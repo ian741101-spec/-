@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>海廢旅人 — 小琉球民宿</title>
+<title>in.house — 小琉球潛水民宿</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -504,7 +504,197 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 }
 .bathroom-text p { font-size:.85rem;line-height:1.95;color:rgba(255,255,255,.56);font-weight:300; }
 
-/* ── STICKY BOTTOM CTA ── */
+/* ── BOOKING SECTION ── */
+.booking-section {
+  padding: 60px 20px 40px;
+}
+.booking-trigger-btn {
+  width: 100%;
+  min-height: var(--touch);
+  background: var(--ocean-deep);
+  color: white;
+  border: none;
+  border-radius: 2px;
+  font-size: .88rem;
+  letter-spacing: .18em;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.booking-trigger-btn:active { background: var(--ocean-mid); }
+.booking-trigger-sub {
+  font-size: .76rem;
+  color: var(--text-light);
+  text-align: center;
+  margin-top: 12px;
+  letter-spacing: .06em;
+}
+
+/* Calendar Modal */
+.cal-modal {
+  position: fixed; inset: 0; z-index: 600;
+  display: flex; align-items: flex-end;
+  pointer-events: none; opacity: 0;
+  transition: opacity .3s;
+}
+.cal-modal.open { pointer-events: all; opacity: 1; }
+.cal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(13,43,62,.55);
+  backdrop-filter: blur(3px);
+}
+.cal-sheet {
+  position: relative; width: 100%;
+  background: var(--cream);
+  border-radius: 16px 16px 0 0;
+  padding: 0 0 calc(20px + var(--safe-bottom));
+  transform: translateY(100%);
+  transition: transform .4s cubic-bezier(.25,.46,.45,.94);
+  max-height: 92svh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.cal-modal.open .cal-sheet { transform: translateY(0); }
+.cal-sheet-handle {
+  width: 36px; height: 4px;
+  background: rgba(0,0,0,.15);
+  border-radius: 2px;
+  margin: 14px auto 20px;
+}
+.cal-sheet-header {
+  padding: 0 20px 16px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.07);
+}
+.cal-sheet-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.1rem; font-weight: 300;
+  color: var(--ocean-deep); letter-spacing: .1em;
+}
+.cal-sheet-close {
+  width: 36px; height: 36px;
+  border: none; background: rgba(0,0,0,.06);
+  border-radius: 50%; font-size: 1rem;
+  color: var(--text-mid); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-sheet-body { padding: 16px 20px 0; }
+
+/* Room chips */
+.room-select-label {
+  font-size: .76rem; letter-spacing: .1em;
+  color: var(--text-light); margin-bottom: 10px;
+}
+.room-chips {
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px; margin-bottom: 16px;
+}
+.room-chips::-webkit-scrollbar { display: none; }
+.room-chip {
+  flex-shrink: 0; height: 36px; padding: 0 16px;
+  border: 1.5px solid rgba(13,43,62,.18);
+  background: white; color: var(--text-mid);
+  border-radius: 2px; font-size: .76rem;
+  letter-spacing: .06em;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer; transition: all .2s;
+}
+.room-chip.active {
+  background: var(--ocean-deep); color: white;
+  border-color: var(--ocean-deep);
+}
+
+/* Calendar widget */
+.cal-wrap { background: white; border-radius: 4px; overflow: hidden; }
+.cal-nav {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--ocean-deep);
+}
+.cal-nav-btn {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,.12);
+  border: none; border-radius: 2px;
+  color: white; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .2s;
+}
+.cal-nav-btn:active { background: rgba(255,255,255,.25); }
+.cal-month {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.05rem; font-weight: 300;
+  color: white; letter-spacing: .12em;
+}
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  background: rgba(13,43,62,.04);
+  padding: 8px 12px 4px;
+}
+.cal-weekday {
+  text-align: center; font-size: .68rem;
+  letter-spacing: .08em; color: var(--text-light); padding: 4px 0;
+}
+.cal-weekday:first-child { color: var(--coral); }
+.cal-weekday:last-child { color: var(--ocean-mid); }
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 2px; padding: 8px 12px 16px;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .88rem; border-radius: 50%;
+  color: var(--text-dark); cursor: pointer;
+  transition: all .2s; position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-day:active { transform: scale(.88); }
+.cal-day.empty { pointer-events: none; }
+.cal-day.past { color: rgba(0,0,0,.2); pointer-events: none; }
+.cal-day.today { font-weight: 400; color: var(--ocean-mid); }
+.cal-day.today::after {
+  content:''; position:absolute; bottom:3px; left:50%;
+  transform:translateX(-50%);
+  width:4px; height:4px; border-radius:50%;
+  background: var(--ocean-mid);
+}
+.cal-day.selected { background: var(--ocean-deep); color: white; font-weight: 400; }
+.cal-day.selected::after { display: none; }
+.cal-day:hover:not(.past):not(.empty) { background: rgba(13,43,62,.08); }
+.cal-summary {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+}
+.cal-summary-text { font-size: .82rem; color: var(--text-mid); line-height: 1.6; }
+.cal-summary-date {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1rem; color: var(--ocean-deep); font-weight: 400;
+}
+.cal-confirm-btn {
+  min-height: var(--touch); padding: 0 24px;
+  background: var(--ocean-deep); color: white;
+  border: none; border-radius: 2px;
+  font-size: .8rem; letter-spacing: .14em;
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 400;
+  flex-shrink: 0; cursor: pointer; transition: background .2s;
+}
+.cal-confirm-btn:active { background: var(--ocean-mid); }
+.cal-confirm-btn:disabled {
+  background: rgba(0,0,0,.12); color: rgba(0,0,0,.3); cursor: not-allowed;
+}
+
+/* ── STICKY CTA ── */
 .sticky-cta {
   position:fixed; bottom:0; left:0; right:0;
   z-index:500;
@@ -619,8 +809,8 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 
   <div class="hero-content">
     <div class="hero-label">Xiaoliuqiu · Taiwan</div>
-    <h1 class="hero-name">海廢旅人</h1>
-    <p class="hero-sub">小琉球 · cozyB&B</p>
+    <h1 class="hero-name">in.house</h1>
+    <p class="hero-sub">小琉球 · 潛水民宿</p>
     <button class="hero-book-btn" onclick="document.querySelector('.rooms-section').scrollIntoView({behavior:'smooth'})">
       立即預訂
     </button>
@@ -861,6 +1051,65 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   </div>
 </section>
 
+<!-- BOOKING SECTION -->
+<section class="booking-section" id="booking">
+  <div class="section-label" style="text-align:center; color:var(--coral); margin-bottom:10px;">Availability</div>
+  <h2 style="font-family:'Noto Serif TC',serif; font-size:1.7rem; font-weight:300; color:var(--ocean-deep); letter-spacing:.15em; text-align:center; margin-bottom:8px;">查詢空房</h2>
+  <p style="font-size:.84rem; color:var(--text-light); text-align:center; margin-bottom:28px; line-height:1.8;">選擇入住日期，確認你的海島旅程</p>
+
+  <button class="booking-trigger-btn" onclick="openCalModal()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    選擇入住日期
+  </button>
+  <div class="booking-trigger-sub" id="booking-date-display">點擊選擇日期</div>
+</section>
+
+<div class="section-sep"></div>
+
+<!-- CALENDAR MODAL -->
+<div class="cal-modal" id="calModal">
+  <div class="cal-backdrop" onclick="closeCalModal()"></div>
+  <div class="cal-sheet">
+    <div class="cal-sheet-handle"></div>
+    <div class="cal-sheet-header">
+      <span class="cal-sheet-title">選擇入住日期</span>
+      <button class="cal-sheet-close" onclick="closeCalModal()">✕</button>
+    </div>
+    <div class="cal-sheet-body">
+      <div class="room-select-label">選擇房型（可略過）</div>
+      <div class="room-chips">
+        <button class="room-chip active" onclick="selectChip(this)">全部房型</button>
+        <button class="room-chip" onclick="selectChip(this)">海洋大床房</button>
+        <button class="room-chip" onclick="selectChip(this)">浪遊雙床房</button>
+        <button class="room-chip" onclick="selectChip(this)">剛剛好房</button>
+        <button class="room-chip" onclick="selectChip(this)">自由潛水員房</button>
+        <button class="room-chip" onclick="selectChip(this)">潮間帶床位</button>
+      </div>
+      <div class="cal-wrap" style="box-shadow:none;">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+          <div class="cal-month" id="cal-month"></div>
+          <button class="cal-nav-btn" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-weekdays">
+          <div class="cal-weekday">日</div><div class="cal-weekday">一</div>
+          <div class="cal-weekday">二</div><div class="cal-weekday">三</div>
+          <div class="cal-weekday">四</div><div class="cal-weekday">五</div>
+          <div class="cal-weekday">六</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-summary">
+          <div class="cal-summary-text">
+            入住日期<br>
+            <span class="cal-summary-date" id="cal-selected">尚未選擇</span>
+          </div>
+          <button class="cal-confirm-btn" id="cal-confirm-btn" disabled onclick="confirmBooking()">確認預訂</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- STICKY BOTTOM CTA -->
 <div class="sticky-cta" role="complementary">
   <button class="cta-line-btn">
@@ -869,7 +1118,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
     </span>
     LINE 詢問
   </button>
-  <button class="cta-book-btn">查看空房 →</button>
+  <button class="cta-book-btn" onclick="openCalModal()">查看空房 →</button>
 </div>
 
 <script>
@@ -968,7 +1217,70 @@ function toggleDesc(id, btn) {
   btn.textContent = expanded ? '收起 ∧' : '展開 ∨';
 }
 
-/* DESKTOP: show diving images */
+/* CALENDAR */
+(function() {
+  const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const now = new Date();
+  let year = now.getFullYear(), month = now.getMonth(), selected = null;
+
+  function render() {
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    document.getElementById('cal-month').textContent = `${year} 年 ${MONTHS[month]}`;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let html = '';
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      const isPast = date < today;
+      const isToday = date.getTime() === today.getTime();
+      const isSel = selected && selected.getFullYear()===year && selected.getMonth()===month && selected.getDate()===d;
+      let cls = 'cal-day';
+      if (isPast) cls += ' past';
+      if (isToday) cls += ' today';
+      if (isSel) cls += ' selected';
+      html += `<div class="${cls}" onclick="calSelect(${year},${month},${d})">${d}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+  }
+
+  window.calPrev = function() {
+    month--; if (month < 0) { month = 11; year--; } render();
+  };
+  window.calNext = function() {
+    month++; if (month > 11) { month = 0; year++; } render();
+  };
+  window.calSelect = function(y, m, d) {
+    selected = new Date(y, m, d);
+    render();
+    const str = `${y} 年 ${m+1} 月 ${d} 日`;
+    document.getElementById('cal-selected').textContent = str;
+    document.getElementById('cal-confirm-btn').disabled = false;
+    document.getElementById('booking-date-display').textContent = `已選擇入住：${str}`;
+  };
+  window.openCalModal = function() {
+    document.getElementById('calModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeCalModal = function() {
+    document.getElementById('calModal').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.confirmBooking = function() {
+    if (!selected) return;
+    closeCalModal();
+    // TODO: 連結訂房系統
+  };
+  window.selectChip = function(btn) {
+    btn.closest('.room-chips').querySelectorAll('.room-chip')
+      .forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+  };
+
+  render();
+})();
+
+
 if (window.matchMedia('(min-width:768px)').matches) {
   const el = document.querySelector('.diving-desktop-imgs');
   if (el) el.style.display = 'grid';
