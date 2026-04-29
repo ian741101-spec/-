@@ -1136,7 +1136,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   <div class="cal-sheet">
     <div class="cal-sheet-handle"></div>
     <div class="cal-sheet-header">
-      <span class="cal-sheet-title">Select Check-in Date</span>
+      <span class="cal-sheet-title"><span id="cal-sheet-title-text">Select Check-in Date</span></span>
       <button class="cal-sheet-close" onclick="closeCalModal()">✕</button>
     </div>
     <div class="cal-sheet-body">
@@ -1196,12 +1196,19 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
     </div>
     <div class="cal-sheet-body" style="padding-bottom:24px;">
 
-      <!-- Step 1: Date -->
+      <!-- Step 1: Dates -->
       <div class="bf-section">
         <div class="bf-label">Check-in Date <span class="bf-req">*</span></div>
-        <button class="bf-date-btn" id="bf-date-btn" onclick="openCalFromForm()">
+        <button class="bf-date-btn" id="bf-date-btn" onclick="openCalFromForm('checkin')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           <span id="bf-date-text">Select date</span>
+        </button>
+      </div>
+      <div class="bf-section">
+        <div class="bf-label">Check-out Date <span class="bf-req">*</span></div>
+        <button class="bf-date-btn" id="bf-checkout-btn" onclick="openCalFromForm('checkout')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span id="bf-checkout-text">Select date</span>
         </button>
       </div>
 
@@ -1398,30 +1405,33 @@ window.closeBookingForm = function() {
   document.getElementById('bookingFormModal').classList.remove('open');
   document.body.style.overflow = '';
 };
-window.openCalFromForm = function() {
-  closeBookingForm();
+window.openCalFromForm = function(type) {
+  window._calFromForm = type; // 'checkin' or 'checkout'
+  document.getElementById('calModal').style.zIndex = '700';
+  // update calendar title based on type
+  document.getElementById('cal-sheet-title-text').textContent =
+    type === 'checkin' ? 'Select Check-in Date' : 'Select Check-out Date';
   openCalModal();
-  // after date selected in cal, return to form
-  window._calFromForm = true;
 };
 window.changeGuests = function(delta) {
   bfGuests = Math.max(1, Math.min(8, bfGuests + delta));
   document.getElementById('bf-guests-num').textContent = bfGuests;
 };
 window.submitBooking = function() {
-  const date  = document.getElementById('bf-date-text').textContent;
-  const room  = document.getElementById('bf-room').value;
-  const name  = document.getElementById('bf-name').value.trim();
-  const contact = document.getElementById('bf-contact').value.trim();
+  const checkin  = document.getElementById('bf-date-text').textContent;
+  const checkout = document.getElementById('bf-checkout-text').textContent;
+  const room     = document.getElementById('bf-room').value;
+  const name     = document.getElementById('bf-name').value.trim();
+  const contact  = document.getElementById('bf-contact').value.trim();
 
-  if (date === 'Select date' || !room || !name || !contact) {
+  if (checkin === 'Select date' || checkout === 'Select date' || !room || !name || !contact) {
     alert('Please fill in all required fields.');
     return;
   }
-  // Show confirmation
   closeBookingForm();
   document.getElementById('confirm-detail').innerHTML =
-    `📅 <strong>Check-in:</strong> ${date}<br>` +
+    `📅 <strong>Check-in:</strong> ${checkin}<br>` +
+    `📅 <strong>Check-out:</strong> ${checkout}<br>` +
     `🛏 <strong>Room:</strong> ${room}<br>` +
     `👤 <strong>Guests:</strong> ${bfGuests}<br>` +
     `✉️ <strong>Contact:</strong> ${contact}`;
@@ -1479,16 +1489,19 @@ window.closeConfirm = function() {
   window.confirmBooking = function() {
     if (!selected) return;
     const str = `${MONTHS[selected.getMonth()]} ${selected.getDate()}, ${selected.getFullYear()}`;
-    // update booking form date button if opened from form
-    const btn = document.getElementById('bf-date-btn');
-    const span = document.getElementById('bf-date-text');
-    if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
-    document.getElementById('booking-date-display').textContent = `Check-in: ${str}`;
-    closeCalModal();
-    if (window._calFromForm) {
-      window._calFromForm = false;
-      setTimeout(() => openBookingForm(), 300);
+    if (window._calFromForm === 'checkin') {
+      const btn = document.getElementById('bf-date-btn');
+      const span = document.getElementById('bf-date-text');
+      if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
+      document.getElementById('booking-date-display').textContent = `Check-in: ${str}`;
+    } else if (window._calFromForm === 'checkout') {
+      const btn = document.getElementById('bf-checkout-btn');
+      const span = document.getElementById('bf-checkout-text');
+      if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
     }
+    document.getElementById('calModal').style.zIndex = '';
+    window._calFromForm = false;
+    closeCalModal();
   };
   window.selectChip = function(btn) {
     btn.closest('.room-chips').querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
