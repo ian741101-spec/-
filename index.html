@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>in.house | 小琉球潛水B&B</title>
+<title>in.house — Xiaoliuqiu B&B</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&family=Sacramento&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1381,7 +1381,7 @@ if (window.matchMedia('(min-width:768px)').matches) {
 }
 /* WHATSAPP */
 window.openWhatsApp = function() {
-  const phone = 'XXXXXXXXXX'; // TODO: 填入 WhatsApp 號碼（含國碼，去掉+號）
+  const phone = 'XXXXXXXXXX'; // TODO: enter WhatsApp number with country code, no + sign
   const msg = encodeURIComponent('Hi! I\'d like to enquire about a room at in.house B&B, Xiaoliuqiu.');
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 };
@@ -1495,7 +1495,7 @@ window.confirmBooking = function() {
   window.confirmBooking = function() {
     if (!selected) return;
     closeCalModal();
-    // TODO: 連結訂房系統
+    // TODO: connect to booking system
   };
   window.selectChip = function(btn) {
     btn.closest('.room-chips').querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
