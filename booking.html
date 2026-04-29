@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Book a Room — in.house</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -173,6 +174,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 .cal-day:active{transform:scale(.86);}
 .cal-day.empty{pointer-events:none;}
 .cal-day.past{color:rgba(0,0,0,.2);pointer-events:none;}
+.cal-day.past.booked{color:var(--coral);opacity:.5;text-decoration:line-through;}
 .cal-day.today{font-weight:400;color:var(--ocean-mid);}
 .cal-day.today::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--ocean-mid);}
 .cal-day.selected{background:var(--ocean-deep);color:white;font-weight:400;}
@@ -196,7 +198,29 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 .cal-confirm:active{background:var(--ocean-mid);}
 .cal-confirm:disabled{background:rgba(0,0,0,.12);color:rgba(0,0,0,.3);cursor:not-allowed;}
 
-/* ── CONFIRMATION SCREEN ── */
+/* ── DESKTOP ≥ 768px ── */
+@media (min-width: 768px) {
+  .form-wrap { padding: 40px 40px 60px; }
+
+  .cal-overlay {
+    align-items: center;
+    justify-content: center;
+  }
+  .cal-sheet {
+    width: 400px;
+    max-height: 90vh;
+    border-radius: 8px;
+    transform: translateY(20px) scale(.96);
+    opacity: 0;
+    transition: transform .3s ease, opacity .3s ease;
+    overflow-y: auto;
+  }
+  .cal-overlay.open .cal-sheet {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  .cal-handle { display: none; }
+}
 .confirm-screen{
   display:none;position:fixed;inset:0;z-index:600;
   background:var(--cream);
@@ -384,18 +408,21 @@ function renderCal() {
   let html = '';
   for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(calYear, calMonth, d);
-    const isPast = date < today;
-    const isToday = date.getTime() === today.getTime();
-    const isSel = selectedDate &&
+    const date    = new Date(calYear, calMonth, d);
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast    = date < today;
+    const isBlocked = blockedDates.includes(dateStr);
+    const isToday   = date.getTime() === today.getTime();
+    const isSel     = selectedDate &&
       selectedDate.getFullYear() === calYear &&
-      selectedDate.getMonth() === calMonth &&
-      selectedDate.getDate() === d;
+      selectedDate.getMonth()    === calMonth &&
+      selectedDate.getDate()     === d;
     let cls = 'cal-day';
-    if (isPast) cls += ' past';
-    if (isToday) cls += ' today';
-    if (isSel) cls += ' selected';
-    html += `<div class="${cls}" onclick="selectDay(${calYear},${calMonth},${d})">${d}</div>`;
+    if (isPast || isBlocked) cls += ' past';
+    if (isToday)  cls += ' today';
+    if (isSel)    cls += ' selected';
+    const label = isBlocked && !isPast ? `<span title="Booked" style="font-size:.55rem;display:block;color:var(--coral);line-height:1">✕</span>` : d;
+    html += `<div class="${cls}" onclick="${(isPast||isBlocked)?'':` selectDay(${calYear},${calMonth},${d})`}">${isPast||isBlocked ? d : d}</div>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
 }
@@ -450,6 +477,46 @@ function changeGuests(delta) {
   document.getElementById('guests-num').textContent = guests;
 }
 
+/* ── EMAILJS CONFIG ── */
+const EMAILJS_PUBLIC_KEY    = 'QDeBHL3lGEOeqY8VL';
+const EMAILJS_SERVICE_ID    = 'service_qwupc3o';
+const EMAILJS_OWNER_TPL     = 'template_raxaox9';
+const EMAILJS_GUEST_TPL     = 'template_ej2ejxo';
+const OWNER_EMAIL           = 'icebar0413@gmail.com';
+const GAS_URL               = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJByORLaGOX9vYVOdthVz0Sg-Dcq4Y3dodH_Qsh6d7x5vl1oMrV8IPhfM/exec';
+const GCAL_API_KEY          = 'AIzaSyD-gETu0w58OZl4TdTvdpK1QVPkUTc-IrU';
+const GCAL_ID               = '4fb79ee0ef48a1069cd7320d150365515828a5850037e06c328030e546d48b49@group.calendar.google.com';
+
+emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+/* ── BLOCKED DATES FROM GOOGLE CALENDAR ── */
+let blockedDates = []; // array of 'YYYY-MM-DD' strings
+
+function fetchBlockedDates() {
+  const calId = encodeURIComponent(GCAL_ID);
+  const now   = new Date().toISOString();
+  const later = new Date(Date.now() + 365*24*60*60*1000).toISOString();
+  const url   = `https://www.googleapis.com/calendar/v3/calendars/${calId}/events?key=${GCAL_API_KEY}&timeMin=${now}&timeMax=${later}&singleEvents=true`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.items) return;
+      blockedDates = [];
+      data.items.forEach(event => {
+        const start = new Date(event.start.date || event.start.dateTime);
+        const end   = new Date(event.end.date   || event.end.dateTime);
+        // add every date in the range
+        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+          blockedDates.push(d.toISOString().slice(0, 10));
+        }
+      });
+    })
+    .catch(() => {}); // fail silently
+}
+
+fetchBlockedDates();
+
 /* ── SUBMIT ── */
 function submitForm() {
   const checkin  = document.getElementById('checkin-text').textContent;
@@ -457,21 +524,59 @@ function submitForm() {
   const room     = document.getElementById('room-select').value;
   const name     = document.getElementById('name-input').value.trim();
   const contact  = document.getElementById('contact-input').value.trim();
+  const notes    = document.getElementById('notes-input').value.trim();
 
   if (checkin === 'Check-in' || checkout === 'Check-out' || !room || !name || !contact) {
     alert('Please fill in all required fields.');
     return;
   }
 
-  document.getElementById('confirm-summary').innerHTML =
-    `📅 <strong>Check-in:</strong> ${checkin}<br>` +
-    `📅 <strong>Check-out:</strong> ${checkout}<br>` +
-    `🛏 <strong>Room:</strong> ${room}<br>` +
-    `👤 <strong>Guests:</strong> ${guests}<br>` +
-    `✉️ <strong>Contact:</strong> ${contact}`;
+  // Show loading state
+  const btn = document.querySelector('.submit-btn');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
 
-  document.getElementById('confirmScreen').classList.add('show');
-  window.scrollTo(0, 0);
+  const templateParams = {
+    guest_name:    name,
+    guest_email:   contact,
+    guest_phone:   contact,
+    to_email:      contact,
+    guest_contact: contact,
+    room_type:     room,
+    checkin_date:  checkin,
+    checkout_date: checkout,
+    guest_count:   guests,
+    guests:        guests,
+    notes:         notes || 'None',
+    owner_email:   OWNER_EMAIL,
+  };
+
+  // Send owner notification + guest confirmation in parallel
+  Promise.all([
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_OWNER_TPL, { ...templateParams, to_email: OWNER_EMAIL }),
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_GUEST_TPL, { ...templateParams }),
+    fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(templateParams)
+    }).catch(() => {}) // Google Calendar — fail silently if not yet configured
+  ])
+  .then(() => {
+    // Success — show confirmation screen
+    document.getElementById('confirm-summary').innerHTML =
+      `📅 <strong>Check-in:</strong> ${checkin}<br>` +
+      `📅 <strong>Check-out:</strong> ${checkout}<br>` +
+      `🛏 <strong>Room:</strong> ${room}<br>` +
+      `👤 <strong>Guests:</strong> ${guests}<br>` +
+      `✉️ <strong>Contact:</strong> ${contact}`;
+    document.getElementById('confirmScreen').classList.add('show');
+    window.scrollTo(0, 0);
+  })
+  .catch((err) => {
+    console.error('EmailJS error:', err);
+    btn.textContent = 'Send Booking Request';
+    btn.disabled = false;
+    alert('Something went wrong. Please try again or contact us via WhatsApp.');
+  });
 }
 </script>
 </body>
