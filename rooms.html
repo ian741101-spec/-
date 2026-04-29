@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Our Rooms — in.house</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ocean-deep:#0d2b3e; --ocean-mid:#1a4a6b; --seafoam:#7ebfb5;
+  --coral:#e07a5f; --sand:#f4ede4; --cream:#faf7f2;
+  --text-dark:#1a1a1a; --text-mid:#4a4a4a; --text-light:#8a8a8a;
+  --safe-top:env(safe-area-inset-top,62px);
+  --safe-bottom:env(safe-area-inset-bottom,34px);
+  --touch:52px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--cream);color:var(--text-dark);font-family:'Noto Sans TC',sans-serif;font-weight:300;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(72px + var(--safe-bottom));}
+img{display:block;max-width:100%;user-select:none;-webkit-user-drag:none;}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;}
+
+/* ── BACK NAV ── */
+.top-nav {
+  position:sticky; top:0; z-index:200;
+  background:var(--ocean-deep);
+  padding:calc(var(--safe-top) + 4px) 20px 12px;
+  display:flex; align-items:center; gap:12px;
+}
+.back-btn {
+  height:40px; padding:0 14px;
+  background:rgba(255,255,255,.12);
+  border:none; border-radius:2px;
+  color:white; font-size:.78rem;
+  letter-spacing:.1em; font-family:'Noto Sans TC',sans-serif;
+  display:flex; align-items:center; gap:6px;
+}
+.back-btn:active{background:rgba(255,255,255,.22);}
+.nav-title {
+  font-family:'Noto Serif TC',serif;
+  font-size:1rem; font-weight:300;
+  color:white; letter-spacing:.14em;
+}
+
+/* ── SECTION HEADER ── */
+.section-header {
+  background:var(--ocean-deep);
+  padding:36px 24px 60px;
+  text-align:center; position:relative; overflow:hidden;
+}
+.section-header::before{
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 65% 0%,rgba(46,122,170,.4) 0%,transparent 55%);
+  pointer-events:none;
+}
+.section-label {
+  position:relative;
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--seafoam); font-size:.76rem;
+  letter-spacing:.28em; text-transform:uppercase; margin-bottom:10px;
+}
+.section-title {
+  position:relative;
+  font-family:'Noto Serif TC',serif;
+  font-size:1.9rem; font-weight:300;
+  color:white; letter-spacing:.16em; margin-bottom:10px;
+}
+.section-desc {
+  position:relative;
+  font-size:.84rem; color:rgba(255,255,255,.55);
+  line-height:1.9;
+}
+.wave{position:absolute;bottom:-1px;left:0;width:100%;line-height:0;overflow:hidden;}
+.wave svg{display:block;width:100%;height:40px;}
+
+/* ── FILTER ── */
+.filter-bar {
+  position:sticky; top:56px; z-index:100;
+  background:white; border-bottom:1px solid rgba(0,0,0,.07);
+  box-shadow:0 1px 12px rgba(0,0,0,.06);
+  display:flex; overflow-x:auto; overflow-y:hidden;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  padding:0 max(16px,env(safe-area-inset-left,0px));
+}
+.filter-bar::-webkit-scrollbar{display:none;}
+.filter-tab {
+  flex-shrink:0; height:var(--touch); padding:0 20px;
+  font-size:.82rem; letter-spacing:.08em;
+  color:var(--text-light); background:none; border:none;
+  border-bottom:2.5px solid transparent;
+  font-family:'Noto Sans TC',sans-serif; font-weight:300;
+  white-space:nowrap; transition:color .2s,border-color .2s;
+}
+.filter-tab.active{color:var(--ocean-mid);border-bottom-color:var(--ocean-mid);font-weight:400;}
+.filter-tab:active{opacity:.6;}
+
+/* ── ROOM CARDS ── */
+.rooms-section{padding:16px 0 4px;}
+.rooms-grid{display:flex;flex-direction:column;gap:1px;background:rgba(0,0,0,.05);}
+
+.room-card{background:white;overflow:hidden;opacity:0;transform:translateY(16px);animation:fadeUp .45s ease forwards;}
+.room-card:nth-child(1){animation-delay:.05s}
+.room-card:nth-child(2){animation-delay:.1s}
+.room-card:nth-child(3){animation-delay:.15s}
+.room-card:nth-child(4){animation-delay:.2s}
+.room-card:nth-child(5){animation-delay:.25s}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+
+.card-image{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--ocean-deep);cursor:grab;}
+.card-image:active{cursor:grabbing;}
+.gallery-track{display:flex;height:100%;transition:transform .32s cubic-bezier(.25,.46,.45,.94);will-change:transform;}
+.gallery-slide{flex:0 0 100%;height:100%;}
+.gallery-slide img{width:100%;height:100%;object-fit:cover;pointer-events:none;}
+
+.card-badge{position:absolute;top:14px;left:14px;z-index:2;background:var(--ocean-deep);color:white;font-size:.68rem;letter-spacing:.18em;padding:5px 11px;}
+.card-type-badge{position:absolute;top:14px;right:14px;z-index:2;background:rgba(255,255,255,.92);color:var(--ocean-mid);font-size:.68rem;letter-spacing:.12em;padding:5px 11px;border-radius:2px;}
+.gallery-dots{position:absolute;bottom:11px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2;}
+.gallery-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.45);transition:all .25s;}
+.gallery-dot.active{background:white;width:18px;border-radius:3px;}
+
+.card-body{padding:18px 20px 22px;}
+.card-capacity{display:flex;align-items:center;gap:4px;font-size:.74rem;color:var(--text-light);margin-bottom:6px;}
+.capacity-icon{width:13px;height:13px;opacity:.5;}
+.card-title{font-family:'Noto Serif TC',serif;font-size:1.18rem;font-weight:400;color:var(--ocean-deep);letter-spacing:.08em;margin-bottom:3px;}
+.card-subtitle{font-family:'Playfair Display',serif;font-style:italic;font-size:.76rem;color:var(--text-light);margin-bottom:12px;}
+.card-desc{font-size:.85rem;color:var(--text-mid);line-height:1.85;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:all .3s;}
+.card-desc.expanded{-webkit-line-clamp:unset;overflow:visible;}
+.desc-toggle{display:inline-block;margin-top:4px;font-size:.75rem;color:var(--ocean-mid);letter-spacing:.06em;min-height:36px;line-height:36px;-webkit-tap-highlight-color:transparent;cursor:pointer;}
+.card-amenities{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 18px;}
+.amenity-tag{font-size:.7rem;color:var(--ocean-mid);border:1px solid rgba(46,122,170,.22);padding:5px 10px;border-radius:2px;letter-spacing:.06em;}
+.card-footer{display:flex;align-items:center;justify-content:flex-end;padding-top:16px;border-top:1px solid rgba(0,0,0,.07);}
+.book-btn{min-height:var(--touch);min-width:110px;padding:0 20px;background:var(--ocean-deep);color:white;border:none;border-radius:2px;font-size:.78rem;letter-spacing:.14em;font-family:'Noto Sans TC',sans-serif;font-weight:400;transition:background .2s;}
+.book-btn:active{background:var(--ocean-mid);transform:scale(.97);}
+
+/* ── COMMON SPACES ── */
+.common-section{background:var(--ocean-deep);padding:56px 0;position:relative;overflow:hidden;}
+.common-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(46,122,170,.2) 0%,transparent 60%);pointer-events:none;}
+.common-header{text-align:center;padding:0 24px;margin-bottom:24px;position:relative;}
+.common-header .section-label{color:var(--seafoam);}
+.common-header h2{font-family:'Noto Serif TC',serif;font-size:1.65rem;font-weight:300;color:white;letter-spacing:.15em;margin-bottom:8px;}
+.common-header p{font-size:.84rem;color:rgba(255,255,255,.55);line-height:1.8;}
+.common-scroll{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory;padding:0 24px;}
+.common-scroll::-webkit-scrollbar{display:none;}
+.common-item{flex:0 0 72vw;max-width:280px;aspect-ratio:3/4;position:relative;overflow:hidden;border-radius:2px;scroll-snap-align:start;}
+.common-item img{width:100%;height:100%;object-fit:cover;filter:brightness(.72);transition:filter .3s;}
+.common-item:active img{filter:brightness(.85);}
+.common-label{position:absolute;bottom:0;left:0;right:0;padding:48px 16px 18px;background:linear-gradient(transparent,rgba(13,43,62,.85));color:white;}
+.common-label-title{font-family:'Noto Serif TC',serif;font-size:.96rem;font-weight:300;letter-spacing:.12em;margin-bottom:3px;}
+.common-label-sub{font-size:.72rem;color:rgba(255,255,255,.58);letter-spacing:.08em;line-height:1.6;}
+
+/* ── DIVING GEAR ── */
+.diving-section{padding:56px 24px;}
+.diving-text .section-label{color:var(--coral);margin-bottom:10px;}
+.diving-text h2{font-family:'Noto Serif TC',serif;font-size:1.5rem;font-weight:300;color:var(--ocean-deep);letter-spacing:.1em;line-height:1.5;margin-bottom:14px;}
+.diving-text p{font-size:.85rem;line-height:1.9;color:var(--text-mid);font-weight:300;margin-bottom:14px;}
+.gear-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:20px;}
+.gear-item{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-mid);}
+.gear-dot{width:6px;height:6px;border-radius:50%;background:var(--seafoam);flex-shrink:0;}
+.gear-photos{display:flex;gap:8px;margin-top:24px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.gear-photos::-webkit-scrollbar{display:none;}
+.gear-photo{flex:0 0 58vw;aspect-ratio:4/3;border-radius:2px;overflow:hidden;}
+.gear-photo img{width:100%;height:100%;object-fit:cover;}
+
+/* ── BATHROOM ── */
+.bathroom-section{background:var(--ocean-deep);padding:56px 24px;}
+.bathroom-img{width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:2px;margin-bottom:26px;}
+.bathroom-img img{width:100%;height:100%;object-fit:cover;filter:brightness(.82);}
+.bathroom-text .section-label{color:var(--seafoam);margin-bottom:10px;}
+.bathroom-text h2{font-family:'Noto Serif TC',serif;font-size:1.4rem;font-weight:300;color:white;letter-spacing:.12em;margin-bottom:12px;}
+.bathroom-text p{font-size:.85rem;line-height:1.95;color:rgba(255,255,255,.56);font-weight:300;}
+
+.section-sep{height:1px;background:rgba(0,0,0,.06);margin:0 24px;}
+
+/* ── STICKY CTA ── */
+.sticky-cta{
+  position:fixed;bottom:0;left:0;right:0;z-index:500;
+  background:white;border-top:1px solid rgba(0,0,0,.08);
+  box-shadow:0 -4px 24px rgba(0,0,0,.1);
+  padding:10px 20px;
+  padding-bottom:calc(10px + var(--safe-bottom));
+  display:flex;gap:10px;align-items:stretch;
+}
+.cta-wa-btn{
+  flex:1;min-height:var(--touch);
+  background:white;border:1.5px solid var(--ocean-deep);
+  color:var(--ocean-deep);border-radius:2px;
+  font-size:.78rem;letter-spacing:.1em;
+  font-family:'Noto Sans TC',sans-serif;font-weight:400;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.cta-wa-btn:active{background:rgba(13,43,62,.06);}
+.cta-book-btn{
+  flex:1.6;min-height:var(--touch);
+  background:var(--ocean-deep);color:white;
+  border:none;border-radius:2px;
+  font-size:.8rem;letter-spacing:.12em;
+  font-family:'Noto Sans TC',sans-serif;font-weight:400;
+  display:flex;align-items:center;justify-content:center;
+}
+.cta-book-btn:active{background:var(--ocean-mid);transform:scale(.98);}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <button class="back-btn" onclick="location.href='index.html'">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Home
+  </button>
+  <span class="nav-title">in.house</span>
+</nav>
+
+<!-- HEADER -->
+<header class="section-header">
+  <div class="section-label">Room Types</div>
+  <h1 class="section-title">Our Rooms</h1>
+  <p class="section-desc">Every room tells a story of the sea.<br>Find your corner on this blue island.</p>
+  <div class="wave"><svg viewBox="0 0 390 40" preserveAspectRatio="none" fill="var(--cream)"><path d="M0,20 C97,40 293,0 390,20 L390,40 L0,40 Z"/></svg></div>
+</header>
+
+<!-- FILTER -->
+<nav class="filter-bar" style="top:calc(56px + var(--safe-top));">
+  <button class="filter-tab active" onclick="filterRooms('all',this)">All Rooms</button>
+  <button class="filter-tab" onclick="filterRooms('private',this)">Private</button>
+  <button class="filter-tab" onclick="filterRooms('dorm',this)">Dorm</button>
+  <button class="filter-tab" onclick="filterRooms('couple',this)">Couples</button>
+</nav>
+
+<!-- ROOM CARDS -->
+<section class="rooms-section">
+<div class="rooms-grid" id="rooms-grid">
+
+  <!-- 1. Ocean Double -->
+  <article class="room-card" data-type="couple">
+    <div class="card-image">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_4.jpg" alt="Ocean Double Room" loading="eager"></div>
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_3.jpg" alt="Ocean Double Room full view" loading="lazy"></div>
+      </div>
+      <span class="card-badge">Featured</span>
+      <span class="card-type-badge">Couples Pick</span>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
+      <h2 class="card-title">Ocean Double</h2>
+      <div class="card-subtitle">Ocean Double Room</div>
+      <p class="card-desc" id="desc-1">A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-1',this)">Read more ∨</span>
+      <div class="card-amenities">
+        <span class="amenity-tag">A/C</span><span class="amenity-tag">Pallet Bed</span><span class="amenity-tag">Plants</span><span class="amenity-tag">Underwater Art</span>
+      </div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+    </div>
+  </article>
+
+  <!-- 2. Twin Wanderer -->
+  <article class="room-card" data-type="private">
+    <div class="card-image">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_10.jpg" alt="Twin Wanderer Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_9.jpg" alt="Twin Wanderer Room full view" loading="lazy"></div>
+      </div>
+      <span class="card-type-badge">Twin Room</span>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
+      <h2 class="card-title">Twin Wanderer</h2>
+      <div class="card-subtitle">Twin Wanderer Room</div>
+      <p class="card-desc" id="desc-2">Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-2',this)">Read more ∨</span>
+      <div class="card-amenities">
+        <span class="amenity-tag">A/C</span><span class="amenity-tag">Window View</span><span class="amenity-tag">Twin Beds</span>
+      </div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+    </div>
+  </article>
+
+  <!-- 3. Just Right -->
+  <article class="room-card" data-type="private">
+    <div class="card-image">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_8.jpg" alt="Just Right Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_7.jpg" alt="Just Right Room twin beds" loading="lazy"></div>
+      </div>
+      <span class="card-type-badge">Music Theme</span>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
+      <h2 class="card-title">Just Right Room</h2>
+      <div class="card-subtitle">"Just Right" — Music Theme</div>
+      <p class="card-desc" id="desc-3">Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-3',this)">Read more ∨</span>
+      <div class="card-amenities">
+        <span class="amenity-tag">A/C</span><span class="amenity-tag">Lyric Wall</span><span class="amenity-tag">Bold Colors</span>
+      </div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+    </div>
+  </article>
+
+  <!-- 4. Freediver -->
+  <article class="room-card" data-type="private">
+    <div class="card-image">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_11.jpg" alt="Freediver Room" loading="lazy"></div>
+      </div>
+      <span class="card-type-badge">Single Room</span>
+      <div class="gallery-dots" style="display:none;"></div>
+    </div>
+    <div class="card-body">
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 guest</div>
+      <h2 class="card-title">Freediver Room</h2>
+      <div class="card-subtitle">Freediver Single Room</div>
+      <p class="card-desc" id="desc-4">A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-4',this)">Read more ∨</span>
+      <div class="card-amenities">
+        <span class="amenity-tag">Fin Display</span><span class="amenity-tag">Full Mirror</span><span class="amenity-tag">Driftwood Deco</span>
+      </div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+    </div>
+  </article>
+
+  <!-- 5. Intertidal Bunk -->
+  <article class="room-card" data-type="dorm">
+    <div class="card-image">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_6.jpg" alt="Intertidal Bunk Dorm" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_5.jpg" alt="Intertidal Bunk full view" loading="lazy"></div>
+      </div>
+      <span class="card-badge">Backpacker</span>
+      <span class="card-type-badge">Bunk Dorm</span>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>Mixed Dorm</div>
+      <h2 class="card-title">Intertidal Bunk</h2>
+      <div class="card-subtitle">Intertidal Bunk Dorm</div>
+      <p class="card-desc" id="desc-5">Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-5',this)">Read more ∨</span>
+      <div class="card-amenities">
+        <span class="amenity-tag">A/C</span><span class="amenity-tag">Privacy Curtain</span><span class="amenity-tag">Bean Bag</span><span class="amenity-tag">Reading Light</span>
+      </div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+    </div>
+  </article>
+
+</div>
+</section>
+
+<!-- COMMON SPACES -->
+<section class="common-section">
+  <div class="common-header">
+    <div class="section-label">Common Areas</div>
+    <h2>Common Spaces</h2>
+    <p>A place to put your phone down and actually talk to people.</p>
+  </div>
+  <div class="common-scroll">
+    <div class="common-item"><img src="images/LINE_NOTE_260425_17.jpg" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title">Lobby</div><div class="common-label-sub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_18.jpg" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title">Lounge</div><div class="common-label-sub">Put your phone down and talk to someone :)</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_19.jpg" alt="Feature Wall" loading="lazy"><div class="common-label"><div class="common-label-title">Feature Wall · Shop</div><div class="common-label-sub">Dive gear · Books · Skateboard</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_14.jpg" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title">Front Garden</div><div class="common-label-sub">Pallet tables · String lights · Greenery</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_15.jpg" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title">Green Balcony</div><div class="common-label-sub">Hanging plants · Lava stones · Mountain view</div></div></div>
+  </div>
+</section>
+
+<!-- DIVING GEAR -->
+<section class="diving-section">
+  <div class="diving-text">
+    <div class="section-label">Dive Equipment</div>
+    <h2>Dive Gear,<br>All Here</h2>
+    <p>Full freediving and scuba equipment available to rent. Everything is cleaned and maintained regularly — arrive light, dive deep.</p>
+    <div class="gear-grid">
+      <div class="gear-item"><span class="gear-dot"></span>Freediving Fins</div>
+      <div class="gear-item"><span class="gear-dot"></span>All Fin Sizes</div>
+      <div class="gear-item"><span class="gear-dot"></span>BCD Vest</div>
+      <div class="gear-item"><span class="gear-dot"></span>AROPEC Weight Belt</div>
+      <div class="gear-item"><span class="gear-dot"></span>Safety Line / SMB</div>
+      <div class="gear-item"><span class="gear-dot"></span>Lead Weights</div>
+      <div class="gear-item"><span class="gear-dot"></span>Dive Flag</div>
+      <div class="gear-item"><span class="gear-dot"></span>Gear Rinse Station</div>
+    </div>
+  </div>
+  <div class="gear-photos">
+    <div class="gear-photo"><img src="images/LINE_NOTE_260425_1.jpg" alt="Safety Line" loading="lazy"></div>
+    <div class="gear-photo"><img src="images/LINE_NOTE_260425_2.jpg" alt="Weight Belt" loading="lazy"></div>
+    <div class="gear-photo"><img src="images/LINE_NOTE_260425_13.jpg" alt="Gear Station" loading="lazy"></div>
+  </div>
+</section>
+
+<div class="section-sep"></div>
+
+<!-- BATHROOM -->
+<section class="bathroom-section">
+  <div class="bathroom-img"><img src="images/LINE_NOTE_260425_12.jpg" alt="Vintage Blue Tile Bathroom" loading="lazy"></div>
+  <div class="bathroom-text">
+    <div class="section-label">Bathroom</div>
+    <h2>Vintage Tile Bathroom</h2>
+    <p>All-blue tiles from floor to ceiling, with a colourful mosaic tub base that carries the warmth of old Taiwanese homes. Plants, morning light, a good shower — ready for the ocean.</p>
+  </div>
+</section>
+
+<!-- STICKY CTA -->
+<div class="sticky-cta">
+  <button class="cta-wa-btn" onclick="openWhatsApp()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    WhatsApp
+  </button>
+  <button class="cta-book-btn" onclick="location.href='booking.html'">Book Now →</button>
+</div>
+
+<script>
+function filterRooms(type, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.room-card').forEach(card => {
+    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
+  });
+}
+
+function toggleDesc(id, btn) {
+  const expanded = document.getElementById(id).classList.toggle('expanded');
+  btn.textContent = expanded ? 'Show less ∧' : 'Read more ∨';
+}
+
+function openWhatsApp() {
+  const phone = 'XXXXXXXXXX'; // TODO: enter WhatsApp number with country code, no + sign
+  const msg = encodeURIComponent("Hi! I'd like to enquire about a room at in.house B&B, Xiaoliuqiu.");
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+
+// Touch swipe gallery
+document.querySelectorAll('.card-image').forEach(gallery => {
+  const track = gallery.querySelector('.gallery-track');
+  const dots  = gallery.querySelectorAll('.gallery-dot');
+  const total = gallery.querySelectorAll('.gallery-slide').length;
+  if (total <= 1) return;
+  let cur = 0, startX = 0, moved = false;
+  function goTo(i) {
+    cur = Math.max(0, Math.min(i, total - 1));
+    track.style.transform = `translateX(${-cur * 100}%)`;
+    dots.forEach((d, idx) => d.classList.toggle('active', idx === cur));
+  }
+  gallery.addEventListener('touchstart', e => { startX = e.touches[0].clientX; moved = false; }, {passive:true});
+  gallery.addEventListener('touchmove',  e => { moved = Math.abs(e.touches[0].clientX - startX) > 6; }, {passive:true});
+  gallery.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
+  });
+  dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+});
+</script>
+</body>
+</html>

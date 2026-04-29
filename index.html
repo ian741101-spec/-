@@ -1,1504 +1,216 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>in.house — Xiaoliuqiu B&B</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&family=Sacramento&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 <style>
 :root {
   --ocean-deep: #0d2b3e;
   --ocean-mid:  #1a4a6b;
   --seafoam:    #7ebfb5;
-  --coral:      #e07a5f;
-  --sand:       #f4ede4;
   --cream:      #faf7f2;
-  --text-dark:  #1a1a1a;
-  --text-mid:   #4a4a4a;
-  --text-light: #8a8a8a;
+  --text-light: rgba(255,255,255,.6);
   --safe-top:    env(safe-area-inset-top, 62px);
   --safe-bottom: env(safe-area-inset-bottom, 34px);
-  --safe-left:   env(safe-area-inset-left, 0px);
-  --safe-right:  env(safe-area-inset-right, 0px);
   --touch: 52px;
 }
-
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+html { -webkit-text-size-adjust:100%; }
+body { background:#000; overflow:hidden; height:100svh; font-family:'Noto Sans TC',sans-serif; }
+button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; border:none; }
+img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:none; }
 
-body {
-  background: var(--cream);
-  color: var(--text-dark);
-  font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 300;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  /* Space for sticky CTA */
-  padding-bottom: calc(76px + var(--safe-bottom));
+/* ── HERO SLIDESHOW ── */
+.hero {
+  position:relative; width:100%; height:100svh; overflow:hidden;
 }
+.slides {
+  display:flex; height:100%;
+  transition:transform .85s cubic-bezier(.77,0,.18,1);
+  will-change:transform;
+}
+.slide { flex:0 0 100%; height:100%; position:relative; }
+.slide img { width:100%; height:100%; object-fit:cover; filter:brightness(.52); }
 
-img { display:block; max-width:100%; -webkit-user-drag:none; user-select:none; }
-button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
-
-/* ── SITE HERO SLIDESHOW ── */
-.site-hero {
-  position: relative;
-  width: 100%;
-  height: 100svh;
-  overflow: hidden;
-  background: var(--ocean-deep);
-}
-
-.hero-slides {
-  display: flex;
-  height: 100%;
-  transition: transform .8s cubic-bezier(.77,0,.18,1);
-  will-change: transform;
-}
-
-.hero-slide {
-  flex: 0 0 100%;
-  height: 100%;
-  position: relative;
-}
-
-.hero-slide img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  filter: brightness(.55);
-  pointer-events: none;
-}
-
-/* gradient overlay */
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to bottom,
-      rgba(13,43,62,.3) 0%,
-      transparent 40%,
-      transparent 50%,
-      rgba(13,43,62,.7) 100%);
-  pointer-events: none;
-}
-
-/* content */
-.hero-content {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 0 28px calc(48px + var(--safe-bottom));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
-}
-
-.hero-label {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  color: var(--seafoam);
-  font-size: .78rem;
-  letter-spacing: .3em;
-  opacity: .9;
-}
-
-.hero-name {
-  font-family: 'Dancing Script', cursive;
-  font-size: clamp(3rem, 13vw, 5rem);
-  font-weight: 700;
-  color: white;
-  letter-spacing: .08em;
-  line-height: 1.2;
-  text-shadow: 0 2px 24px rgba(0,0,0,.35);
-}
-
-.hero-sub {
-  font-size: .82rem;
-  color: rgba(255,255,255,.65);
-  letter-spacing: .18em;
-  margin-bottom: 28px;
-  font-weight: 300;
-}
-
-.hero-book-btn {
-  min-height: var(--touch);
-  padding: 0 36px;
-  background: white;
-  color: var(--ocean-deep);
-  border: none;
-  border-radius: 2px;
-  font-size: .82rem;
-  letter-spacing: .18em;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 400;
-  cursor: pointer;
-  transition: all .2s;
-  box-shadow: 0 4px 20px rgba(0,0,0,.25);
-}
-.hero-book-btn:active { transform: scale(.96); opacity: .85; }
-
-/* progress dots */
-.hero-dots {
-  position: absolute;
-  bottom: calc(160px + var(--safe-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 7px;
-  z-index: 10;
-}
-.hero-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.4);
-  transition: all .4s;
-  cursor: pointer;
-}
-.hero-dot.active {
-  background: white;
-  width: 20px;
-  border-radius: 3px;
-}
-
-/* progress bar */
-.hero-progress {
-  position: absolute;
-  bottom: 0; left: 0;
-  height: 2px;
-  background: var(--seafoam);
-  width: 0%;
-  transition: width linear;
-  z-index: 10;
-}
-
-/* scroll hint */
-.scroll-hint {
-  position: absolute;
-  bottom: calc(16px + var(--safe-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  opacity: .55;
-  animation: bounce 2s infinite;
-  cursor: pointer;
-}
-.scroll-hint span {
-  font-size: .65rem;
-  letter-spacing: .18em;
-  color: white;
-  font-weight: 300;
-}
-.scroll-hint svg { color: white; }
-
-@keyframes bounce {
-  0%,100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(6px); }
-}
-
-/* ── HERO ── */
-.rooms-header {
-  position: relative;
-  background: var(--ocean-deep);
-  padding: calc(var(--safe-top) + 44px) 24px 68px;
-  text-align: center;
-  overflow: hidden;
-}
-.rooms-header::before {
-  content:'';
+.overlay {
   position:absolute; inset:0;
-  background:
-    radial-gradient(ellipse at 70% 0%, rgba(46,122,170,.45) 0%, transparent 55%),
-    radial-gradient(ellipse at 10% 100%, rgba(126,191,181,.2) 0%, transparent 50%);
+  background:linear-gradient(to bottom,
+    rgba(13,43,62,.25) 0%, transparent 35%,
+    transparent 45%, rgba(13,43,62,.75) 100%);
   pointer-events:none;
 }
-.wave-divider { position:absolute; bottom:-1px; left:0; width:100%; line-height:0; overflow:hidden; }
-.wave-divider svg { display:block; width:100%; height:44px; }
 
-.section-label {
-  position:relative;
+/* ── CONTENT ── */
+.content {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:0 28px calc(52px + var(--safe-bottom));
+  display:flex; flex-direction:column;
+  align-items:center; text-align:center; gap:6px;
+}
+.label {
   font-family:'Playfair Display',serif;
   font-style:italic;
   color:var(--seafoam);
-  font-size:.78rem;
-  letter-spacing:.28em;
-  text-transform:uppercase;
-  margin-bottom:10px;
+  font-size:.76rem; letter-spacing:.3em;
+  text-transform:uppercase; opacity:.9;
 }
-.hero-title {
-  position:relative;
-  font-family:'Noto Serif TC',serif;
-  font-size:2.1rem;
-  font-weight:300;
-  color:white;
-  letter-spacing:.18em;
-  margin-bottom:14px;
-  line-height:1.3;
+.name {
+  font-family:'Dancing Script',cursive;
+  font-size:clamp(3.2rem,14vw,5.2rem);
+  font-weight:700; color:white; line-height:1;
+  text-shadow:0 2px 32px rgba(0,0,0,.4);
+  letter-spacing:.04em;
 }
-.hero-desc {
-  position:relative;
-  color:rgba(255,255,255,.58);
-  font-size:.86rem;
-  line-height:1.95;
+.sub {
+  font-size:.8rem; color:var(--text-light);
+  letter-spacing:.2em; margin-bottom:24px;
 }
 
-/* ── FILTER BAR ── */
-.filter-bar {
-  position:sticky; top:0; z-index:200;
-  background:white;
-  border-bottom:1px solid rgba(0,0,0,.07);
-  box-shadow:0 1px 12px rgba(0,0,0,.07);
-  display:flex; gap:0;
-  overflow-x:auto; overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  padding-left:max(16px, var(--safe-left));
-  padding-right:max(16px, var(--safe-right));
-  scroll-snap-type:x mandatory;
+/* ── NAV BUTTONS ── */
+.nav-btns {
+  display:flex; gap:10px; width:100%;
 }
-.filter-bar::-webkit-scrollbar { display:none; }
-
-.filter-tab {
-  flex-shrink:0;
-  scroll-snap-align:start;
-  height:var(--touch);
-  padding:0 20px;
-  font-size:.82rem;
-  letter-spacing:.08em;
-  color:var(--text-light);
-  background:none;
-  border:none;
-  border-bottom:2.5px solid transparent;
-  font-family:'Noto Sans TC',sans-serif;
-  font-weight:300;
-  white-space:nowrap;
-  cursor:pointer;
-  transition:color .2s, border-color .2s;
-}
-.filter-tab.active { color:var(--ocean-mid); border-bottom-color:var(--ocean-mid); font-weight:400; }
-.filter-tab:active { opacity:.6; }
-
-/* ── ROOM CARDS ── */
-.rooms-section { padding:20px 0 4px; }
-.rooms-grid { display:flex; flex-direction:column; gap:1px; background:rgba(0,0,0,.05); }
-
-.room-card {
-  background:white; overflow:hidden;
-  opacity:0; transform:translateY(18px);
-  animation:fadeUp .5s ease forwards;
-}
-.room-card:nth-child(1){animation-delay:.05s}
-.room-card:nth-child(2){animation-delay:.12s}
-.room-card:nth-child(3){animation-delay:.18s}
-.room-card:nth-child(4){animation-delay:.24s}
-.room-card:nth-child(5){animation-delay:.30s}
-@keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
-
-/* Gallery */
-.card-image {
-  position:relative; width:100%;
-  aspect-ratio:4/3;
-  overflow:hidden;
-  background:var(--ocean-deep);
-  cursor:grab;
-}
-.card-image:active { cursor:grabbing; }
-.gallery-track {
-  display:flex; height:100%;
-  transition:transform .32s cubic-bezier(.25,.46,.45,.94);
-  will-change:transform;
-}
-.gallery-slide { flex:0 0 100%; height:100%; }
-.gallery-slide img { width:100%; height:100%; object-fit:cover; pointer-events:none; }
-
-.card-badge {
-  position:absolute; top:14px; left:14px; z-index:2;
-  background:var(--ocean-deep); color:white;
-  font-size:.68rem; letter-spacing:.18em; padding:5px 11px;
-}
-.card-type-badge {
-  position:absolute; top:14px; right:14px; z-index:2;
-  background:rgba(255,255,255,.9); color:var(--ocean-mid);
-  font-size:.68rem; letter-spacing:.12em; padding:5px 11px;
-  border-radius:2px;
-}
-.gallery-dots {
-  position:absolute; bottom:11px; left:50%;
-  transform:translateX(-50%);
-  display:flex; gap:5px; z-index:2;
-}
-.gallery-dot { width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.45);transition:all .25s; }
-.gallery-dot.active { background:white;width:18px;border-radius:3px; }
-
-/* Card Body */
-.card-body { padding:18px 20px 22px; }
-.card-meta { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
-.card-capacity { display:flex;align-items:center;gap:4px;font-size:.74rem;color:var(--text-light); }
-.capacity-icon { width:13px;height:13px;opacity:.5; }
-
-.card-title {
-  font-family:'Noto Serif TC',serif;
-  font-size:1.18rem; font-weight:400;
-  color:var(--ocean-deep);
-  letter-spacing:.08em; margin-bottom:3px;
-}
-.card-subtitle {
-  font-family:'Playfair Display',serif;
-  font-style:italic; font-size:.76rem;
-  color:var(--text-light); margin-bottom:12px;
-}
-
-.card-desc {
-  font-size:.85rem; color:var(--text-mid);
-  line-height:1.85; font-weight:300;
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-  transition:all .3s ease;
-}
-.card-desc.expanded { -webkit-line-clamp:unset; overflow:visible; }
-
-.desc-toggle {
-  display:inline-block;
-  margin-top:4px;
-  font-size:.75rem;
-  color:var(--ocean-mid);
-  letter-spacing:.06em;
-  cursor:pointer;
-  min-height:36px; line-height:36px;
-  -webkit-tap-highlight-color:transparent;
-}
-
-.card-amenities { display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 18px; }
-.amenity-tag {
-  font-size:.7rem; color:var(--ocean-mid);
-  border:1px solid rgba(46,122,170,.22);
-  padding:5px 10px; border-radius:2px;
-  letter-spacing:.06em;
-}
-
-.card-footer {
-  display:flex; align-items:center;
-  justify-content:space-between;
-  padding-top:16px;
-  border-top:1px solid rgba(0,0,0,.07);
-}
-.card-price { display:flex;flex-direction:column;gap:1px; }
-.price-label { font-size:.67rem;color:var(--text-light);letter-spacing:.08em; }
-.price-value {
-  font-family:'Playfair Display',serif;
-  font-size:1.35rem; color:var(--ocean-deep);
-  font-weight:700; line-height:1.2;
-}
-.price-unit { font-family:'Noto Sans TC',sans-serif;font-size:.7rem;color:var(--text-light);font-weight:300; }
-
-.book-btn {
-  min-height:var(--touch); min-width:96px;
-  padding:0 18px;
-  background:var(--ocean-deep); color:white;
-  border:none; border-radius:2px;
-  font-size:.78rem; letter-spacing:.14em;
+.btn-primary {
+  flex:1.6; height:var(--touch);
+  background:white; color:var(--ocean-deep);
+  font-size:.8rem; letter-spacing:.16em;
   font-family:'Noto Sans TC',sans-serif; font-weight:400;
-  cursor:pointer; transition:background .2s;
+  border-radius:2px;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+  transition:all .2s;
 }
-.book-btn:active { background:var(--ocean-mid); transform:scale(.97); }
+.btn-primary:active { transform:scale(.96); opacity:.85; }
+.btn-secondary {
+  flex:1; height:var(--touch);
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);
+  color:white; border:1px solid rgba(255,255,255,.35);
+  font-size:.8rem; letter-spacing:.14em;
+  font-family:'Noto Sans TC',sans-serif; font-weight:300;
+  border-radius:2px;
+  transition:all .2s;
+}
+.btn-secondary:active { background:rgba(255,255,255,.25); }
 
-/* ── COMMON SPACES ── */
-.common-section {
-  background:var(--ocean-deep);
-  padding:56px 0;
-  position:relative; overflow:hidden;
+/* ── DOTS ── */
+.dots {
+  position:absolute;
+  bottom:calc(160px + var(--safe-bottom));
+  left:50%; transform:translateX(-50%);
+  display:flex; gap:6px; z-index:10;
 }
-.common-section::before {
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(ellipse at 80% 50%,rgba(46,122,170,.2) 0%,transparent 60%);
+.dot {
+  width:5px; height:5px; border-radius:50%;
+  background:rgba(255,255,255,.4);
+  transition:all .35s; cursor:pointer;
+}
+.dot.active { background:white; width:20px; border-radius:3px; }
+
+/* ── PROGRESS BAR ── */
+.progress {
+  position:absolute; bottom:0; left:0;
+  height:2px; background:var(--seafoam);
+  width:0%; transition:width linear; z-index:10;
+}
+
+/* ── SCROLL HINT ── */
+.scroll-hint {
+  position:absolute;
+  bottom:calc(18px + var(--safe-bottom));
+  left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column;
+  align-items:center; gap:3px;
+  opacity:.5; animation:bounce 2.2s infinite;
+  cursor:pointer;
+}
+.scroll-hint span { font-size:.62rem; letter-spacing:.18em; color:white; }
+@keyframes bounce {
+  0%,100%{transform:translateX(-50%) translateY(0)}
+  50%{transform:translateX(-50%) translateY(7px)}
+}
+
+/* ── DYNAMIC ISLAND SAFE ── */
+.top-safe {
+  position:absolute; top:0; left:0; right:0;
+  height:calc(var(--safe-top) + 16px);
   pointer-events:none;
-}
-.common-header {
-  text-align:center; padding:0 24px;
-  margin-bottom:24px; position:relative;
-}
-.common-header .section-label { color:var(--seafoam); }
-.common-header h2 {
-  font-family:'Noto Serif TC',serif;
-  font-size:1.65rem; font-weight:300;
-  color:white; letter-spacing:.15em; margin-bottom:8px;
-}
-.common-header p { font-size:.84rem;color:rgba(255,255,255,.55);line-height:1.8; }
-
-.common-scroll {
-  display:flex; gap:10px;
-  overflow-x:auto; overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  scroll-snap-type:x mandatory;
-  padding:0 24px;
-  padding-right:max(24px, var(--safe-right));
-}
-.common-scroll::-webkit-scrollbar { display:none; }
-
-.common-item {
-  flex:0 0 72vw; max-width:280px;
-  aspect-ratio:3/4;
-  position:relative; overflow:hidden;
-  border-radius:2px;
-  scroll-snap-align:start;
-  cursor:pointer;
-}
-.common-item img {
-  width:100%; height:100%;
-  object-fit:cover; filter:brightness(.72);
-  transition:filter .3s;
-}
-.common-item:active img { filter:brightness(.85); }
-.common-label {
-  position:absolute; bottom:0; left:0; right:0;
-  padding:48px 16px 18px;
-  background:linear-gradient(transparent,rgba(13,43,62,.85));
-  color:white;
-}
-.common-label-title {
-  font-family:'Noto Serif TC',serif;
-  font-size:.96rem; font-weight:300;
-  letter-spacing:.12em; margin-bottom:3px;
-}
-.common-label-sub { font-size:.72rem;color:rgba(255,255,255,.58);letter-spacing:.08em;line-height:1.6; }
-
-/* ── DIVING GEAR ── */
-.diving-section { padding:56px 24px; }
-.diving-text .section-label { color:var(--coral); margin-bottom:10px; }
-.diving-text h2 {
-  font-family:'Noto Serif TC',serif;
-  font-size:1.5rem; font-weight:300;
-  color:var(--ocean-deep); letter-spacing:.1em;
-  line-height:1.5; margin-bottom:14px;
-}
-.diving-text p { font-size:.85rem;line-height:1.9;color:var(--text-mid);font-weight:300;margin-bottom:14px; }
-
-.gear-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:20px; }
-.gear-item { display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-mid); }
-.gear-dot { width:6px;height:6px;border-radius:50%;background:var(--seafoam);flex-shrink:0; }
-
-.gear-photos {
-  display:flex; gap:8px; margin-top:24px;
-  overflow-x:auto; -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-.gear-photos::-webkit-scrollbar { display:none; }
-.gear-photo { flex:0 0 58vw;aspect-ratio:4/3;border-radius:2px;overflow:hidden; }
-.gear-photo img { width:100%;height:100%;object-fit:cover; }
-
-/* ── BATHROOM ── */
-.bathroom-section { background:var(--ocean-deep); padding:56px 24px; }
-.bathroom-img { width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:2px;margin-bottom:26px; }
-.bathroom-img img { width:100%;height:100%;object-fit:cover;filter:brightness(.82); }
-.bathroom-text .section-label { color:var(--seafoam);margin-bottom:10px; }
-.bathroom-text h2 {
-  font-family:'Noto Serif TC',serif;
-  font-size:1.4rem; font-weight:300;
-  color:white; letter-spacing:.12em; margin-bottom:12px;
-}
-.bathroom-text p { font-size:.85rem;line-height:1.95;color:rgba(255,255,255,.56);font-weight:300; }
-
-/* ── BOOKING FORM ── */
-.bf-section { margin-bottom: 18px; }
-.bf-label { font-size:.76rem;letter-spacing:.1em;color:var(--text-light);margin-bottom:8px; }
-.bf-req { color:var(--coral); }
-.bf-date-btn {
-  width:100%; min-height:var(--touch);
-  background:white; border:1.5px solid rgba(13,43,62,.18);
-  border-radius:2px; color:var(--text-mid);
-  font-size:.84rem; letter-spacing:.06em;
-  font-family:'Noto Sans TC',sans-serif;
-  display:flex; align-items:center; gap:8px;
-  padding:0 16px; cursor:pointer; transition:border-color .2s;
-}
-.bf-date-btn:active { border-color:var(--ocean-mid); }
-.bf-date-btn.filled { color:var(--ocean-deep); border-color:var(--ocean-mid); }
-.bf-select {
-  width:100%; min-height:var(--touch);
-  border:1.5px solid rgba(13,43,62,.18);
-  border-radius:2px; padding:0 16px;
-  font-size:.84rem; color:var(--text-dark);
-  font-family:'Noto Sans TC',sans-serif;
-  background:white; appearance:none; -webkit-appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat; background-position:right 16px center;
-}
-.bf-input {
-  width:100%; min-height:var(--touch);
-  border:1.5px solid rgba(13,43,62,.18);
-  border-radius:2px; padding:12px 16px;
-  font-size:.84rem; color:var(--text-dark);
-  font-family:'Noto Sans TC',sans-serif;
-  background:white; outline:none; transition:border-color .2s;
-}
-.bf-input:focus { border-color:var(--ocean-mid); }
-.bf-textarea { min-height:90px; resize:none; }
-.bf-counter { display:flex; align-items:center; gap:20px; }
-.bf-count-btn {
-  width:44px; height:44px;
-  border:1.5px solid rgba(13,43,62,.18);
-  border-radius:50%; background:white;
-  font-size:1.2rem; color:var(--ocean-deep);
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; transition:all .2s;
-}
-.bf-count-btn:active { background:var(--ocean-deep); color:white; }
-#bf-guests-num { font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ocean-deep);min-width:32px;text-align:center; }
-.bf-policy {
-  background:rgba(13,43,62,.04);
-  border-left:3px solid var(--seafoam);
-  border-radius:0 2px 2px 0;
-  padding:14px 16px; margin-bottom:20px;
-}
-.bf-policy-title { font-size:.72rem;letter-spacing:.1em;color:var(--ocean-mid);margin-bottom:6px;font-weight:400; }
-.bf-policy-text { font-size:.78rem;color:var(--text-mid);line-height:1.7;font-weight:300; }
-.bf-submit-btn {
-  width:100%; min-height:var(--touch);
-  background:var(--ocean-deep); color:white;
-  border:none; border-radius:2px;
-  font-size:.86rem; letter-spacing:.16em;
-  font-family:'Noto Sans TC',sans-serif; font-weight:400;
-  cursor:pointer; transition:background .2s;
-}
-.bf-submit-btn:active { background:var(--ocean-mid); }
-/* ── CONFIRMATION ── */
-.confirm-body { padding:8px 24px 32px; text-align:center; }
-.confirm-icon {
-  width:56px; height:56px; background:var(--seafoam);
-  border-radius:50%; display:flex; align-items:center;
-  justify-content:center; font-size:1.4rem; color:white;
-  margin:0 auto 16px;
-}
-.confirm-title { font-family:'Noto Serif TC',serif;font-size:1.3rem;font-weight:300;color:var(--ocean-deep);letter-spacing:.1em;margin-bottom:12px; }
-.confirm-sub { font-size:.86rem;color:var(--text-mid);line-height:1.8;margin-bottom:20px; }
-.confirm-detail { background:rgba(13,43,62,.04);border-radius:4px;padding:14px 16px;font-size:.82rem;color:var(--ocean-deep);line-height:1.8;text-align:left;margin-bottom:14px; }
-.confirm-note { background:rgba(126,191,181,.1);border-left:3px solid var(--seafoam);border-radius:0 2px 2px 0;padding:12px 14px;text-align:left; }
-.confirm-note-title { font-size:.72rem;letter-spacing:.1em;color:var(--ocean-mid);margin-bottom:5px;font-weight:400; }
-.confirm-note-text { font-size:.78rem;color:var(--text-mid);line-height:1.7;font-weight:300; }
-/* ── STICKY BOTTOM CTA ── */
-.sticky-cta {
-  position:fixed; bottom:0; left:0; right:0;
-  z-index:500;
-  background:white;
-  border-top:1px solid rgba(0,0,0,.08);
-  box-shadow:0 -4px 24px rgba(0,0,0,.1);
-  padding:10px 20px;
-  padding-bottom:calc(10px + var(--safe-bottom));
-  padding-left:max(20px, var(--safe-left));
-  padding-right:max(20px, var(--safe-right));
-  display:flex; gap:10px; align-items:stretch;
-}
-.cta-line-btn {
-  flex:1; min-height:var(--touch);
-  background:white; border:1.5px solid var(--ocean-deep);
-  color:var(--ocean-deep); border-radius:2px;
-  font-size:.78rem; letter-spacing:.1em;
-  font-family:'Noto Sans TC',sans-serif; font-weight:400;
-  cursor:pointer; display:flex; align-items:center;
-  justify-content:center; gap:5px;
-}
-.cta-line-btn:active { background:rgba(13,43,62,.06); }
-.cta-book-btn {
-  flex:1.6; min-height:var(--touch);
-  background:var(--ocean-deep); color:white;
-  border:none; border-radius:2px;
-  font-size:.8rem; letter-spacing:.12em;
-  font-family:'Noto Sans TC',sans-serif; font-weight:400;
-  cursor:pointer; display:flex; align-items:center;
-  justify-content:center; gap:5px;
-}
-.cta-book-btn:active { background:var(--ocean-mid); transform:scale(.98); }
-.line-icon { color:#06c755; }
-
-.section-sep { height:1px; background:rgba(0,0,0,.06); margin:0 24px; }
-
-/* ── DESKTOP ≥ 768px ── */
-@media (min-width:768px) {
-  body { padding-bottom:0; }
-  .sticky-cta { display:none; }
-
-  .rooms-section { padding:60px 32px; }
-  .rooms-grid {
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:24px; background:transparent;
-  }
-  .room-card {
-    border-radius:4px;
-    box-shadow:0 2px 20px rgba(0,0,0,.06);
-    transition:transform .35s ease,box-shadow .35s ease;
-  }
-  .room-card:hover { transform:translateY(-6px);box-shadow:0 16px 48px rgba(13,43,62,.13); }
-  .room-card:first-child { grid-column:span 2; }
-  .room-card:first-child .card-image { aspect-ratio:16/7; }
-  .card-body { padding:26px 28px 30px; }
-  .card-desc { -webkit-line-clamp:unset;overflow:visible; }
-  .desc-toggle { display:none; }
-
-  .common-scroll {
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    grid-template-rows:260px 260px;
-    overflow:visible; padding:0 32px;
-  }
-  .common-item { flex:none;max-width:none;aspect-ratio:auto;border-radius:0; }
-  .common-item:first-child { grid-row:span 2; }
-
-  .diving-section {
-    display:grid; grid-template-columns:1fr 1fr;
-    gap:60px; align-items:center;
-    max-width:1100px; margin:0 auto;
-    padding:80px 32px;
-  }
-  .gear-photos { display:none; }
-  .diving-desktop-imgs {
-    display:grid !important;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:200px 200px;
-    gap:8px;
-  }
-  .diving-desktop-imgs img { width:100%;height:100%;object-fit:cover;border-radius:2px; }
-  .diving-desktop-imgs img:first-child { grid-row:span 2; }
-
-  .bathroom-section { padding:80px 32px; }
-  .bathroom-inner { display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1000px;margin:0 auto; }
-  .bathroom-img { margin-bottom:0;aspect-ratio:auto;height:340px; }
-}
-/* ── BOOKING SECTION ── */
-.booking-section {
-  padding: 60px 20px 40px;
-}
-.booking-trigger-btn {
-  width: 100%;
-  min-height: var(--touch);
-  background: var(--ocean-deep);
-  color: white;
-  border: none;
-  border-radius: 2px;
-  font-size: .88rem;
-  letter-spacing: .18em;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: background .2s;
-}
-.booking-trigger-btn:active { background: var(--ocean-mid); }
-.booking-trigger-sub {
-  font-size: .76rem;
-  color: var(--text-light);
-  text-align: center;
-  margin-top: 12px;
-  letter-spacing: .06em;
-}
-.cal-modal {
-  position: fixed; inset: 0; z-index: 600;
-  display: flex; align-items: flex-end;
-  pointer-events: none; opacity: 0;
-  transition: opacity .3s;
-}
-.cal-modal.open { pointer-events: all; opacity: 1; }
-.cal-backdrop {
-  position: absolute; inset: 0;
-  background: rgba(13,43,62,.55);
-  backdrop-filter: blur(3px);
-}
-.cal-sheet {
-  position: relative; width: 100%;
-  background: var(--cream);
-  border-radius: 16px 16px 0 0;
-  padding: 0 0 calc(20px + var(--safe-bottom));
-  transform: translateY(100%);
-  transition: transform .4s cubic-bezier(.25,.46,.45,.94);
-  max-height: 92svh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.cal-modal.open .cal-sheet { transform: translateY(0); }
-.cal-sheet-handle {
-  width: 36px; height: 4px;
-  background: rgba(0,0,0,.15);
-  border-radius: 2px;
-  margin: 14px auto 20px;
-}
-.cal-sheet-header {
-  padding: 0 20px 16px;
-  display: flex; align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(0,0,0,.07);
-}
-.cal-sheet-title {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1.1rem; font-weight: 300;
-  color: var(--ocean-deep); letter-spacing: .1em;
-}
-.cal-sheet-close {
-  width: 36px; height: 36px;
-  border: none; background: rgba(0,0,0,.06);
-  border-radius: 50%; font-size: 1rem;
-  color: var(--text-mid); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.cal-sheet-body { padding: 16px 20px 0; }
-.room-select-label {
-  font-size: .76rem; letter-spacing: .1em;
-  color: var(--text-light); margin-bottom: 10px;
-}
-.room-chips {
-  display: flex; gap: 8px;
-  overflow-x: auto; scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px; margin-bottom: 16px;
-}
-.room-chips::-webkit-scrollbar { display: none; }
-.room-chip {
-  flex-shrink: 0; height: 36px; padding: 0 16px;
-  border: 1.5px solid rgba(13,43,62,.18);
-  background: white; color: var(--text-mid);
-  border-radius: 2px; font-size: .76rem;
-  letter-spacing: .06em;
-  font-family: 'Noto Sans TC', sans-serif;
-  cursor: pointer; transition: all .2s;
-}
-.room-chip.active {
-  background: var(--ocean-deep); color: white;
-  border-color: var(--ocean-deep);
-}
-.cal-wrap { background: white; border-radius: 4px; overflow: hidden; }
-.cal-nav {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: var(--ocean-deep);
-}
-.cal-nav-btn {
-  width: 40px; height: 40px;
-  background: rgba(255,255,255,.12);
-  border: none; border-radius: 2px;
-  color: white; font-size: 1.1rem;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background .2s;
-}
-.cal-nav-btn:active { background: rgba(255,255,255,.25); }
-.cal-month {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1.05rem; font-weight: 300;
-  color: white; letter-spacing: .12em;
-}
-.cal-weekdays {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  background: rgba(13,43,62,.04);
-  padding: 8px 12px 4px;
-}
-.cal-weekday {
-  text-align: center; font-size: .68rem;
-  letter-spacing: .08em; color: var(--text-light); padding: 4px 0;
-}
-.cal-weekday:first-child { color: var(--coral); }
-.cal-weekday:last-child { color: var(--ocean-mid); }
-.cal-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 2px; padding: 8px 12px 16px;
-}
-.cal-day {
-  aspect-ratio: 1;
-  display: flex; align-items: center; justify-content: center;
-  font-size: .88rem; border-radius: 50%;
-  color: var(--text-dark); cursor: pointer;
-  transition: all .2s; position: relative;
-  -webkit-tap-highlight-color: transparent;
-}
-.cal-day:active { transform: scale(.88); }
-.cal-day.empty { pointer-events: none; }
-.cal-day.past { color: rgba(0,0,0,.2); pointer-events: none; }
-.cal-day.today { font-weight: 400; color: var(--ocean-mid); }
-.cal-day.today::after {
-  content:''; position:absolute; bottom:3px; left:50%;
-  transform:translateX(-50%);
-  width:4px; height:4px; border-radius:50%;
-  background: var(--ocean-mid);
-}
-.cal-day.selected { background: var(--ocean-deep); color: white; font-weight: 400; }
-.cal-day.selected::after { display: none; }
-.cal-day:hover:not(.past):not(.empty) { background: rgba(13,43,62,.08); }
-.cal-summary {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(0,0,0,.07);
-  display: flex; align-items: center;
-  justify-content: space-between; gap: 12px;
-}
-.cal-summary-text { font-size: .82rem; color: var(--text-mid); line-height: 1.6; }
-.cal-summary-date {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 1rem; color: var(--ocean-deep); font-weight: 400;
-}
-.cal-confirm-btn {
-  min-height: var(--touch); padding: 0 24px;
-  background: var(--ocean-deep); color: white;
-  border: none; border-radius: 2px;
-  font-size: .8rem; letter-spacing: .14em;
-  font-family: 'Noto Sans TC', sans-serif; font-weight: 400;
-  flex-shrink: 0; cursor: pointer; transition: background .2s;
-}
-.cal-confirm-btn:active { background: var(--ocean-mid); }
-.cal-confirm-btn:disabled {
-  background: rgba(0,0,0,.12); color: rgba(0,0,0,.3); cursor: not-allowed;
 }
 </style>
 </head>
 <body>
 
-<!-- ══════════ SITE HERO SLIDESHOW ══════════ -->
-<section class="site-hero" id="site-hero">
-  <div class="hero-slides" id="heroSlides">
-    <div class="hero-slide"><img src="images/LINE_NOTE_260425_14.jpg" alt="in.house — Front Garden" loading="eager"></div>
-    <div class="hero-slide"><img src="images/LINE_NOTE_260425_16.jpg" alt="in.house — Ocean Double Room" loading="lazy"></div>
-    <div class="hero-slide"><img src="images/LINE_NOTE_260425_17.jpg" alt="in.house — Lobby" loading="lazy"></div>
-    <div class="hero-slide"><img src="images/LINE_NOTE_260425_15.jpg" alt="in.house — Balcony" loading="lazy"></div>
-    <div class="hero-slide"><img src="images/LINE_NOTE_260425_1.jpg" alt="in.house — Dive Gear" loading="lazy"></div>
+<div class="hero" id="hero">
+  <div class="slides" id="slides">
+    <div class="slide"><img src="images/LINE_NOTE_260425_14.jpg" alt="in.house — Front Garden" loading="eager"></div>
+    <div class="slide"><img src="images/LINE_NOTE_260425_16.jpg" alt="in.house — Ocean Double Room" loading="lazy"></div>
+    <div class="slide"><img src="images/LINE_NOTE_260425_17.jpg" alt="in.house — Lobby" loading="lazy"></div>
+    <div class="slide"><img src="images/LINE_NOTE_260425_15.jpg" alt="in.house — Balcony" loading="lazy"></div>
+    <div class="slide"><img src="images/LINE_NOTE_260425_1.jpg" alt="in.house — Dive Gear" loading="lazy"></div>
   </div>
 
-  <div class="hero-overlay"></div>
+  <div class="overlay"></div>
+  <div class="top-safe"></div>
 
-  <div class="hero-dots" id="heroDots">
-    <span class="hero-dot active" onclick="heroGoTo(0)"></span>
-    <span class="hero-dot" onclick="heroGoTo(1)"></span>
-    <span class="hero-dot" onclick="heroGoTo(2)"></span>
-    <span class="hero-dot" onclick="heroGoTo(3)"></span>
-    <span class="hero-dot" onclick="heroGoTo(4)"></span>
+  <div class="dots" id="dots">
+    <span class="dot active" onclick="goTo(0)"></span>
+    <span class="dot" onclick="goTo(1)"></span>
+    <span class="dot" onclick="goTo(2)"></span>
+    <span class="dot" onclick="goTo(3)"></span>
+    <span class="dot" onclick="goTo(4)"></span>
   </div>
 
-  <div class="hero-content">
-    <div class="hero-label">Xiaoliuqiu · Taiwan</div>
-    <h1 class="hero-name">in.house</h1>
-    <p class="hero-sub">Xiaoliuqiu · B&B</p>
-    <button class="hero-book-btn" onclick="openBookingForm()">
-      Book Now
-    </button>
+  <div class="content">
+    <div class="label">Xiaoliuqiu · Taiwan</div>
+    <h1 class="name">in.house</h1>
+    <p class="sub">小琉球 · B&B</p>
+    <div class="nav-btns">
+      <button class="btn-primary" onclick="location.href='booking.html'">Book Now</button>
+      <button class="btn-secondary" onclick="location.href='rooms.html'">Our Rooms</button>
+    </div>
   </div>
 
-  <div class="hero-progress" id="heroProgress"></div>
+  <div class="progress" id="progress"></div>
 
-  <div class="scroll-hint" onclick="document.querySelector('.rooms-header').scrollIntoView({behavior:'smooth'})">
+  <div class="scroll-hint" onclick="location.href='rooms.html'">
     <span>Explore</span>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-  </div>
-</section>
-
-<!-- HERO -->
-<header class="rooms-header">
-  <div class="section-label">Room Types</div>
-  <h1 class="hero-title">Our Rooms</h1>
-  <p class="hero-desc">Every room tells a story of the sea.<br>Find your corner on this blue island and slow down.</p>
-  <div class="wave-divider">
-    <svg viewBox="0 0 390 44" preserveAspectRatio="none" fill="var(--cream)">
-      <path d="M0,22 C97,44 293,0 390,22 L390,44 L0,44 Z"/>
-    </svg>
-  </div>
-</header>
-
-<!-- FILTER -->
-<nav class="filter-bar" role="tablist">
-  <button class="filter-tab active" role="tab" onclick="filterRooms('all',this)">All Rooms</button>
-  <button class="filter-tab" role="tab" onclick="filterRooms('private',this)">Private</button>
-  <button class="filter-tab" role="tab" onclick="filterRooms('dorm',this)">Dorm</button>
-  <button class="filter-tab" role="tab" onclick="filterRooms('couple',this)">Couples</button>
-</nav>
-
-<!-- ROOM CARDS -->
-<section class="rooms-section">
-<div class="rooms-grid" id="rooms-grid">
-
-  <!-- 1. 海洋大床房 -->
-  <article class="room-card" data-type="couple">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_4.jpg" alt="Ocean Double Room" loading="eager"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_3.jpg" alt="Ocean Double Room — Full View" loading="lazy"></div>
-      </div>
-      <span class="card-badge">Featured</span>
-      <span class="card-type-badge">Couples Pick</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</span>
-      </div>
-      <h2 class="card-title">Ocean Double</h2>
-      <div class="card-subtitle">Ocean Double Room</div>
-      <p class="card-desc" id="desc-1">A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned and adorned with plants and underwater photography — every detail in conversation with the ocean.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-1',this)">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Pallet Bed</span><span class="amenity-tag">Plants</span><span class="amenity-tag">Underwater Art</span>
-      </div>
-      <div class="card-footer">
-        <button class="book-btn" onclick="openBookingForm()">Book Now</button>
-      </div>
-    </div>
-  </article>
-
-  <!-- 2. 浪遊雙床房 -->
-  <article class="room-card" data-type="private">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_10.jpg" alt="Twin Wanderer Room" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_9.jpg" alt="Twin Wanderer Room — Full View" loading="lazy"></div>
-      </div>
-      <span class="card-type-badge">Twin Room</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</span>
-      </div>
-      <h2 class="card-title">Twin Wanderer</h2>
-      <div class="card-subtitle">Twin Wanderer Room</div>
-      <p class="card-desc" id="desc-2">Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in gently — perfect for dive buddies or travel companions who like their own space.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-2',this)">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Window View</span><span class="amenity-tag">Twin Beds</span>
-      </div>
-      <div class="card-footer">
-        <button class="book-btn" onclick="openBookingForm()">Book Now</button>
-      </div>
-    </div>
-  </article>
-
-  <!-- 3. 剛剛好房 -->
-  <article class="room-card" data-type="private">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_8.jpg" alt="Just Right Room" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_7.jpg" alt="Just Right Room — Twin Beds" loading="lazy"></div>
-      </div>
-      <span class="card-type-badge">Music Theme</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</span>
-      </div>
-      <h2 class="card-title">Just Right Room</h2>
-      <div class="card-subtitle">"Just Right" — Music Theme</div>
-      <p class="card-desc" id="desc-3">Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — a room made for souls who stopped mid-journey and decided to stay a while.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-3',this)">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Lyric Wall</span><span class="amenity-tag">Bold Colors</span>
-      </div>
-      <div class="card-footer">
-        <button class="book-btn" onclick="openBookingForm()">Book Now</button>
-      </div>
-    </div>
-  </article>
-
-  <!-- 4. 自由潛水員房 -->
-  <article class="room-card" data-type="private">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_11.jpg" alt="Freediver Room" loading="lazy"></div>
-      </div>
-      <span class="card-type-badge">Single Room</span>
-      <div class="gallery-dots" style="display:none;"></div>
-    </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 guest</span>
-      </div>
-      <h2 class="card-title">Freediver Room</h2>
-      <div class="card-subtitle">Freediver Single Room</div>
-      <p class="card-desc" id="desc-4">A real carbon-fibre freediving fin is displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-4',this)">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag">Fin Display</span><span class="amenity-tag">Full Mirror</span><span class="amenity-tag">Driftwood Deco</span>
-      </div>
-      <div class="card-footer">
-        <button class="book-btn" onclick="openBookingForm()">Book Now</button>
-      </div>
-    </div>
-  </article>
-
-  <!-- 5. 潮間帶床位 -->
-  <article class="room-card" data-type="dorm">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_6.jpg" alt="Intertidal Bunk Dorm" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_5.jpg" alt="Intertidal Bunk — Full View" loading="lazy"></div>
-      </div>
-      <span class="card-badge">Backpacker</span>
-      <span class="card-type-badge">Bunk Dorm</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="card-meta">
-        <span class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>Mixed Dorm</span>
-      </div>
-      <h2 class="card-title">Intertidal Bunk</h2>
-      <div class="card-subtitle">Intertidal Bunk Dorm</div>
-      <p class="card-desc" id="desc-5">Bunk beds with privacy curtains give you your own little world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-5',this)">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Privacy Curtain</span><span class="amenity-tag">Bean Bag</span><span class="amenity-tag">Reading Light</span>
-      </div>
-      <div class="card-footer">
-        <button class="book-btn" onclick="openBookingForm()">Book Now</button>
-      </div>
-    </div>
-  </article>
-
-</div>
-</section>
-
-<!-- COMMON SPACES -->
-<section class="common-section">
-  <div class="common-header">
-    <div class="section-label">Common Areas</div>
-    <h2>Common Spaces</h2>
-    <p>A place to put your phone down and actually talk to people.</p>
-  </div>
-  <div class="common-scroll">
-    <div class="common-item"><img src="images/LINE_NOTE_260425_17.jpg" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title">Lobby</div><div class="common-label-sub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_18.jpg" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title">Lounge</div><div class="common-label-sub">Put your phone down and talk to someone :)</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_19.jpg" alt="Wall" loading="lazy"><div class="common-label"><div class="common-label-title">Feature Wall · Shop</div><div class="common-label-sub">Dive gear · Books · Skateboard</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_14.jpg" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title">Front Garden</div><div class="common-label-sub">Pallet tables · String lights · Greenery</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_15.jpg" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title">Green Balcony</div><div class="common-label-sub">Hanging plants · Lava stones · Mountain view</div></div></div>
-  </div>
-</section>
-
-<!-- DIVING GEAR -->
-<section class="diving-section">
-  <div class="diving-text">
-    <div class="section-label">Dive Equipment</div>
-    <h2>Dive Gear,<br>All Here</h2>
-    <p>Full freediving and scuba equipment available to rent. Everything is cleaned and maintained regularly — arrive light, dive deep.</p>
-    <div class="gear-grid">
-      <div class="gear-item"><span class="gear-dot"></span>Freediving Fins</div>
-      <div class="gear-item"><span class="gear-dot"></span>All Fin Sizes</div>
-      <div class="gear-item"><span class="gear-dot"></span>BCD Vest</div>
-      <div class="gear-item"><span class="gear-dot"></span>AROPEC Weight Belt</div>
-      <div class="gear-item"><span class="gear-dot"></span>Safety Line / SMB</div>
-      <div class="gear-item"><span class="gear-dot"></span>Lead Weights</div>
-      <div class="gear-item"><span class="gear-dot"></span>Dive Flag</div>
-      <div class="gear-item"><span class="gear-dot"></span>Gear Rinse Station</div>
-    </div>
-  </div>
-  <div class="gear-photos">
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_1.jpg" alt="Safety Line" loading="lazy"></div>
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_2.jpg" alt="Weight Belt" loading="lazy"></div>
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_13.jpg" alt="Gear Station" loading="lazy"></div>
-  </div>
-  <div class="diving-desktop-imgs" style="display:none;">
-    <img src="images/LINE_NOTE_260425_1.jpg" alt="Safety Line">
-    <img src="images/LINE_NOTE_260425_2.jpg" alt="Weight Belt">
-    <img src="images/LINE_NOTE_260425_13.jpg" alt="Gear Station">
-  </div>
-</section>
-
-<div class="section-sep"></div>
-
-<!-- BATHROOM -->
-<section class="bathroom-section">
-  <div class="bathroom-inner">
-    <div class="bathroom-img"><img src="images/LINE_NOTE_260425_12.jpg" alt="Vintage Blue Tile Bathroom" loading="lazy"></div>
-    <div class="bathroom-text">
-      <div class="section-label">Bathroom</div>
-      <h2>Vintage Tile Bathroom</h2>
-      <p>All-blue tiles from floor to ceiling, with a colourful mosaic tub base that carries the warmth of old Taiwanese homes. Plants, morning light, a good shower — ready for the ocean.</p>
-    </div>
-  </div>
-</section>
-
-<!-- BOOKING SECTION -->
-<section class="booking-section" id="booking">
-  <div class="section-label" style="text-align:center; color:var(--coral); margin-bottom:10px;">Availability</div>
-  <h2 style="font-family:'Noto Serif TC',serif; font-size:1.7rem; font-weight:300; color:var(--ocean-deep); letter-spacing:.15em; text-align:center; margin-bottom:8px;">Check Availability</h2>
-  <p style="font-size:.84rem; color:var(--text-light); text-align:center; margin-bottom:28px; line-height:1.8;">Pick your check-in date and start planning your island stay.</p>
-  <button class="booking-trigger-btn" onclick="openCalModal()">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-    Select Check-in Date
-  </button>
-  <div class="booking-trigger-sub" id="booking-date-display">Tap to choose a date</div>
-</section>
-
-<div class="section-sep"></div>
-
-<!-- CALENDAR MODAL -->
-<div class="cal-modal" id="calModal">
-  <div class="cal-backdrop" onclick="closeCalModal()"></div>
-  <div class="cal-sheet">
-    <div class="cal-sheet-handle"></div>
-    <div class="cal-sheet-header">
-      <span class="cal-sheet-title"><span id="cal-sheet-title-text">Select Check-in Date</span></span>
-      <button class="cal-sheet-close" onclick="closeCalModal()">✕</button>
-    </div>
-    <div class="cal-sheet-body">
-      <div class="cal-wrap" style="box-shadow:none;">
-        <div class="cal-nav">
-          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-          <div class="cal-month" id="cal-month"></div>
-          <button class="cal-nav-btn" onclick="calNext()">›</button>
-        </div>
-        <div class="cal-weekdays">
-          <div class="cal-weekday">Sun</div><div class="cal-weekday">Mon</div>
-          <div class="cal-weekday">Tue</div><div class="cal-weekday">Wed</div>
-          <div class="cal-weekday">Thu</div><div class="cal-weekday">Fri</div>
-          <div class="cal-weekday">Sat</div>
-        </div>
-        <div class="cal-grid" id="cal-grid"></div>
-        <div class="cal-summary">
-          <div class="cal-summary-text">
-            Check-in<br>
-            <span class="cal-summary-date" id="cal-selected">Not selected</span>
-          </div>
-          <button class="cal-confirm-btn" id="cal-confirm-btn" disabled onclick="confirmBooking()">Confirm</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- STICKY BOTTOM CTA -->
-<div class="sticky-cta" role="complementary">
-  <button class="cta-line-btn" onclick="openWhatsApp()">
-    <span aria-hidden="true">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    </span>
-    WhatsApp
-  </button>
-  <button class="cta-book-btn" onclick="openBookingForm()">Book Now →</button>
-</div>
-
-<!-- BOOKING FORM MODAL -->
-<div class="cal-modal" id="bookingFormModal">
-  <div class="cal-backdrop" onclick="closeBookingForm()"></div>
-  <div class="cal-sheet" style="max-height:95svh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
-    <div class="cal-sheet-handle"></div>
-    <div class="cal-sheet-header">
-      <span class="cal-sheet-title">Booking Request</span>
-      <button class="cal-sheet-close" onclick="closeBookingForm()">✕</button>
-    </div>
-    <div class="cal-sheet-body" style="padding-bottom:calc(40px + var(--safe-bottom)); overflow-y:auto;">
-
-      <!-- Step 1: Dates -->
-      <div class="bf-section">
-        <div class="bf-label">Check-in Date <span class="bf-req">*</span></div>
-        <button class="bf-date-btn" id="bf-date-btn" onclick="openCalFromForm('checkin')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          <span id="bf-date-text">Select date</span>
-        </button>
-      </div>
-      <div class="bf-section">
-        <div class="bf-label">Check-out Date <span class="bf-req">*</span></div>
-        <button class="bf-date-btn" id="bf-checkout-btn" onclick="openCalFromForm('checkout')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          <span id="bf-checkout-text">Select date</span>
-        </button>
-      </div>
-
-      <!-- Step 2: Room -->
-      <div class="bf-section">
-        <div class="bf-label">Room Type <span class="bf-req">*</span></div>
-        <select class="bf-select" id="bf-room">
-          <option value="">— Select a room —</option>
-          <option value="Ocean Double">Ocean Double Room</option>
-          <option value="Twin Wanderer">Twin Wanderer Room</option>
-          <option value="Just Right">Just Right Room</option>
-          <option value="Freediver">Freediver Single Room</option>
-          <option value="Intertidal Bunk">Intertidal Bunk Dorm (per bed)</option>
-        </select>
-      </div>
-
-      <!-- Step 3: Guests -->
-      <div class="bf-section">
-        <div class="bf-label">Number of Guests <span class="bf-req">*</span></div>
-        <div class="bf-counter">
-          <button class="bf-count-btn" onclick="changeGuests(-1)">−</button>
-          <span id="bf-guests-num">1</span>
-          <button class="bf-count-btn" onclick="changeGuests(1)">+</button>
-        </div>
-      </div>
-
-      <!-- Step 4: Name & Contact -->
-      <div class="bf-section">
-        <div class="bf-label">Your Name <span class="bf-req">*</span></div>
-        <input class="bf-input" id="bf-name" type="text" placeholder="Full name">
-      </div>
-      <div class="bf-section">
-        <div class="bf-label">WhatsApp / Email <span class="bf-req">*</span></div>
-        <input class="bf-input" id="bf-contact" type="text" placeholder="So we can reach you">
-      </div>
-
-      <!-- Step 5: Notes -->
-      <div class="bf-section">
-        <div class="bf-label">Special Requests <span style="font-size:.72rem;color:var(--text-light);">(optional)</span></div>
-        <textarea class="bf-input bf-textarea" id="bf-notes" placeholder="Allergies, arrival time, dive gear needs..."></textarea>
-      </div>
-
-      <!-- Cancellation Policy -->
-      <div class="bf-policy">
-        <div class="bf-policy-title">Cancellation Policy</div>
-        <div class="bf-policy-text">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
-      </div>
-
-      <button class="bf-submit-btn" onclick="submitBooking()">Send Booking Request</button>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRMATION MODAL -->
-<div class="cal-modal" id="confirmModal">
-  <div class="cal-backdrop" onclick="closeConfirm()"></div>
-  <div class="cal-sheet">
-    <div class="cal-sheet-handle"></div>
-    <div class="confirm-body">
-      <div class="confirm-icon">✓</div>
-      <h3 class="confirm-title">Request Received!</h3>
-      <p class="confirm-sub">We'll get back to you within <strong>2 business days</strong> to confirm your booking and share full pricing details.</p>
-      <div class="confirm-detail" id="confirm-detail"></div>
-      <div class="confirm-note">
-        <div class="confirm-note-title">Pricing Overview</div>
-        <div class="confirm-note-text">Exact room rates will be included in our confirmation message. Prices may vary by season and room type.</div>
-      </div>
-      <div class="confirm-note" style="margin-top:10px;">
-        <div class="confirm-note-title">Cancellation Policy</div>
-        <div class="confirm-note-text">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
-      </div>
-      <button class="bf-submit-btn" onclick="closeConfirm()" style="margin-top:24px;">Got It</button>
-    </div>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
   </div>
 </div>
 
 <script>
-/* HERO SLIDESHOW */
 (function() {
-  const slides = document.getElementById('heroSlides');
-  const dots   = document.querySelectorAll('#heroDots .hero-dot');
-  const bar    = document.getElementById('heroProgress');
-  const total  = 5;
-  const DELAY  = 4000; // ms per slide
-  let current  = 0, timer, startX = 0, moved = false;
+  const slides = document.getElementById('slides');
+  const dots   = document.querySelectorAll('.dot');
+  const bar    = document.getElementById('progress');
+  const TOTAL  = 5, DELAY = 4200;
+  let cur = 0, timer, startX = 0, moved = false;
 
-  function heroGoTo(i) {
-    current = (i + total) % total;
-    slides.style.transform = `translateX(${-current * 100}%)`;
-    dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
-    // reset progress bar
-    bar.style.transition = 'none';
-    bar.style.width = '0%';
+  function goTo(i) {
+    cur = (i + TOTAL) % TOTAL;
+    slides.style.transform = `translateX(${-cur * 100}%)`;
+    dots.forEach((d,idx) => d.classList.toggle('active', idx === cur));
+    bar.style.transition = 'none'; bar.style.width = '0%';
     requestAnimationFrame(() => {
       bar.style.transition = `width ${DELAY}ms linear`;
       bar.style.width = '100%';
     });
   }
 
-  window.heroGoTo = heroGoTo;
+  window.goTo = goTo;
+  function auto() { clearInterval(timer); timer = setInterval(() => goTo(cur+1), DELAY); }
 
-  function next() { heroGoTo(current + 1); }
-
-  function startAuto() {
-    clearInterval(timer);
-    timer = setInterval(next, DELAY);
-  }
-
-  // touch swipe
-  const hero = document.getElementById('site-hero');
-  hero.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX; moved = false;
-    clearInterval(timer);
-  }, { passive: true });
-  hero.addEventListener('touchmove', e => {
-    moved = Math.abs(e.touches[0].clientX - startX) > 8;
-  }, { passive: true });
-  hero.addEventListener('touchend', e => {
+  const hero = document.getElementById('hero');
+  hero.addEventListener('touchstart', e => { startX = e.touches[0].clientX; moved = false; clearInterval(timer); }, {passive:true});
+  hero.addEventListener('touchmove',  e => { moved = Math.abs(e.touches[0].clientX - startX) > 8; }, {passive:true});
+  hero.addEventListener('touchend',   e => {
     const dx = e.changedTouches[0].clientX - startX;
-    if (moved && Math.abs(dx) > 40) heroGoTo(dx < 0 ? current + 1 : current - 1);
-    startAuto();
+    if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? cur+1 : cur-1);
+    auto();
   });
 
-  heroGoTo(0);
-  startAuto();
-})();
-
-
-document.querySelectorAll('.card-image').forEach(gallery => {
-  const track = gallery.querySelector('.gallery-track');
-  const dots  = gallery.querySelectorAll('.gallery-dot');
-  const total = gallery.querySelectorAll('.gallery-slide').length;
-  if (total <= 1) return;
-  let current = 0, startX = 0, moved = false;
-
-  function goTo(i) {
-    current = Math.max(0, Math.min(i, total - 1));
-    track.style.transform = `translateX(${-current * 100}%)`;
-    dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
-  }
-
-  gallery.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX; moved = false;
-  }, { passive: true });
-
-  gallery.addEventListener('touchmove', e => {
-    moved = Math.abs(e.touches[0].clientX - startX) > 6;
-  }, { passive: true });
-
-  gallery.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - startX;
-    if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? current + 1 : current - 1);
-  });
-
-  dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
-});
-
-/* FILTER */
-function filterRooms(type, btn) {
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.room-card').forEach(card => {
-    card.style.display = (type === 'all' || card.dataset.type === type) ? '' : 'none';
-  });
-}
-
-/* EXPAND DESC */
-function toggleDesc(id, btn) {
-  const expanded = document.getElementById(id).classList.toggle('expanded');
-  btn.textContent = expanded ? 'Show less ∧' : 'Read more ∨';
-}
-
-/* DESKTOP: show diving images */
-if (window.matchMedia('(min-width:768px)').matches) {
-  const el = document.querySelector('.diving-desktop-imgs');
-  if (el) el.style.display = 'grid';
-}
-/* WHATSAPP */
-window.openWhatsApp = function() {
-  const phone = 'XXXXXXXXXX'; // TODO: enter WhatsApp number with country code, no + sign
-  const msg = encodeURIComponent('Hi! I\'d like to enquire about a room at in.house B&B, Xiaoliuqiu.');
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-};
-
-/* BOOKING FORM */
-let bfSelectedDate = null;
-let bfGuests = 1;
-
-window.openBookingForm = function() {
-  document.getElementById('bookingFormModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-window.closeBookingForm = function() {
-  document.getElementById('bookingFormModal').classList.remove('open');
-  document.body.style.overflow = '';
-};
-window.openCalFromForm = function(type) {
-  window._calFromForm = type; // 'checkin' or 'checkout'
-  document.getElementById('calModal').style.zIndex = '700';
-  // update calendar title based on type
-  document.getElementById('cal-sheet-title-text').textContent =
-    type === 'checkin' ? 'Select Check-in Date' : 'Select Check-out Date';
-  openCalModal();
-};
-window.changeGuests = function(delta) {
-  bfGuests = Math.max(1, Math.min(8, bfGuests + delta));
-  document.getElementById('bf-guests-num').textContent = bfGuests;
-};
-window.submitBooking = function() {
-  const checkin  = document.getElementById('bf-date-text').textContent;
-  const checkout = document.getElementById('bf-checkout-text').textContent;
-  const room     = document.getElementById('bf-room').value;
-  const name     = document.getElementById('bf-name').value.trim();
-  const contact  = document.getElementById('bf-contact').value.trim();
-
-  if (checkin === 'Select date' || checkout === 'Select date' || !room || !name || !contact) {
-    alert('Please fill in all required fields.');
-    return;
-  }
-  closeBookingForm();
-  document.getElementById('confirm-detail').innerHTML =
-    `📅 <strong>Check-in:</strong> ${checkin}<br>` +
-    `📅 <strong>Check-out:</strong> ${checkout}<br>` +
-    `🛏 <strong>Room:</strong> ${room}<br>` +
-    `👤 <strong>Guests:</strong> ${bfGuests}<br>` +
-    `✉️ <strong>Contact:</strong> ${contact}`;
-  document.getElementById('confirmModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-window.closeConfirm = function() {
-  document.getElementById('confirmModal').classList.remove('open');
-  document.body.style.overflow = '';
-};
-
-
-
-(function() {
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now = new Date();
-  let year = now.getFullYear(), month = now.getMonth(), selected = null;
-  function render() {
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    document.getElementById('cal-month').textContent = `${MONTHS[month]} ${year}`;
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    let html = '';
-    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
-    for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, month, d);
-      const isPast = date < today;
-      const isToday = date.getTime() === today.getTime();
-      const isSel = selected && selected.getFullYear()===year && selected.getMonth()===month && selected.getDate()===d;
-      let cls = 'cal-day';
-      if (isPast) cls += ' past';
-      if (isToday) cls += ' today';
-      if (isSel) cls += ' selected';
-      html += `<div class="${cls}" onclick="calSelect(${year},${month},${d})">${d}</div>`;
-    }
-    document.getElementById('cal-grid').innerHTML = html;
-  }
-  window.calPrev = function() { month--; if (month < 0) { month=11; year--; } render(); };
-  window.calNext = function() { month++; if (month > 11) { month=0; year++; } render(); };
-  window.calSelect = function(y, m, d) {
-    selected = new Date(y, m, d); render();
-    const str = `${MONTHS[m]} ${d}, ${y}`;
-    document.getElementById('cal-selected').textContent = str;
-    document.getElementById('cal-confirm-btn').disabled = false;
-    document.getElementById('booking-date-display').textContent = `Check-in: ${str}`;
-  };
-  window.openCalModal = function() {
-    document.getElementById('calModal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  window.closeCalModal = function() {
-    document.getElementById('calModal').classList.remove('open');
-    document.body.style.overflow = '';
-  };
-  window.confirmBooking = function() {
-    if (!selected) return;
-    const str = `${MONTHS[selected.getMonth()]} ${selected.getDate()}, ${selected.getFullYear()}`;
-    if (window._calFromForm === 'checkin') {
-      const btn = document.getElementById('bf-date-btn');
-      const span = document.getElementById('bf-date-text');
-      if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
-      document.getElementById('booking-date-display').textContent = `Check-in: ${str}`;
-    } else if (window._calFromForm === 'checkout') {
-      const btn = document.getElementById('bf-checkout-btn');
-      const span = document.getElementById('bf-checkout-text');
-      if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
-    }
-    document.getElementById('calModal').style.zIndex = '';
-    window._calFromForm = false;
-    closeCalModal();
-  };
-  window.selectChip = function(btn) {
-    btn.closest('.room-chips').querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-  };
-  render();
+  goTo(0); auto();
 })();
 </script>
 </body>
