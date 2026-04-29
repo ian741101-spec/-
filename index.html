@@ -1433,22 +1433,6 @@ window.closeConfirm = function() {
   document.body.style.overflow = '';
 };
 
-// patch confirmBooking to also update booking form date
-const _origConfirm = window.confirmBooking;
-window.confirmBooking = function() {
-  const selected = document.getElementById('cal-selected').textContent;
-  if (selected && selected !== 'Not selected') {
-    bfSelectedDate = selected;
-    const btn = document.getElementById('bf-date-btn');
-    const span = document.getElementById('bf-date-text');
-    if (btn && span) { span.textContent = selected; btn.classList.add('filled'); }
-  }
-  closeCalModal();
-  if (window._calFromForm) {
-    window._calFromForm = false;
-    setTimeout(() => openBookingForm(), 300);
-  }
-};
 
 
 (function() {
@@ -1494,8 +1478,17 @@ window.confirmBooking = function() {
   };
   window.confirmBooking = function() {
     if (!selected) return;
+    const str = `${MONTHS[selected.getMonth()]} ${selected.getDate()}, ${selected.getFullYear()}`;
+    // update booking form date button if opened from form
+    const btn = document.getElementById('bf-date-btn');
+    const span = document.getElementById('bf-date-text');
+    if (btn && span) { span.textContent = str; btn.classList.add('filled'); }
+    document.getElementById('booking-date-display').textContent = `Check-in: ${str}`;
     closeCalModal();
-    // TODO: connect to booking system
+    if (window._calFromForm) {
+      window._calFromForm = false;
+      setTimeout(() => openBookingForm(), 300);
+    }
   };
   window.selectChip = function(btn) {
     btn.closest('.room-chips').querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
