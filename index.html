@@ -1140,15 +1140,6 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
       <button class="cal-sheet-close" onclick="closeCalModal()">✕</button>
     </div>
     <div class="cal-sheet-body">
-      <div class="room-select-label">Room Type (optional)</div>
-      <div class="room-chips">
-        <button class="room-chip active" onclick="selectChip(this)">All Rooms</button>
-        <button class="room-chip" onclick="selectChip(this)">Ocean Double</button>
-        <button class="room-chip" onclick="selectChip(this)">Twin Wanderer</button>
-        <button class="room-chip" onclick="selectChip(this)">Just Right</button>
-        <button class="room-chip" onclick="selectChip(this)">Freediver</button>
-        <button class="room-chip" onclick="selectChip(this)">Intertidal Bunk</button>
-      </div>
       <div class="cal-wrap" style="box-shadow:none;">
         <div class="cal-nav">
           <button class="cal-nav-btn" onclick="calPrev()">‹</button>
@@ -1188,13 +1179,13 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 <!-- BOOKING FORM MODAL -->
 <div class="cal-modal" id="bookingFormModal">
   <div class="cal-backdrop" onclick="closeBookingForm()"></div>
-  <div class="cal-sheet" style="max-height:95svh;">
+  <div class="cal-sheet" style="max-height:95svh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
     <div class="cal-sheet-handle"></div>
     <div class="cal-sheet-header">
       <span class="cal-sheet-title">Booking Request</span>
       <button class="cal-sheet-close" onclick="closeBookingForm()">✕</button>
     </div>
-    <div class="cal-sheet-body" style="padding-bottom:24px;">
+    <div class="cal-sheet-body" style="padding-bottom:calc(40px + var(--safe-bottom)); overflow-y:auto;">
 
       <!-- Step 1: Dates -->
       <div class="bf-section">
