@@ -478,43 +478,51 @@ function changeGuests(delta) {
 }
 
 /* ── EMAILJS CONFIG ── */
-const EMAILJS_PUBLIC_KEY    = 'QDeBHL3lGEOeqY8VL';
-const EMAILJS_SERVICE_ID    = 'service_qwupc3o';
-const EMAILJS_OWNER_TPL     = 'template_raxaox9';
-const EMAILJS_GUEST_TPL     = 'template_ej2ejxo';
-const OWNER_EMAIL           = 'icebar0413@gmail.com';
-const GAS_URL               = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJByORLaGOX9vYVOdthVz0Sg-Dcq4Y3dodH_Qsh6d7x5vl1oMrV8IPhfM/exec';
-const GCAL_API_KEY          = 'AIzaSyD-gETu0w58OZl4TdTvdpK1QVPkUTc-IrU';
-const GCAL_ID               = '4fb79ee0ef48a1069cd7320d150365515828a5850037e06c328030e546d48b49@group.calendar.google.com';
+const EMAILJS_PUBLIC_KEY = 'QDeBHL3lGEOeqY8VL';
+const EMAILJS_SERVICE_ID = 'service_qwupc3o';
+const EMAILJS_OWNER_TPL  = 'template_raxaox9';
+const EMAILJS_GUEST_TPL  = 'template_ej2ejxo';
+const OWNER_EMAIL        = 'icebar0413@gmail.com';
+const GAS_URL            = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJByORLaGOX9vYVOdthVz0Sg-Dcq4Y3dodH_Qsh6d7x5vl1oMrV8IPhfM/exec';
 
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
-/* ── BLOCKED DATES FROM GOOGLE CALENDAR ── */
-let blockedDates = []; // array of 'YYYY-MM-DD' strings
+/* ── AIRTABLE CONFIG ── */
+const AIRTABLE_TOKEN    = 'patDNaErguCCfezR5.783b0684d5c6163da904b144525dce1eeddab0b09757187d19111ffb59f6d8c8';
+const AIRTABLE_BASE_ID  = 'app8OqmPIe5o3Wl';
+const AIRTABLE_TABLE    = 'In.house booking';
+const AIRTABLE_URL      = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}`;
+
+/* ── BLOCKED DATES (per room type from Airtable) ── */
+let blockedDates = [];
 
 function fetchBlockedDates() {
-  const calId = encodeURIComponent(GCAL_ID);
-  const now   = new Date().toISOString();
-  const later = new Date(Date.now() + 365*24*60*60*1000).toISOString();
-  const url   = `https://www.googleapis.com/calendar/v3/calendars/${calId}/events?key=${GCAL_API_KEY}&timeMin=${now}&timeMax=${later}&singleEvents=true`;
+  const room = document.getElementById('room-select').value;
+  if (!room) { blockedDates = []; renderCal(); return; }
 
-  fetch(url)
-    .then(r => r.json())
-    .then(data => {
-      if (!data.items) return;
-      blockedDates = [];
-      data.items.forEach(event => {
-        const start = new Date(event.start.date || event.start.dateTime);
-        const end   = new Date(event.end.date   || event.end.dateTime);
-        // add every date in the range
-        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-          blockedDates.push(d.toISOString().slice(0, 10));
-        }
-      });
-    })
-    .catch(() => {}); // fail silently
+  const filter = encodeURIComponent(`AND({room_type}="${room}",{status}!="Cancelled")`);
+  fetch(`${AIRTABLE_URL}?filterByFormula=${filter}&fields[]=checkin_date&fields[]=checkout_date`, {
+    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+  })
+  .then(r => r.json())
+  .then(data => {
+    blockedDates = [];
+    (data.records || []).forEach(rec => {
+      const f = rec.fields;
+      if (!f.checkin_date || !f.checkout_date) return;
+      const start = new Date(f.checkin_date);
+      const end   = new Date(f.checkout_date);
+      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+        blockedDates.push(d.toISOString().slice(0, 10));
+      }
+    });
+    renderCal();
+  })
+  .catch(() => { blockedDates = []; renderCal(); });
 }
 
+// Re-fetch when room type changes
+document.getElementById('room-select').addEventListener('change', fetchBlockedDates);
 fetchBlockedDates();
 
 /* ── SUBMIT ── */
@@ -531,7 +539,6 @@ function submitForm() {
     return;
   }
 
-  // Show loading state
   const btn = document.querySelector('.submit-btn');
   btn.textContent = 'Sending…';
   btn.disabled = true;
@@ -551,17 +558,50 @@ function submitForm() {
     owner_email:   OWNER_EMAIL,
   };
 
-  // Send owner notification + guest confirmation in parallel
-  Promise.all([
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_OWNER_TPL, { ...templateParams, to_email: OWNER_EMAIL }),
-    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_GUEST_TPL, { ...templateParams }),
-    fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify(templateParams)
-    }).catch(() => {}) // Google Calendar — fail silently if not yet configured
-  ])
-  .then(() => {
-    // Success — show confirmation screen
+  // Convert date string back to YYYY-MM-DD for Airtable
+  function toISO(str) {
+    const d = new Date(str);
+    return isNaN(d) ? str : d.toISOString().slice(0, 10);
+  }
+
+  // Step 1: Write to Airtable first
+  fetch(AIRTABLE_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fields: {
+        guest_name:    name,
+        guest_contact: contact,
+        room_type:     room,
+        checkin_date:  toISO(checkin),
+        checkout_date: toISO(checkout),
+        guests:        guests,
+        notes:         notes || '',
+        status:        'Pending'
+      }
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      console.error('Airtable error:', data.error);
+      alert(`Airtable error: ${data.error.message || JSON.stringify(data.error)}`);
+      btn.textContent = 'Send Booking Request';
+      btn.disabled = false;
+      return;
+    }
+    // Step 2: Airtable success — send emails
+    return Promise.all([
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_OWNER_TPL, { ...templateParams, to_email: OWNER_EMAIL }),
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_GUEST_TPL, { ...templateParams }),
+      fetch(GAS_URL, { method: 'POST', body: JSON.stringify(templateParams) }).catch(() => {})
+    ]);
+  })
+  .then(results => {
+    if (!results) return; // already handled error above
     document.getElementById('confirm-summary').innerHTML =
       `📅 <strong>Check-in:</strong> ${checkin}<br>` +
       `📅 <strong>Check-out:</strong> ${checkout}<br>` +
@@ -571,8 +611,8 @@ function submitForm() {
     document.getElementById('confirmScreen').classList.add('show');
     window.scrollTo(0, 0);
   })
-  .catch((err) => {
-    console.error('EmailJS error:', err);
+  .catch(err => {
+    console.error('Error:', err);
     btn.textContent = 'Send Booking Request';
     btn.disabled = false;
     alert('Something went wrong. Please try again or contact us via WhatsApp.');
