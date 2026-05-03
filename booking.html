@@ -487,41 +487,25 @@ const GAS_URL            = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJB
 
 emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
-/* ── AIRTABLE CONFIG ── */
-const AIRTABLE_TOKEN    = 'patDNaErguCCfezR5.783b0684d5c6163da904b144525dce1eeddab0b09757187d19111ffb59f6d8c8';
-const AIRTABLE_BASE_ID  = 'app8ObqmBPie5o3WJ';
-const AIRTABLE_TABLE    = 'tblVoUu0MnrZW0b1d';
-const AIRTABLE_URL      = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE}`;
+/* ── CLOUDFLARE WORKER (Airtable proxy — no token in HTML) ── */
+const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
 
-/* ── BLOCKED DATES (per room type from Airtable) ── */
+/* ── BLOCKED DATES (per room type) ── */
 let blockedDates = [];
 
 function fetchBlockedDates() {
   const room = document.getElementById('room-select').value;
   if (!room) { blockedDates = []; renderCal(); return; }
 
-  const filter = encodeURIComponent(`AND({room_type}="${room}",{status}!="Cancelled")`);
-  fetch(`${AIRTABLE_URL}?filterByFormula=${filter}&fields[]=checkin_date&fields[]=checkout_date`, {
-    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
-  })
+  fetch(`${WORKER_URL}/availability?room_type=${encodeURIComponent(room)}`)
   .then(r => r.json())
   .then(data => {
-    blockedDates = [];
-    (data.records || []).forEach(rec => {
-      const f = rec.fields;
-      if (!f.checkin_date || !f.checkout_date) return;
-      const start = new Date(f.checkin_date);
-      const end   = new Date(f.checkout_date);
-      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        blockedDates.push(d.toISOString().slice(0, 10));
-      }
-    });
+    blockedDates = data.blocked || [];
     renderCal();
   })
   .catch(() => { blockedDates = []; renderCal(); });
 }
 
-// Re-fetch when room type changes
 document.getElementById('room-select').addEventListener('change', fetchBlockedDates);
 fetchBlockedDates();
 
@@ -564,24 +548,18 @@ function submitForm() {
     return isNaN(d) ? str : d.toISOString().slice(0, 10);
   }
 
-  // Step 1: Write to Airtable first
-  fetch(AIRTABLE_URL, {
+  // Step 1: Write to Airtable via Worker
+  fetch(`${WORKER_URL}/booking`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      fields: {
-        guest_name:    name,
-        guest_contact: contact,
-        room_type:     room,
-        checkin_date:  toISO(checkin),
-        checkout_date: toISO(checkout),
-        guests:        guests,
-        notes:         notes || '',
-        status:        'Pending'
-      }
+      guest_name:    name,
+      guest_contact: contact,
+      room_type:     room,
+      checkin_date:  toISO(checkin),
+      checkout_date: toISO(checkout),
+      guests:        guests,
+      notes:         notes || ''
     })
   })
   .then(r => r.json())

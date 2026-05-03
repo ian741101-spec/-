@@ -26,10 +26,7 @@ p { color: #666; margin-bottom: 20px; font-size: .9rem; }
 <div id="result">Click a button to test...</div>
 
 <script>
-const TOKEN   = 'patDNaErguCCfezR5.783b0684d5c6163da904b144525dce1eeddab0b09757187d19111ffb59f6d8c8';
-const BASE_ID = 'app8ObqmBPie5o3WJ';
-const TABLE   = 'tblVoUu0MnrZW0b1d';
-const URL     = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}`;
+const WORKER = 'https://inhouse-airtable.ian741101.workers.dev';
 let lastRecordId = null;
 
 function show(msg, isError) {
@@ -39,15 +36,14 @@ function show(msg, isError) {
 }
 
 async function testRead() {
-  show('Reading records...');
+  show('Reading records via Worker...');
   try {
-    const r = await fetch(URL, { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const r = await fetch(`${WORKER}/availability?room_type=Ocean%20Double`);
     const data = await r.json();
     if (data.error) {
       show('❌ ERROR:\n' + JSON.stringify(data.error, null, 2), true);
     } else {
-      show(`✅ READ OK — Found ${data.records.length} record(s)\n\nFields in first record:\n` +
-        (data.records[0] ? JSON.stringify(data.records[0].fields, null, 2) : '(empty table)'));
+      show(`✅ READ OK\n\nBlocked dates for Ocean Double:\n${data.blocked && data.blocked.length ? data.blocked.join('\n') : '(none yet)'}`);
     }
   } catch(e) {
     show('❌ Network error: ' + e.message, true);
@@ -55,34 +51,27 @@ async function testRead() {
 }
 
 async function testWrite() {
-  show('Writing test record...');
+  show('Writing test record via Worker...');
   try {
-    const r = await fetch(URL, {
+    const r = await fetch(`${WORKER}/booking`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        fields: {
-          guest_name:    'TEST GUEST',
-          guest_contact: 'test@test.com',
-          room_type:     'Ocean Double',
-          checkin_date:  '2026-06-01',
-          checkout_date: '2026-06-03',
-          guests:        2,
-          notes:         'This is a test record',
-          status:        'Pending'
-        }
+        guest_name:    'TEST GUEST',
+        guest_contact: 'test@test.com',
+        room_type:     'Ocean Double',
+        checkin_date:  '2026-06-01',
+        checkout_date: '2026-06-03',
+        guests:        2,
+        notes:         'This is a test record'
       })
     });
     const data = await r.json();
-    if (data.error) {
+    if (!data.ok) {
       show('❌ ERROR:\n' + JSON.stringify(data.error, null, 2), true);
     } else {
       lastRecordId = data.id;
-      show(`✅ WRITE OK — Record created!\nID: ${data.id}\n\nFields written:\n` +
-        JSON.stringify(data.fields, null, 2));
+      show(`✅ WRITE OK — Record created!\nID: ${data.id}\n\nClick "Delete test record" to clean up.`);
     }
   } catch(e) {
     show('❌ Network error: ' + e.message, true);
@@ -90,23 +79,7 @@ async function testWrite() {
 }
 
 async function testDelete() {
-  if (!lastRecordId) { show('⚠️ No test record to delete. Run Test WRITE first.', true); return; }
-  show('Deleting test record...');
-  try {
-    const r = await fetch(`${URL}/${lastRecordId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${TOKEN}` }
-    });
-    const data = await r.json();
-    if (data.deleted) {
-      show(`✅ DELETE OK — Record ${lastRecordId} deleted.`);
-      lastRecordId = null;
-    } else {
-      show('❌ ERROR:\n' + JSON.stringify(data, null, 2), true);
-    }
-  } catch(e) {
-    show('❌ Network error: ' + e.message, true);
-  }
+  show('Note: Delete not available via Worker. Manually delete test records in Airtable.');
 }
 </script>
 </body>
