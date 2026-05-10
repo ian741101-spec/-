@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Book a Room — in.house</title>
+<title data-i18n-title="pageTitle">Book a Room — in.house</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Noto+Serif+JP:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
   --ocean-deep:#0d2b3e; --ocean-mid:#1a4a6b; --seafoam:#7ebfb5;
@@ -17,9 +17,44 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
-body{background:var(--cream);color:var(--text-dark);font-family:'Noto Sans TC',sans-serif;font-weight:300;min-height:100svh;}
+body{background:var(--cream);color:var(--text-dark);font-family:'Noto Sans TC','Noto Sans JP',sans-serif;font-weight:300;min-height:100svh;}
 button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;border:none;}
 
+
+/* ── LANGUAGE SWITCHER ── */
+.lang-switch {
+  position: fixed;
+  top: calc(var(--safe-top) + 8px);
+  right: 12px;
+  z-index: 300;
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(13,43,62,.15);
+  border-radius: 100px;
+  padding: 3px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.1);
+}
+.lang-btn {
+  background: transparent;
+  color: var(--text-light);
+  font-size: .68rem;
+  letter-spacing: .06em;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 100px;
+  font-family: inherit;
+  font-weight: 400;
+  transition: all .2s;
+  min-width: 38px;
+  cursor: pointer;
+}
+.lang-btn.active {
+  background: var(--ocean-deep);
+  color: white;
+}
+.lang-btn:active { transform: scale(.94); }
 /* ── TOP NAV ── */
 .top-nav{
   background:var(--ocean-deep);
@@ -260,20 +295,27 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 </head>
 <body>
 
+<!-- LANGUAGE SWITCHER -->
+<div class="lang-switch">
+  <button class="lang-btn" data-lang="en">EN</button>
+  <button class="lang-btn" data-lang="zh">繁中</button>
+  <button class="lang-btn" data-lang="ja">日本語</button>
+</div>
+
 <!-- TOP NAV -->
 <nav class="top-nav">
   <button class="back-btn" onclick="location.href='rooms.html'">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Rooms
+    <span data-i18n="navRooms">Rooms</span>
   </button>
   <span class="nav-title">in.house</span>
 </nav>
 
 <!-- PAGE HEADER -->
 <div class="page-header">
-  <div class="section-label">Reservations</div>
-  <h1 class="page-title">Book a Room</h1>
-  <p class="page-desc">Fill in your details and we'll confirm<br>within 2 business days.</p>
+  <div class="section-label" data-i18n="reservations">Reservations</div>
+  <h1 class="page-title" data-i18n="bookRoom">Book a Room</h1>
+  <p class="page-desc" data-i18n-html="pageDesc">Fill in your details and we'll confirm<br>within 2 business days.</p>
   <div class="wave"><svg viewBox="0 0 390 40" preserveAspectRatio="none" fill="var(--cream)"><path d="M0,20 C97,40 293,0 390,20 L390,40 L0,40 Z"/></svg></div>
 </div>
 
@@ -282,35 +324,35 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 
   <!-- Dates -->
   <div class="form-section">
-    <label class="form-label">Stay Dates <span class="form-req">*</span></label>
+    <label class="form-label"><span data-i18n="stayDates">Stay Dates</span> <span class="form-req">*</span></label>
     <div class="date-row">
       <button class="date-btn" id="checkin-btn" onclick="openCal('checkin')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span id="checkin-text">Check-in</span>
+        <span id="checkin-text" data-i18n="checkin">Check-in</span>
       </button>
       <button class="date-btn" id="checkout-btn" onclick="openCal('checkout')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <span id="checkout-text">Check-out</span>
+        <span id="checkout-text" data-i18n="checkout">Check-out</span>
       </button>
     </div>
   </div>
 
   <!-- Room -->
   <div class="form-section">
-    <label class="form-label">Room Type <span class="form-req">*</span></label>
+    <label class="form-label"><span data-i18n="roomType">Room Type</span> <span class="form-req">*</span></label>
     <select class="form-select" id="room-select">
-      <option value="">— Select a room —</option>
-      <option value="Ocean Double">Ocean Double Room</option>
-      <option value="Twin Wanderer">Twin Wanderer Room</option>
-      <option value="Just Right">Just Right Room</option>
-      <option value="Freediver">Freediver Single Room</option>
-      <option value="Intertidal Bunk">Intertidal Bunk Dorm (per bed)</option>
+      <option value="" data-i18n="selectRoom">— Select a room —</option>
+      <option value="Ocean Double" data-i18n="optOcean">Ocean Double Room</option>
+      <option value="Twin Wanderer" data-i18n="optTwin">Twin Wanderer Room</option>
+      <option value="Just Right" data-i18n="optJustRight">Just Right Room</option>
+      <option value="Freediver" data-i18n="optFreediver">Freediver Single Room</option>
+      <option value="Intertidal Bunk" data-i18n="optBunk">Intertidal Bunk Dorm (per bed)</option>
     </select>
   </div>
 
   <!-- Guests -->
   <div class="form-section">
-    <label class="form-label">Number of Guests <span class="form-req">*</span></label>
+    <label class="form-label"><span data-i18n="numGuests">Number of Guests</span> <span class="form-req">*</span></label>
     <div class="guest-counter">
       <button class="count-btn" onclick="changeGuests(-1)">−</button>
       <span id="guests-num">1</span>
@@ -320,29 +362,29 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 
   <!-- Name -->
   <div class="form-section">
-    <label class="form-label">Your Name <span class="form-req">*</span></label>
-    <input class="form-input" id="name-input" type="text" placeholder="Full name">
+    <label class="form-label"><span data-i18n="yourName">Your Name</span> <span class="form-req">*</span></label>
+    <input class="form-input" id="name-input" type="text" placeholder="Full name" data-i18n-placeholder="phName">
   </div>
 
   <!-- Contact -->
   <div class="form-section">
-    <label class="form-label">WhatsApp / Email <span class="form-req">*</span></label>
-    <input class="form-input" id="contact-input" type="text" placeholder="So we can reach you">
+    <label class="form-label"><span data-i18n="contact">WhatsApp / Email</span> <span class="form-req">*</span></label>
+    <input class="form-input" id="contact-input" type="text" placeholder="So we can reach you" data-i18n-placeholder="phContact">
   </div>
 
   <!-- Notes -->
   <div class="form-section">
-    <label class="form-label">Special Requests <span style="font-size:.72rem;color:var(--text-light);">(optional)</span></label>
-    <textarea class="form-input form-textarea" id="notes-input" placeholder="Allergies, arrival time, dive gear needs..."></textarea>
+    <label class="form-label"><span data-i18n="specialReq">Special Requests</span> <span style="font-size:.72rem;color:var(--text-light);" data-i18n="optional">(optional)</span></label>
+    <textarea class="form-input form-textarea" id="notes-input" placeholder="Allergies, arrival time, dive gear needs..." data-i18n-placeholder="phNotes"></textarea>
   </div>
 
   <!-- Cancellation Policy -->
   <div class="policy-box">
-    <div class="policy-title">Cancellation Policy</div>
-    <div class="policy-text">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
+    <div class="policy-title" data-i18n="cancelPolicy">Cancellation Policy</div>
+    <div class="policy-text" data-i18n="cancelText">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
   </div>
 
-  <button class="submit-btn" onclick="submitForm()">Send Booking Request</button>
+  <button class="submit-btn" onclick="submitForm()" data-i18n="sendRequest">Send Booking Request</button>
 </div>
 
 <!-- CALENDAR OVERLAY -->
@@ -350,7 +392,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <div class="cal-sheet">
     <div class="cal-handle"></div>
     <div class="cal-head">
-      <span class="cal-head-title" id="cal-head-title">Select Check-in Date</span>
+      <span class="cal-head-title" id="cal-head-title" data-i18n="selectCheckin">Select Check-in Date</span>
       <button class="cal-close" onclick="closeCal()">✕</button>
     </div>
     <div class="cal-nav-row">
@@ -359,18 +401,18 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
       <button class="cal-nav-btn" onclick="calNext()">›</button>
     </div>
     <div class="cal-weekdays">
-      <div class="cal-wd">Sun</div><div class="cal-wd">Mon</div>
-      <div class="cal-wd">Tue</div><div class="cal-wd">Wed</div>
-      <div class="cal-wd">Thu</div><div class="cal-wd">Fri</div>
-      <div class="cal-wd">Sat</div>
+      <div class="cal-wd" data-i18n="wdSun">Sun</div><div class="cal-wd" data-i18n="wdMon">Mon</div>
+      <div class="cal-wd" data-i18n="wdTue">Tue</div><div class="cal-wd" data-i18n="wdWed">Wed</div>
+      <div class="cal-wd" data-i18n="wdThu">Thu</div><div class="cal-wd" data-i18n="wdFri">Fri</div>
+      <div class="cal-wd" data-i18n="wdSat">Sat</div>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
     <div class="cal-footer">
       <div class="cal-selected-text">
-        Selected<br>
+        <span data-i18n="selected">Selected</span><br>
         <span class="cal-selected-date" id="cal-selected-display">—</span>
       </div>
-      <button class="cal-confirm" id="cal-confirm-btn" disabled onclick="confirmDate()">Confirm</button>
+      <button class="cal-confirm" id="cal-confirm-btn" disabled onclick="confirmDate()" data-i18n="confirm">Confirm</button>
     </div>
   </div>
 </div>
@@ -378,21 +420,168 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 <!-- CONFIRMATION SCREEN -->
 <div class="confirm-screen" id="confirmScreen">
   <div class="confirm-icon">✓</div>
-  <h2 class="confirm-title">Request Received!</h2>
-  <p class="confirm-sub">We'll get back to you within <strong>2 business days</strong> to confirm your booking and share full pricing details.</p>
+  <h2 class="confirm-title" data-i18n="requestReceived">Request Received!</h2>
+  <p class="confirm-sub" data-i18n-html="confirmSub">We'll get back to you within <strong>2 business days</strong> to confirm your booking and share full pricing details.</p>
   <div class="confirm-summary" id="confirm-summary"></div>
   <div class="confirm-note">
-    <div class="confirm-note-title">Pricing</div>
-    <div class="confirm-note-text">Exact room rates will be included in our confirmation message. Prices may vary by season and room type.</div>
+    <div class="confirm-note-title" data-i18n="pricingTitle">Pricing</div>
+    <div class="confirm-note-text" data-i18n="pricingText">Exact room rates will be included in our confirmation message. Prices may vary by season and room type.</div>
   </div>
   <div class="confirm-note">
-    <div class="confirm-note-title">Cancellation Policy</div>
-    <div class="confirm-note-text">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
+    <div class="confirm-note-title" data-i18n="cancelPolicy">Cancellation Policy</div>
+    <div class="confirm-note-text" data-i18n="cancelText">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
   </div>
-  <button class="confirm-done" onclick="location.href='index.html'">Back to Home</button>
+  <button class="confirm-done" onclick="location.href='index.html'" data-i18n="backHome">Back to Home</button>
 </div>
 
 <script>
+
+/* ── i18n DICTIONARY ── */
+const i18n = {
+  en: {
+    pageTitle: 'Book a Room — in.house',
+    navRooms: 'Rooms',
+    reservations: 'Reservations',
+    bookRoom: 'Book a Room',
+    pageDesc: "Fill in your details and we'll confirm<br>within 2 business days.",
+    stayDates: 'Stay Dates', checkin: 'Check-in', checkout: 'Check-out',
+    roomType: 'Room Type', selectRoom: '— Select a room —',
+    optOcean: 'Ocean Double Room', optTwin: 'Twin Wanderer Room',
+    optJustRight: 'Just Right Room', optFreediver: 'Freediver Single Room',
+    optBunk: 'Intertidal Bunk Dorm (per bed)',
+    numGuests: 'Number of Guests', yourName: 'Your Name',
+    contact: 'WhatsApp / Email', specialReq: 'Special Requests', optional: '(optional)',
+    phName: 'Full name', phContact: 'So we can reach you',
+    phNotes: 'Allergies, arrival time, dive gear needs...',
+    cancelPolicy: 'Cancellation Policy',
+    cancelText: 'In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.',
+    sendRequest: 'Send Booking Request',
+    selectCheckin: 'Select Check-in Date', selectCheckout: 'Select Check-out Date',
+    wdSun: 'Sun', wdMon: 'Mon', wdTue: 'Tue', wdWed: 'Wed', wdThu: 'Thu', wdFri: 'Fri', wdSat: 'Sat',
+    selected: 'Selected', confirm: 'Confirm',
+    requestReceived: 'Request Received!',
+    confirmSub: "We'll get back to you within <strong>2 business days</strong> to confirm your booking and share full pricing details.",
+    pricingTitle: 'Pricing',
+    pricingText: 'Exact room rates will be included in our confirmation message. Prices may vary by season and room type.',
+    backHome: 'Back to Home',
+    fillRequired: 'Please fill in all required fields.',
+    sending: 'Sending…',
+    errorMsg: 'Something went wrong. Please try again or contact us via WhatsApp.',
+  },
+  zh: {
+    pageTitle: '預訂房間 — in.house',
+    navRooms: '房型',
+    reservations: '訂房',
+    bookRoom: '預訂房間',
+    pageDesc: '填寫您的資料,我們將於<br>2 個工作天內回覆確認。',
+    stayDates: '入住日期', checkin: '入住日', checkout: '退房日',
+    roomType: '房型', selectRoom: '— 請選擇房型 —',
+    optOcean: '海洋雙人房', optTwin: '漫遊雙床房',
+    optJustRight: '剛剛好房', optFreediver: '自由潛水單人房',
+    optBunk: '潮間帶背包房(每床)',
+    numGuests: '入住人數', yourName: '您的姓名',
+    contact: 'WhatsApp / Email', specialReq: '特殊需求', optional: '(選填)',
+    phName: '全名', phContact: '方便我們聯繫您',
+    phNotes: '過敏、抵達時間、潛水裝備需求...',
+    cancelPolicy: '取消政策',
+    cancelText: '若遇不可抗力之惡劣天氣,我們提供改期作為補償,恕不退款。',
+    sendRequest: '送出訂房申請',
+    selectCheckin: '選擇入住日期', selectCheckout: '選擇退房日期',
+    wdSun: '日', wdMon: '一', wdTue: '二', wdWed: '三', wdThu: '四', wdFri: '五', wdSat: '六',
+    selected: '已選擇', confirm: '確認',
+    requestReceived: '已收到您的訂房申請!',
+    confirmSub: '我們將於 <strong>2 個工作天內</strong> 回覆,確認您的訂房並提供完整價格資訊。',
+    pricingTitle: '房價',
+    pricingText: '確認訊息中將提供詳細房價。價格可能依季節與房型有所不同。',
+    backHome: '返回首頁',
+    fillRequired: '請填寫所有必填欄位。',
+    sending: '傳送中…',
+    errorMsg: '發生錯誤,請稍後再試或透過 WhatsApp 聯繫我們。',
+  },
+  ja: {
+    pageTitle: '予約 — in.house',
+    navRooms: '客室',
+    reservations: 'ご予約',
+    bookRoom: '客室を予約',
+    pageDesc: '詳細をご記入いただければ<br>2営業日以内にご確認のご返信をいたします。',
+    stayDates: '宿泊日', checkin: 'チェックイン', checkout: 'チェックアウト',
+    roomType: '客室タイプ', selectRoom: '— 客室を選択 —',
+    optOcean: 'オーシャンダブルルーム', optTwin: 'ツインワンダラールーム',
+    optJustRight: 'ジャストライトルーム', optFreediver: 'フリーダイバーシングル',
+    optBunk: 'インタータイダルバンク(ベッド単位)',
+    numGuests: '宿泊人数', yourName: 'お名前',
+    contact: 'WhatsApp / メール', specialReq: '特別なご要望', optional: '(任意)',
+    phName: 'フルネーム', phContact: 'ご連絡可能な方法',
+    phNotes: 'アレルギー、到着時間、ダイビング装備の希望など...',
+    cancelPolicy: 'キャンセルポリシー',
+    cancelText: '不可抗力の悪天候の場合、日程変更を補償として提供いたします。返金はいたしかねます。',
+    sendRequest: '予約リクエストを送信',
+    selectCheckin: 'チェックイン日を選択', selectCheckout: 'チェックアウト日を選択',
+    wdSun: '日', wdMon: '月', wdTue: '火', wdWed: '水', wdThu: '木', wdFri: '金', wdSat: '土',
+    selected: '選択済み', confirm: '確定',
+    requestReceived: 'リクエストを受け付けました!',
+    confirmSub: '<strong>2営業日以内</strong>にご返信し、ご予約の確認と詳細な価格情報をお送りします。',
+    pricingTitle: '料金',
+    pricingText: '正確な料金は確認メッセージに記載されます。価格は季節や客室タイプにより異なる場合があります。',
+    backHome: 'ホームへ戻る',
+    fillRequired: 'すべての必須項目を入力してください。',
+    sending: '送信中…',
+    errorMsg: 'エラーが発生しました。再度お試しいただくか、WhatsAppでご連絡ください。',
+  }
+};
+
+function detectLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved && i18n[saved]) return saved;
+  const b = (navigator.language || 'en').toLowerCase();
+  if (b.startsWith('zh')) return 'zh';
+  if (b.startsWith('ja')) return 'ja';
+  return 'en';
+}
+
+function applyLang(lang) {
+  if (!i18n[lang]) lang = 'en';
+  const dict = i18n[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : lang;
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const k = el.getAttribute('data-i18n-title');
+    if (dict[k]) document.title = dict[k];
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (dict[k]) el.textContent = dict[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    if (dict[k]) el.innerHTML = dict[k];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const k = el.getAttribute('data-i18n-placeholder');
+    if (dict[k]) el.placeholder = dict[k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  // Update calendar header title based on current calMode
+  const headTitle = document.getElementById('cal-head-title');
+  if (headTitle && typeof calMode !== 'undefined') {
+    headTitle.textContent = calMode === 'checkin' ? dict.selectCheckin : dict.selectCheckout;
+  }
+  localStorage.setItem('lang', lang);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+function getDict() {
+  const lang = localStorage.getItem('lang') || 'en';
+  return i18n[lang] || i18n.en;
+}
+
+applyLang(detectLang());
+
+
 /* ── CALENDAR ── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const now = new Date();
@@ -443,8 +632,9 @@ function openCal(mode) {
   selectedDate = null;
   document.getElementById('cal-selected-display').textContent = '—';
   document.getElementById('cal-confirm-btn').disabled = true;
+  const _dict = getDict();
   document.getElementById('cal-head-title').textContent =
-    mode === 'checkin' ? 'Select Check-in Date' : 'Select Check-out Date';
+    mode === 'checkin' ? _dict.selectCheckin : _dict.selectCheckout;
   // reset to current month
   calYear = now.getFullYear(); calMonth = now.getMonth();
   renderCal();
@@ -518,13 +708,13 @@ function submitForm() {
   const contact  = document.getElementById('contact-input').value.trim();
   const notes    = document.getElementById('notes-input').value.trim();
 
-  if (checkin === 'Check-in' || checkout === 'Check-out' || !room || !name || !contact) {
-    alert('Please fill in all required fields.');
+  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !contact) {
+    alert(getDict().fillRequired);
     return;
   }
 
   const btn = document.querySelector('.submit-btn');
-  btn.textContent = 'Sending…';
+  btn.textContent = getDict().sending;
   btn.disabled = true;
 
   const templateParams = {
@@ -567,7 +757,7 @@ function submitForm() {
     if (data.error) {
       console.error('Airtable error:', data.error);
       alert(`Airtable error: ${data.error.message || JSON.stringify(data.error)}`);
-      btn.textContent = 'Send Booking Request';
+      btn.textContent = getDict().sendRequest;
       btn.disabled = false;
       return;
     }
@@ -580,20 +770,21 @@ function submitForm() {
   })
   .then(results => {
     if (!results) return; // already handled error above
+    const _d = getDict();
     document.getElementById('confirm-summary').innerHTML =
-      `📅 <strong>Check-in:</strong> ${checkin}<br>` +
-      `📅 <strong>Check-out:</strong> ${checkout}<br>` +
-      `🛏 <strong>Room:</strong> ${room}<br>` +
-      `👤 <strong>Guests:</strong> ${guests}<br>` +
-      `✉️ <strong>Contact:</strong> ${contact}`;
+      `📅 <strong>${_d.checkin}:</strong> ${checkin}<br>` +
+      `📅 <strong>${_d.checkout}:</strong> ${checkout}<br>` +
+      `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
+      `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
+      `✉️ <strong>${_d.contact}:</strong> ${contact}`;
     document.getElementById('confirmScreen').classList.add('show');
     window.scrollTo(0, 0);
   })
   .catch(err => {
     console.error('Error:', err);
-    btn.textContent = 'Send Booking Request';
+    btn.textContent = getDict().sendRequest;
     btn.disabled = false;
-    alert('Something went wrong. Please try again or contact us via WhatsApp.');
+    alert(getDict().errorMsg);
   });
 }
 </script>

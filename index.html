@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>in.house — Xiaoliuqiu B&B</title>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 <style>
 :root {
   --ocean-deep: #0d2b3e;
@@ -18,9 +18,41 @@
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { -webkit-text-size-adjust:100%; }
-body { background:#000; overflow:hidden; height:100svh; font-family:'Noto Sans TC',sans-serif; }
+body { background:#000; overflow:hidden; height:100svh; font-family:'Noto Sans TC','Noto Sans JP',sans-serif; }
 button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; border:none; }
 img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:none; }
+
+/* ── LANGUAGE SWITCHER ── */
+.lang-switch {
+  position: absolute;
+  top: calc(var(--safe-top) + 8px);
+  right: 16px;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,.12);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 100px;
+  padding: 3px;
+}
+.lang-btn {
+  background: transparent;
+  color: rgba(255,255,255,.7);
+  font-size: .68rem;
+  letter-spacing: .08em;
+  padding: 6px 10px;
+  border-radius: 100px;
+  font-family: inherit;
+  font-weight: 400;
+  transition: all .2s;
+  min-width: 38px;
+}
+.lang-btn.active {
+  background: white;
+  color: var(--ocean-deep);
+}
+.lang-btn:active { transform: scale(.94); }
 
 /* ── HERO SLIDESHOW ── */
 .hero {
@@ -76,7 +108,7 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
   flex:1.6; height:var(--touch);
   background:white; color:var(--ocean-deep);
   font-size:.8rem; letter-spacing:.16em;
-  font-family:'Noto Sans TC',sans-serif; font-weight:400;
+  font-family:'Noto Sans TC','Noto Sans JP',sans-serif; font-weight:400;
   border-radius:2px;
   box-shadow:0 4px 20px rgba(0,0,0,.3);
   transition:all .2s;
@@ -88,7 +120,7 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
   backdrop-filter:blur(8px);
   color:white; border:1px solid rgba(255,255,255,.35);
   font-size:.8rem; letter-spacing:.14em;
-  font-family:'Noto Sans TC',sans-serif; font-weight:300;
+  font-family:'Noto Sans TC','Noto Sans JP',sans-serif; font-weight:300;
   border-radius:2px;
   transition:all .2s;
 }
@@ -141,6 +173,13 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
 </head>
 <body>
 
+<!-- LANGUAGE SWITCHER -->
+<div class="lang-switch">
+  <button class="lang-btn" data-lang="en">EN</button>
+  <button class="lang-btn" data-lang="zh">繁中</button>
+  <button class="lang-btn" data-lang="ja">日本語</button>
+</div>
+
 <div class="hero" id="hero">
   <div class="slides" id="slides">
     <div class="slide"><img src="images/LINE_NOTE_260425_14.jpg" alt="in.house — Front Garden" loading="eager"></div>
@@ -162,24 +201,84 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
   </div>
 
   <div class="content">
-    <div class="label">Xiaoliuqiu · Taiwan</div>
+    <div class="label" data-i18n="label">Xiaoliuqiu · Taiwan</div>
     <h1 class="name">in.house</h1>
-    <p class="sub">小琉球 · B&B</p>
+    <p class="sub" data-i18n="sub">小琉球 · B&B</p>
     <div class="nav-btns">
-      <button class="btn-primary" onclick="location.href='booking.html'">Book Now</button>
-      <button class="btn-secondary" onclick="location.href='rooms.html'">Our Rooms</button>
+      <button class="btn-primary" data-i18n="bookNow" onclick="location.href='booking.html'">Book Now</button>
+      <button class="btn-secondary" data-i18n="ourRooms" onclick="location.href='rooms.html'">Our Rooms</button>
     </div>
   </div>
 
   <div class="progress" id="progress"></div>
 
   <div class="scroll-hint" onclick="location.href='rooms.html'">
-    <span>Explore</span>
+    <span data-i18n="explore">Explore</span>
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
   </div>
 </div>
 
 <script>
+/* ── i18n DICTIONARY ── */
+const i18n = {
+  en: {
+    title:    'in.house — Xiaoliuqiu B&B',
+    label:    'Xiaoliuqiu · Taiwan',
+    sub:      'Xiaoliuqiu · B&B',
+    bookNow:  'Book Now',
+    ourRooms: 'Our Rooms',
+    explore:  'Explore',
+  },
+  zh: {
+    title:    'in.house — 小琉球',
+    label:    '小琉球 · 台灣',
+    sub:      '小琉球',
+    bookNow:  '立即訂房',
+    ourRooms: '房型介紹',
+    explore:  '了解更多',
+  },
+  ja: {
+    title:    'in.house — 小琉球ゲストハウス',
+    label:    '小琉球 · 台湾',
+    sub:      '小琉球 · ゲストハウス',
+    bookNow:  '今すぐ予約',
+    ourRooms: '客室紹介',
+    explore:  'もっと見る',
+  }
+};
+
+/* ── LANGUAGE SWITCHER LOGIC ── */
+function detectLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved && i18n[saved]) return saved;
+  const browser = (navigator.language || 'en').toLowerCase();
+  if (browser.startsWith('zh')) return 'zh';
+  if (browser.startsWith('ja')) return 'ja';
+  return 'en';
+}
+
+function applyLang(lang) {
+  if (!i18n[lang]) lang = 'en';
+  const dict = i18n[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : lang;
+  document.title = dict.title;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  localStorage.setItem('lang', lang);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+applyLang(detectLang());
+
+/* ── HERO SLIDESHOW ── */
 (function() {
   const slides = document.getElementById('slides');
   const dots   = document.querySelectorAll('.dot');

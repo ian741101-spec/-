@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Our Rooms — in.house</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<title data-i18n-title="pageTitle">Our Rooms — in.house</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400&family=Noto+Serif+JP:wght@300;400&family=Playfair+Display:ital,wght@0,700;1,400&family=Noto+Sans+TC:wght@300;400&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
   --ocean-deep:#0d2b3e; --ocean-mid:#1a4a6b; --seafoam:#7ebfb5;
@@ -16,10 +16,45 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
-body{background:var(--cream);color:var(--text-dark);font-family:'Noto Sans TC',sans-serif;font-weight:300;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(72px + var(--safe-bottom));}
+body{background:var(--cream);color:var(--text-dark);font-family:'Noto Sans TC','Noto Sans JP',sans-serif;font-weight:300;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(72px + var(--safe-bottom));}
 img{display:block;max-width:100%;user-select:none;-webkit-user-drag:none;}
 button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;}
 
+
+/* ── LANGUAGE SWITCHER ── */
+.lang-switch {
+  position: fixed;
+  top: calc(var(--safe-top) + 8px);
+  right: 12px;
+  z-index: 300;
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(13,43,62,.15);
+  border-radius: 100px;
+  padding: 3px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.1);
+}
+.lang-btn {
+  background: transparent;
+  color: var(--text-light);
+  font-size: .68rem;
+  letter-spacing: .06em;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 100px;
+  font-family: inherit;
+  font-weight: 400;
+  transition: all .2s;
+  min-width: 38px;
+  cursor: pointer;
+}
+.lang-btn.active {
+  background: var(--ocean-deep);
+  color: white;
+}
+.lang-btn:active { transform: scale(.94); }
 /* ── BACK NAV ── */
 .top-nav {
   position:sticky; top:0; z-index:200;
@@ -202,29 +237,36 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 </head>
 <body>
 
+<!-- LANGUAGE SWITCHER -->
+<div class="lang-switch">
+  <button class="lang-btn" data-lang="en">EN</button>
+  <button class="lang-btn" data-lang="zh">繁中</button>
+  <button class="lang-btn" data-lang="ja">日本語</button>
+</div>
+
 <!-- TOP NAV -->
 <nav class="top-nav">
   <button class="back-btn" onclick="location.href='index.html'">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Home
+    <span data-i18n="navHome">Home</span>
   </button>
   <span class="nav-title">in.house</span>
 </nav>
 
 <!-- HEADER -->
 <header class="section-header">
-  <div class="section-label">Room Types</div>
-  <h1 class="section-title">Our Rooms</h1>
-  <p class="section-desc">Every room tells a story of the sea.<br>Find your corner on this blue island.</p>
+  <div class="section-label" data-i18n="roomTypes">Room Types</div>
+  <h1 class="section-title" data-i18n="ourRooms">Our Rooms</h1>
+  <p class="section-desc" data-i18n-html="ourRoomsDesc">Every room tells a story of the sea.<br>Find your corner on this blue island.</p>
   <div class="wave"><svg viewBox="0 0 390 40" preserveAspectRatio="none" fill="var(--cream)"><path d="M0,20 C97,40 293,0 390,20 L390,40 L0,40 Z"/></svg></div>
 </header>
 
 <!-- FILTER -->
 <nav class="filter-bar" style="top:calc(56px + var(--safe-top));">
-  <button class="filter-tab active" onclick="filterRooms('all',this)">All Rooms</button>
-  <button class="filter-tab" onclick="filterRooms('private',this)">Private</button>
-  <button class="filter-tab" onclick="filterRooms('dorm',this)">Dorm</button>
-  <button class="filter-tab" onclick="filterRooms('couple',this)">Couples</button>
+  <button class="filter-tab active" onclick="filterRooms('all',this)" data-i18n="filterAll">All Rooms</button>
+  <button class="filter-tab" onclick="filterRooms('private',this)" data-i18n="filterPrivate">Private</button>
+  <button class="filter-tab" onclick="filterRooms('dorm',this)" data-i18n="filterDorm">Dorm</button>
+  <button class="filter-tab" onclick="filterRooms('couple',this)" data-i18n="filterCouple">Couples</button>
 </nav>
 
 <!-- ROOM CARDS -->
@@ -238,20 +280,20 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_4.jpg" alt="Ocean Double Room" loading="eager"></div>
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_3.jpg" alt="Ocean Double Room full view" loading="lazy"></div>
       </div>
-      <span class="card-badge">Featured</span>
-      <span class="card-type-badge">Couples Pick</span>
+      <span class="card-badge" data-i18n="badgeFeatured">Featured</span>
+      <span class="card-type-badge" data-i18n="typeCouplesPick">Couples Pick</span>
       <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
-      <h2 class="card-title">Ocean Double</h2>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
+      <h2 class="card-title" data-i18n="r1Title">Ocean Double</h2>
       <div class="card-subtitle">Ocean Double Room</div>
-      <p class="card-desc" id="desc-1">A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-1',this)">Read more ∨</span>
+      <p class="card-desc" id="desc-1" data-i18n="r1Desc">A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-1',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Pallet Bed</span><span class="amenity-tag">Plants</span><span class="amenity-tag">Underwater Art</span>
+        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amPallet">Pallet Bed</span><span class="amenity-tag" data-i18n="amPlants">Plants</span><span class="amenity-tag" data-i18n="amUnderwaterArt">Underwater Art</span>
       </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
   </article>
 
@@ -262,19 +304,19 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_10.jpg" alt="Twin Wanderer Room" loading="lazy"></div>
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_9.jpg" alt="Twin Wanderer Room full view" loading="lazy"></div>
       </div>
-      <span class="card-type-badge">Twin Room</span>
+      <span class="card-type-badge" data-i18n="typeTwin">Twin Room</span>
       <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
-      <h2 class="card-title">Twin Wanderer</h2>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
+      <h2 class="card-title" data-i18n="r2Title">Twin Wanderer</h2>
       <div class="card-subtitle">Twin Wanderer Room</div>
-      <p class="card-desc" id="desc-2">Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-2',this)">Read more ∨</span>
+      <p class="card-desc" id="desc-2" data-i18n="r2Desc">Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-2',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Window View</span><span class="amenity-tag">Twin Beds</span>
+        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amWindow">Window View</span><span class="amenity-tag" data-i18n="amTwinBeds">Twin Beds</span>
       </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
   </article>
 
@@ -285,19 +327,19 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_8.jpg" alt="Just Right Room" loading="lazy"></div>
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_7.jpg" alt="Just Right Room twin beds" loading="lazy"></div>
       </div>
-      <span class="card-type-badge">Music Theme</span>
+      <span class="card-type-badge" data-i18n="typeMusic">Music Theme</span>
       <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 – 2 guests</div>
-      <h2 class="card-title">Just Right Room</h2>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
+      <h2 class="card-title" data-i18n="r3Title">Just Right Room</h2>
       <div class="card-subtitle">"Just Right" — Music Theme</div>
-      <p class="card-desc" id="desc-3">Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-3',this)">Read more ∨</span>
+      <p class="card-desc" id="desc-3" data-i18n="r3Desc">Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-3',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Lyric Wall</span><span class="amenity-tag">Bold Colors</span>
+        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amLyric">Lyric Wall</span><span class="amenity-tag" data-i18n="amBold">Bold Colors</span>
       </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
   </article>
 
@@ -307,19 +349,19 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
       <div class="gallery-track">
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_11.jpg" alt="Freediver Room" loading="lazy"></div>
       </div>
-      <span class="card-type-badge">Single Room</span>
+      <span class="card-type-badge" data-i18n="typeSingle">Single Room</span>
       <div class="gallery-dots" style="display:none;"></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>1 guest</div>
-      <h2 class="card-title">Freediver Room</h2>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1">1 guest</span></div>
+      <h2 class="card-title" data-i18n="r4Title">Freediver Room</h2>
       <div class="card-subtitle">Freediver Single Room</div>
-      <p class="card-desc" id="desc-4">A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-4',this)">Read more ∨</span>
+      <p class="card-desc" id="desc-4" data-i18n="r4Desc">A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-4',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag">Fin Display</span><span class="amenity-tag">Full Mirror</span><span class="amenity-tag">Driftwood Deco</span>
+        <span class="amenity-tag" data-i18n="amFin">Fin Display</span><span class="amenity-tag" data-i18n="amMirror">Full Mirror</span><span class="amenity-tag" data-i18n="amDriftwood">Driftwood Deco</span>
       </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
   </article>
 
@@ -330,20 +372,20 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_6.jpg" alt="Intertidal Bunk Dorm" loading="lazy"></div>
         <div class="gallery-slide"><img src="images/LINE_NOTE_260425_5.jpg" alt="Intertidal Bunk full view" loading="lazy"></div>
       </div>
-      <span class="card-badge">Backpacker</span>
-      <span class="card-type-badge">Bunk Dorm</span>
+      <span class="card-badge" data-i18n="badgeBackpacker">Backpacker</span>
+      <span class="card-type-badge" data-i18n="typeBunk">Bunk Dorm</span>
       <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>Mixed Dorm</div>
-      <h2 class="card-title">Intertidal Bunk</h2>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="capMixed">Mixed Dorm</span></div>
+      <h2 class="card-title" data-i18n="r5Title">Intertidal Bunk</h2>
       <div class="card-subtitle">Intertidal Bunk Dorm</div>
-      <p class="card-desc" id="desc-5">Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-5',this)">Read more ∨</span>
+      <p class="card-desc" id="desc-5" data-i18n="r5Desc">Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet.</p>
+      <span class="desc-toggle" onclick="toggleDesc('desc-5',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag">A/C</span><span class="amenity-tag">Privacy Curtain</span><span class="amenity-tag">Bean Bag</span><span class="amenity-tag">Reading Light</span>
+        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amCurtain">Privacy Curtain</span><span class="amenity-tag" data-i18n="amBean">Bean Bag</span><span class="amenity-tag" data-i18n="amReading">Reading Light</span>
       </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'">Book Now</button></div>
+      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
   </article>
 
@@ -353,34 +395,34 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 <!-- COMMON SPACES -->
 <section class="common-section">
   <div class="common-header">
-    <div class="section-label">Common Areas</div>
-    <h2>Common Spaces</h2>
-    <p>A place to put your phone down and actually talk to people.</p>
+    <div class="section-label" data-i18n="commonAreas">Common Areas</div>
+    <h2 data-i18n="commonSpaces">Common Spaces</h2>
+    <p data-i18n="commonDesc">A place to put your phone down and actually talk to people.</p>
   </div>
   <div class="common-scroll">
-    <div class="common-item"><img src="images/LINE_NOTE_260425_17.jpg" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title">Lobby</div><div class="common-label-sub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_18.jpg" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title">Lounge</div><div class="common-label-sub">Put your phone down and talk to someone :)</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_19.jpg" alt="Feature Wall" loading="lazy"><div class="common-label"><div class="common-label-title">Feature Wall · Shop</div><div class="common-label-sub">Dive gear · Books · Skateboard</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_14.jpg" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title">Front Garden</div><div class="common-label-sub">Pallet tables · String lights · Greenery</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_15.jpg" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title">Green Balcony</div><div class="common-label-sub">Hanging plants · Lava stones · Mountain view</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_17.jpg" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="lobbyTitle">Lobby</div><div class="common-label-sub" data-i18n="lobbySub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_18.jpg" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="loungeTitle">Lounge</div><div class="common-label-sub" data-i18n="loungeSub">Put your phone down and talk to someone :)</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_19.jpg" alt="Feature Wall" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="featureTitle">Feature Wall · Shop</div><div class="common-label-sub" data-i18n="featureSub">Dive gear · Books · Skateboard</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_14.jpg" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="gardenTitle">Front Garden</div><div class="common-label-sub" data-i18n="gardenSub">Pallet tables · String lights · Greenery</div></div></div>
+    <div class="common-item"><img src="images/LINE_NOTE_260425_15.jpg" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="balconyTitle">Green Balcony</div><div class="common-label-sub" data-i18n="balconySub">Hanging plants · Lava stones · Mountain view</div></div></div>
   </div>
 </section>
 
 <!-- DIVING GEAR -->
 <section class="diving-section">
   <div class="diving-text">
-    <div class="section-label">Dive Equipment</div>
-    <h2>Dive Gear,<br>All Here</h2>
-    <p>Full freediving and scuba equipment available to rent. Everything is cleaned and maintained regularly — arrive light, dive deep.</p>
+    <div class="section-label" data-i18n="diveEquip">Dive Equipment</div>
+    <h2 data-i18n-html="diveTitle">Dive Gear,<br>All Here</h2>
+    <p data-i18n="diveDesc">Full freediving and scuba equipment available to rent. Everything is cleaned and maintained regularly — arrive light, dive deep.</p>
     <div class="gear-grid">
-      <div class="gear-item"><span class="gear-dot"></span>Freediving Fins</div>
-      <div class="gear-item"><span class="gear-dot"></span>All Fin Sizes</div>
-      <div class="gear-item"><span class="gear-dot"></span>BCD Vest</div>
-      <div class="gear-item"><span class="gear-dot"></span>AROPEC Weight Belt</div>
-      <div class="gear-item"><span class="gear-dot"></span>Safety Line / SMB</div>
-      <div class="gear-item"><span class="gear-dot"></span>Lead Weights</div>
-      <div class="gear-item"><span class="gear-dot"></span>Dive Flag</div>
-      <div class="gear-item"><span class="gear-dot"></span>Gear Rinse Station</div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearFins">Freediving Fins</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearSizes">All Fin Sizes</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearBCD">BCD Vest</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearBelt">AROPEC Weight Belt</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearSafety">Safety Line / SMB</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearWeights">Lead Weights</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearFlag">Dive Flag</span></div>
+      <div class="gear-item"><span class="gear-dot"></span><span data-i18n="gearRinse">Gear Rinse Station</span></div>
     </div>
   </div>
   <div class="gear-photos">
@@ -396,9 +438,9 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 <section class="bathroom-section">
   <div class="bathroom-img"><img src="images/LINE_NOTE_260425_12.jpg" alt="Vintage Blue Tile Bathroom" loading="lazy"></div>
   <div class="bathroom-text">
-    <div class="section-label">Bathroom</div>
-    <h2>Vintage Tile Bathroom</h2>
-    <p>All-blue tiles from floor to ceiling, with a colourful mosaic tub base that carries the warmth of old Taiwanese homes. Plants, morning light, a good shower — ready for the ocean.</p>
+    <div class="section-label" data-i18n="bathroom">Bathroom</div>
+    <h2 data-i18n="bathroomTitle">Vintage Tile Bathroom</h2>
+    <p data-i18n="bathroomDesc">All-blue tiles from floor to ceiling, with a colourful mosaic tub base that carries the warmth of old Taiwanese homes. Plants, morning light, a good shower — ready for the ocean.</p>
   </div>
 </section>
 
@@ -406,12 +448,204 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 <div class="sticky-cta">
   <button class="cta-wa-btn" onclick="openWhatsApp()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    WhatsApp
+    <span data-i18n="whatsapp">WhatsApp</span>
   </button>
-  <button class="cta-book-btn" onclick="location.href='booking.html'">Book Now →</button>
+  <button class="cta-book-btn" onclick="location.href='booking.html'" data-i18n="bookNowArrow">Book Now →</button>
 </div>
 
 <script>
+
+/* ── i18n DICTIONARY ── */
+const i18n = {
+  en: {
+    pageTitle: 'Our Rooms — in.house',
+    navHome: 'Home',
+    roomTypes: 'Room Types',
+    ourRooms: 'Our Rooms',
+    ourRoomsDesc: 'Every room tells a story of the sea.<br>Find your corner on this blue island.',
+    filterAll: 'All Rooms', filterPrivate: 'Private', filterDorm: 'Dorm', filterCouple: 'Couples',
+    badgeFeatured: 'Featured', badgeBackpacker: 'Backpacker',
+    typeCouplesPick: 'Couples Pick', typeTwin: 'Twin Room', typeMusic: 'Music Theme',
+    typeSingle: 'Single Room', typeBunk: 'Bunk Dorm',
+    cap1to2: '1 – 2 guests', cap1: '1 guest', capMixed: 'Mixed Dorm',
+    r1Title: 'Ocean Double',
+    r1Desc: 'A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.',
+    r2Title: 'Twin Wanderer',
+    r2Desc: 'Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.',
+    r3Title: 'Just Right Room',
+    r3Desc: 'Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.',
+    r4Title: 'Freediver Room',
+    r4Desc: 'A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.',
+    r5Title: 'Intertidal Bunk',
+    r5Desc: 'Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you\'ll meet.',
+    readMore: 'Read more ∨', readLess: 'Show less ∧',
+    amAC: 'A/C', amPallet: 'Pallet Bed', amPlants: 'Plants', amUnderwaterArt: 'Underwater Art',
+    amWindow: 'Window View', amTwinBeds: 'Twin Beds',
+    amLyric: 'Lyric Wall', amBold: 'Bold Colors',
+    amFin: 'Fin Display', amMirror: 'Full Mirror', amDriftwood: 'Driftwood Deco',
+    amCurtain: 'Privacy Curtain', amBean: 'Bean Bag', amReading: 'Reading Light',
+    bookNow: 'Book Now', bookNowArrow: 'Book Now →', whatsapp: 'WhatsApp',
+    commonAreas: 'Common Areas', commonSpaces: 'Common Spaces',
+    commonDesc: 'A place to put your phone down and actually talk to people.',
+    lobbyTitle: 'Lobby', lobbySub: 'Terrazzo floors · Corona neon · There\'s a cat',
+    loungeTitle: 'Lounge', loungeSub: 'Put your phone down and talk to someone :)',
+    featureTitle: 'Feature Wall · Shop', featureSub: 'Dive gear · Books · Skateboard',
+    gardenTitle: 'Front Garden', gardenSub: 'Pallet tables · String lights · Greenery',
+    balconyTitle: 'Green Balcony', balconySub: 'Hanging plants · Lava stones · Mountain view',
+    diveEquip: 'Dive Equipment', diveTitle: 'Dive Gear,<br>All Here',
+    diveDesc: 'Full freediving and scuba equipment available to rent. Everything is cleaned and maintained regularly — arrive light, dive deep.',
+    gearFins: 'Freediving Fins', gearSizes: 'All Fin Sizes', gearBCD: 'BCD Vest',
+    gearBelt: 'AROPEC Weight Belt', gearSafety: 'Safety Line / SMB', gearWeights: 'Lead Weights',
+    gearFlag: 'Dive Flag', gearRinse: 'Gear Rinse Station',
+    bathroom: 'Bathroom', bathroomTitle: 'Vintage Tile Bathroom',
+    bathroomDesc: 'All-blue tiles from floor to ceiling, with a colourful mosaic tub base that carries the warmth of old Taiwanese homes. Plants, morning light, a good shower — ready for the ocean.',
+  },
+  zh: {
+    pageTitle: '房型介紹 — in.house',
+    navHome: '首頁',
+    roomTypes: '房型',
+    ourRooms: '房型介紹',
+    ourRoomsDesc: '每間房都訴說著海的故事<br>在這座藍色小島，找到屬於你的角落',
+    filterAll: '全部房型', filterPrivate: '私人房', filterDorm: '背包房', filterCouple: '雙人房',
+    badgeFeatured: '推薦', badgeBackpacker: '背包客',
+    typeCouplesPick: '情侶首選', typeTwin: '雙床房', typeMusic: '音樂主題',
+    typeSingle: '單人房', typeBunk: '上下舖',
+    cap1to2: '1 – 2 人', cap1: '1 人', capMixed: '男女混宿',
+    r1Title: '海洋雙人房',
+    r1Desc: '低床木棧板床架,帶來放鬆的島嶼氛圍。深藍色寢具如同寧靜的海面,搭配冷氣、植栽與水下攝影作品,每個細節都與海洋對話。',
+    r2Title: '漫遊雙床房',
+    r2Desc: '兩張單人床中間以圓形地毯劃分共享空間。輕透窗簾讓晨光緩緩灑入——適合潛水夥伴或喜歡擁有獨立空間的旅伴。',
+    r3Title: '剛剛好房',
+    r3Desc: '牆上印著歌詞:「我們的流浪剛好趕上時間。」大膽的紅藍床品,簡約卻充滿個性——獻給那些旅途中駐足、決定留下的靈魂。',
+    r4Title: '自由潛水單人房',
+    r4Desc: '牆上展示真正的碳纖維自由潛水蛙鞋,搭配漂流木與珊瑚石。落地鏡映著光線。獨自旅行者——你值得這份寧靜。',
+    r5Title: '潮間帶背包房',
+    r5Desc: '附隱私簾的上下舖,在共享空間中擁有自己的小天地。冷氣、圓形地毯、懶骨頭——潛完水回來就能躺下放空。最棒的是?在這裡遇見的人。',
+    readMore: '展開 ∨', readLess: '收起 ∧',
+    amAC: '冷氣', amPallet: '木棧板床', amPlants: '植栽', amUnderwaterArt: '水下攝影',
+    amWindow: '窗景', amTwinBeds: '雙單人床',
+    amLyric: '歌詞牆', amBold: '撞色設計',
+    amFin: '蛙鞋裝飾', amMirror: '落地鏡', amDriftwood: '漂流木佈置',
+    amCurtain: '隱私簾', amBean: '懶骨頭', amReading: '閱讀燈',
+    bookNow: '立即訂房', bookNowArrow: '立即訂房 →', whatsapp: 'WhatsApp',
+    commonAreas: '公共空間', commonSpaces: '公共區域',
+    commonDesc: '一個讓你放下手機,真正與人交談的地方。',
+    lobbyTitle: '大廳', lobbySub: '磨石子地板 · Corona 霓虹燈 · 有隻貓',
+    loungeTitle: '休憩區', loungeSub: '放下手機,跟身邊的人聊聊吧 :)',
+    featureTitle: '特色牆 · 選物', featureSub: '潛水裝備 · 書籍 · 滑板',
+    gardenTitle: '前院花園', gardenSub: '棧板桌 · 串燈 · 綠意',
+    balconyTitle: '綠意陽台', balconySub: '懸吊植栽 · 火山石 · 山景',
+    diveEquip: '潛水裝備', diveTitle: '潛水裝備<br>一應俱全',
+    diveDesc: '提供完整的自由潛水與水肺裝備租借。所有裝備定期清潔保養——輕裝抵達,盡情潛入。',
+    gearFins: '自由潛水蛙鞋', gearSizes: '全尺寸蛙鞋', gearBCD: 'BCD 浮力背心',
+    gearBelt: 'AROPEC 配重帶', gearSafety: '安全繩 / SMB', gearWeights: '鉛塊',
+    gearFlag: '潛水旗', gearRinse: '裝備沖洗區',
+    bathroom: '浴室', bathroomTitle: '復古磁磚浴室',
+    bathroomDesc: '從地板到天花板的全藍磁磚,搭配色彩繽紛的馬賽克浴缸底,帶有老台灣家屋的溫度。植栽、晨光、舒服的淋浴——準備好迎接大海。',
+  },
+  ja: {
+    pageTitle: '客室紹介 — in.house',
+    navHome: 'ホーム',
+    roomTypes: '客室タイプ',
+    ourRooms: '客室紹介',
+    ourRoomsDesc: 'すべての部屋が海の物語を語ります<br>この青い島で、あなたの居場所を見つけて',
+    filterAll: '全ての客室', filterPrivate: '個室', filterDorm: 'ドミトリー', filterCouple: 'カップル',
+    badgeFeatured: 'おすすめ', badgeBackpacker: 'バックパッカー',
+    typeCouplesPick: 'カップル人気', typeTwin: 'ツインルーム', typeMusic: '音楽テーマ',
+    typeSingle: 'シングルルーム', typeBunk: '二段ベッド',
+    cap1to2: '1 – 2 名', cap1: '1 名', capMixed: '男女混合',
+    r1Title: 'オーシャンダブル',
+    r1Desc: 'ローパレットベッドが島のリラックスした雰囲気を演出。深い青の寝具は穏やかな海のよう。エアコン完備、植物と水中写真で飾られ——あらゆる細部が海と対話します。',
+    r2Title: 'ツインワンダラー',
+    r2Desc: '2つのシングルベッドの間に丸いラグで共有スペースを演出。透けるカーテンから朝の光が優しく差し込みます——ダイビング仲間や、それぞれの空間を大切にしたい旅仲間に最適。',
+    r3Title: 'ジャストライト',
+    r3Desc: '壁には歌詞:「僕らの放浪がここでちょうど間に合った」。大胆な赤と青の寝具、シンプルながら個性的——旅の途中で立ち止まり、留まることを決めた魂のために。',
+    r4Title: 'フリーダイバールーム',
+    r4Desc: '本物のカーボン製フリーダイビングフィンを壁に展示、流木と珊瑚石を添えて。全身鏡が光を捉えます。一人旅の方へ——この静けさを存分に。',
+    r5Title: 'インタータイダルバンク',
+    r5Desc: 'プライバシーカーテン付きの二段ベッドで、共有空間でも自分だけの世界を。エアコン、丸いラグ、ビーズクッション——ダイビング後はそのまま寝転んで。一番の魅力?ここで出会う人々。',
+    readMore: '続きを読む ∨', readLess: '閉じる ∧',
+    amAC: 'エアコン', amPallet: 'パレットベッド', amPlants: '植物', amUnderwaterArt: '水中写真',
+    amWindow: '窓からの景色', amTwinBeds: 'ツインベッド',
+    amLyric: '歌詞ウォール', amBold: '大胆な配色',
+    amFin: 'フィン展示', amMirror: '全身鏡', amDriftwood: '流木装飾',
+    amCurtain: 'プライバシーカーテン', amBean: 'ビーズクッション', amReading: '読書灯',
+    bookNow: '今すぐ予約', bookNowArrow: '今すぐ予約 →', whatsapp: 'WhatsApp',
+    commonAreas: '共有スペース', commonSpaces: '共有エリア',
+    commonDesc: 'スマホを置いて、本当に人と話せる場所。',
+    lobbyTitle: 'ロビー', lobbySub: 'テラゾー床 · Coronaネオン · 猫がいます',
+    loungeTitle: 'ラウンジ', loungeSub: 'スマホを置いて、隣の人とおしゃべり :)',
+    featureTitle: 'フィーチャーウォール · ショップ', featureSub: 'ダイビング用品 · 本 · スケートボード',
+    gardenTitle: 'フロントガーデン', gardenSub: 'パレットテーブル · ストリングライト · 緑',
+    balconyTitle: 'グリーンバルコニー', balconySub: '吊り下げ植物 · 溶岩石 · 山の景色',
+    diveEquip: 'ダイビング装備', diveTitle: 'ダイビング装備<br>全て揃っています',
+    diveDesc: 'フリーダイビングとスキューバの装備一式をレンタル可能。全て定期的に洗浄・メンテナンス済み——身軽に到着、思い切り潜って。',
+    gearFins: 'フリーダイビングフィン', gearSizes: '全サイズのフィン', gearBCD: 'BCDベスト',
+    gearBelt: 'AROPECウェイトベルト', gearSafety: '安全ライン / SMB', gearWeights: '鉛ウェイト',
+    gearFlag: 'ダイビングフラッグ', gearRinse: '装備洗い場',
+    bathroom: 'バスルーム', bathroomTitle: 'ヴィンテージタイルバスルーム',
+    bathroomDesc: '床から天井まで全て青いタイル、カラフルなモザイクの浴槽底が懐かしい台湾の家の温もりを伝えます。植物、朝の光、心地よいシャワー——海への準備は万全。',
+  }
+};
+
+/* ── LANGUAGE SWITCHER ── */
+function detectLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved && i18n[saved]) return saved;
+  const b = (navigator.language || 'en').toLowerCase();
+  if (b.startsWith('zh')) return 'zh';
+  if (b.startsWith('ja')) return 'ja';
+  return 'en';
+}
+
+function applyLang(lang) {
+  if (!i18n[lang]) lang = 'en';
+  const dict = i18n[lang];
+  document.documentElement.lang = lang === 'zh' ? 'zh-TW' : lang;
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const k = el.getAttribute('data-i18n-title');
+    if (dict[k]) document.title = dict[k];
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (dict[k]) el.textContent = dict[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    if (dict[k]) el.innerHTML = dict[k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  // Reset all desc-toggle buttons to their initial state in current language
+  document.querySelectorAll('.desc-toggle').forEach(btn => {
+    const targetId = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+    const target = document.getElementById(targetId);
+    if (target && !target.classList.contains('expanded')) {
+      btn.textContent = dict.readMore;
+    } else if (target) {
+      btn.textContent = dict.readLess;
+    }
+  });
+  localStorage.setItem('lang', lang);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLang(btn.dataset.lang));
+});
+
+// Override toggleDesc to use i18n
+const _origToggle = window.toggleDesc;
+window.toggleDesc = function(id, btn) {
+  const expanded = document.getElementById(id).classList.toggle('expanded');
+  const lang = localStorage.getItem('lang') || 'en';
+  const dict = i18n[lang] || i18n.en;
+  btn.textContent = expanded ? dict.readLess : dict.readMore;
+};
+
+applyLang(detectLang());
+
+
 function filterRooms(type, btn) {
   document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
@@ -420,10 +654,7 @@ function filterRooms(type, btn) {
   });
 }
 
-function toggleDesc(id, btn) {
-  const expanded = document.getElementById(id).classList.toggle('expanded');
-  btn.textContent = expanded ? 'Show less ∧' : 'Read more ∨';
-}
+// toggleDesc is overridden above
 
 function openWhatsApp() {
   const phone = 'XXXXXXXXXX'; // TODO: enter WhatsApp number with country code, no + sign
