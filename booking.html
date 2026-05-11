@@ -549,6 +549,11 @@ function applyLang(lang) {
   });
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
+    // Skip date text spans if user already picked a date (parent button has .filled)
+    if ((el.id === 'checkin-text' || el.id === 'checkout-text') &&
+        el.parentElement && el.parentElement.classList.contains('filled')) {
+      return;
+    }
     if (dict[k]) el.textContent = dict[k];
   });
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
