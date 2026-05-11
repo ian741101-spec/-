@@ -615,8 +615,7 @@ function renderCal() {
     if (isPast || isBlocked) cls += ' past';
     if (isToday)  cls += ' today';
     if (isSel)    cls += ' selected';
-    const label = isBlocked && !isPast ? `<span title="Booked" style="font-size:.55rem;display:block;color:var(--coral);line-height:1">✕</span>` : d;
-    html += `<div class="${cls}" onclick="${(isPast||isBlocked)?'':` selectDay(${calYear},${calMonth},${d})`}">${isPast||isBlocked ? d : d}</div>`;
+    html += `<div class="${cls}" onclick="${(isPast||isBlocked)?'':`selectDay(${calYear},${calMonth},${d})`}">${d}</div>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
 }
