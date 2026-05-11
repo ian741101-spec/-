@@ -589,7 +589,7 @@ function getDict() {
   return i18n[lang] || i18n.en;
 }
 
-applyLang(detectLang());
+try { applyLang(detectLang()); } catch(e) { console.error('applyLang failed:', e); }
 
 
 /* ── CALENDAR ── */
@@ -684,7 +684,7 @@ const EMAILJS_GUEST_TPL  = 'template_ej2ejxo';
 const OWNER_EMAIL        = 'icebar0413@gmail.com';
 const GAS_URL            = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJByORLaGOX9vYVOdthVz0Sg-Dcq4Y3dodH_Qsh6d7x5vl1oMrV8IPhfM/exec';
 
-emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.error('EmailJS init failed:', e); }
 
 /* ── CLOUDFLARE WORKER (Airtable proxy — no token in HTML) ── */
 const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
@@ -705,8 +705,11 @@ function fetchBlockedDates() {
   .catch(() => { blockedDates = []; renderCal(); });
 }
 
-document.getElementById('room-select').addEventListener('change', fetchBlockedDates);
-fetchBlockedDates();
+const _roomSelectEl = document.getElementById('room-select');
+if (_roomSelectEl) {
+  _roomSelectEl.addEventListener('change', fetchBlockedDates);
+}
+try { fetchBlockedDates(); } catch(e) { console.error('fetchBlockedDates failed:', e); }
 
 /* ── SUBMIT ── */
 function submitForm() {
