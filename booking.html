@@ -569,8 +569,13 @@ function applyLang(lang) {
   });
   // Update calendar header title based on current calMode
   const headTitle = document.getElementById('cal-head-title');
-  if (headTitle && typeof calMode !== 'undefined') {
-    headTitle.textContent = calMode === 'checkin' ? dict.selectCheckin : dict.selectCheckout;
+  if (headTitle) {
+    try {
+      const mode = (typeof window.calMode !== 'undefined') ? window.calMode : 'checkin';
+      headTitle.textContent = mode === 'checkin' ? dict.selectCheckin : dict.selectCheckout;
+    } catch (e) {
+      headTitle.textContent = dict.selectCheckin;
+    }
   }
   localStorage.setItem('lang', lang);
 }
