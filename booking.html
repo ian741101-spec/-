@@ -570,12 +570,8 @@ function applyLang(lang) {
   // Update calendar header title based on current calMode
   const headTitle = document.getElementById('cal-head-title');
   if (headTitle) {
-    try {
-      const mode = (typeof window.calMode !== 'undefined') ? window.calMode : 'checkin';
-      headTitle.textContent = mode === 'checkin' ? dict.selectCheckin : dict.selectCheckout;
-    } catch (e) {
-      headTitle.textContent = dict.selectCheckin;
-    }
+    const mode = (typeof calMode !== 'undefined' && calMode) ? calMode : 'checkin';
+    headTitle.textContent = mode === 'checkin' ? dict.selectCheckin : dict.selectCheckout;
   }
   localStorage.setItem('lang', lang);
 }
@@ -595,9 +591,9 @@ try { applyLang(detectLang()); } catch(e) { console.error('applyLang failed:', e
 /* ── CALENDAR ── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const now = new Date();
-let calYear = now.getFullYear(), calMonth = now.getMonth();
-let calMode = 'checkin'; // 'checkin' or 'checkout'
-let selectedDate = null;
+var calYear = now.getFullYear(), calMonth = now.getMonth();
+var calMode = 'checkin'; // 'checkin' or 'checkout'
+var selectedDate = null;
 
 function renderCal() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -670,7 +666,7 @@ function confirmDate() {
 }
 
 /* ── GUESTS ── */
-let guests = 1;
+var guests = 1;
 function changeGuests(delta) {
   guests = Math.max(1, Math.min(8, guests + delta));
   document.getElementById('guests-num').textContent = guests;
@@ -690,7 +686,7 @@ try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.erro
 const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
 
 /* ── BLOCKED DATES (per room type) ── */
-let blockedDates = [];
+var blockedDates = [];
 
 function fetchBlockedDates() {
   const room = document.getElementById('room-select').value;
