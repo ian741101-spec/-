@@ -381,7 +381,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <!-- Cancellation Policy -->
   <div class="policy-box">
     <div class="policy-title" data-i18n="cancelPolicy">Cancellation Policy</div>
-    <div class="policy-text" data-i18n="cancelText">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
+    <div class="policy-text" data-i18n-html="cancelText"></div>
   </div>
 
   <button class="submit-btn" onclick="submitForm()" data-i18n="sendRequest">Send Booking Request</button>
@@ -429,7 +429,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   </div>
   <div class="confirm-note">
     <div class="confirm-note-title" data-i18n="cancelPolicy">Cancellation Policy</div>
-    <div class="confirm-note-text" data-i18n="cancelText">In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.</div>
+    <div class="confirm-note-text" data-i18n-html="cancelText"></div>
   </div>
   <button class="confirm-done" onclick="location.href='index.html'" data-i18n="backHome">Back to Home</button>
 </div>
@@ -454,7 +454,7 @@ const i18n = {
     phName: 'Full name', phContact: 'So we can reach you',
     phNotes: 'Allergies, arrival time, dive gear needs...',
     cancelPolicy: 'Cancellation Policy',
-    cancelText: 'In the event of unavoidable severe weather conditions, we offer date rescheduling as compensation. No refunds will be issued.',
+    cancelText: '<table style="width:100%;border-collapse:collapse;font-size:.76rem;margin-bottom:8px;"><tr style="border-bottom:1px solid rgba(13,43,62,.15);"><th style="text-align:left;padding:6px 4px;font-weight:400;color:var(--text-dark);">Cancel Time (before check-in)</th><th style="text-align:right;padding:6px 4px;font-weight:400;color:var(--text-dark);">Deposit Refund</th></tr><tr><td style="padding:5px 4px;">14+ days</td><td style="text-align:right;padding:5px 4px;">100%</td></tr><tr><td style="padding:5px 4px;">10 – 13 days</td><td style="text-align:right;padding:5px 4px;">70%</td></tr><tr><td style="padding:5px 4px;">7 – 9 days</td><td style="text-align:right;padding:5px 4px;">50%</td></tr><tr><td style="padding:5px 4px;">4 – 6 days</td><td style="text-align:right;padding:5px 4px;">40%</td></tr><tr><td style="padding:5px 4px;">2 – 3 days</td><td style="text-align:right;padding:5px 4px;">30%</td></tr><tr><td style="padding:5px 4px;">1 day before</td><td style="text-align:right;padding:5px 4px;">20%</td></tr><tr><td style="padding:5px 4px;">Same day</td><td style="text-align:right;padding:5px 4px;">No refund</td></tr></table><div style="font-size:.74rem;line-height:1.7;padding-top:6px;border-top:1px solid rgba(13,43,62,.15);">In case of ferry suspension due to natural disasters or unavoidable causes, full refund will be issued, or reschedule within 6 months.</div>',
     sendRequest: 'Send Booking Request',
     selectCheckin: 'Select Check-in Date', selectCheckout: 'Select Check-out Date',
     wdSun: 'Sun', wdMon: 'Mon', wdTue: 'Tue', wdWed: 'Wed', wdThu: 'Thu', wdFri: 'Fri', wdSat: 'Sat',
@@ -484,7 +484,7 @@ const i18n = {
     phName: '全名', phContact: '方便我們聯繫您',
     phNotes: '過敏、抵達時間、潛水裝備需求...',
     cancelPolicy: '取消政策',
-    cancelText: '若遇不可抗力之惡劣天氣,我們提供改期作為補償,恕不退款。',
+    cancelText: '<table style="width:100%;border-collapse:collapse;font-size:.76rem;margin-bottom:8px;"><tr style="border-bottom:1px solid rgba(13,43,62,.15);"><th style="text-align:left;padding:6px 4px;font-weight:400;color:var(--text-dark);">取消時間(入住日前)</th><th style="text-align:right;padding:6px 4px;font-weight:400;color:var(--text-dark);">退還定金</th></tr><tr><td style="padding:5px 4px;">14 天以上</td><td style="text-align:right;padding:5px 4px;">100%</td></tr><tr><td style="padding:5px 4px;">10 – 13 天</td><td style="text-align:right;padding:5px 4px;">70%</td></tr><tr><td style="padding:5px 4px;">7 – 9 天</td><td style="text-align:right;padding:5px 4px;">50%</td></tr><tr><td style="padding:5px 4px;">4 – 6 天</td><td style="text-align:right;padding:5px 4px;">40%</td></tr><tr><td style="padding:5px 4px;">2 – 3 天</td><td style="text-align:right;padding:5px 4px;">30%</td></tr><tr><td style="padding:5px 4px;">1 天前</td><td style="text-align:right;padding:5px 4px;">20%</td></tr><tr><td style="padding:5px 4px;">當天取消</td><td style="text-align:right;padding:5px 4px;">不予退還</td></tr></table><div style="font-size:.74rem;line-height:1.7;padding-top:6px;border-top:1px solid rgba(13,43,62,.15);">遇天災等不可逆因素停船,無條件退費,或延期半年內使用。</div>',
     sendRequest: '送出訂房申請',
     selectCheckin: '選擇入住日期', selectCheckout: '選擇退房日期',
     wdSun: '日', wdMon: '一', wdTue: '二', wdWed: '三', wdThu: '四', wdFri: '五', wdSat: '六',
@@ -514,7 +514,7 @@ const i18n = {
     phName: 'フルネーム', phContact: 'ご連絡可能な方法',
     phNotes: 'アレルギー、到着時間、ダイビング装備の希望など...',
     cancelPolicy: 'キャンセルポリシー',
-    cancelText: '不可抗力の悪天候の場合、日程変更を補償として提供いたします。返金はいたしかねます。',
+    cancelText: '<table style="width:100%;border-collapse:collapse;font-size:.76rem;margin-bottom:8px;"><tr style="border-bottom:1px solid rgba(13,43,62,.15);"><th style="text-align:left;padding:6px 4px;font-weight:400;color:var(--text-dark);">キャンセル時期(チェックイン前)</th><th style="text-align:right;padding:6px 4px;font-weight:400;color:var(--text-dark);">手付金返金</th></tr><tr><td style="padding:5px 4px;">14日以上前</td><td style="text-align:right;padding:5px 4px;">100%</td></tr><tr><td style="padding:5px 4px;">10 – 13日前</td><td style="text-align:right;padding:5px 4px;">70%</td></tr><tr><td style="padding:5px 4px;">7 – 9日前</td><td style="text-align:right;padding:5px 4px;">50%</td></tr><tr><td style="padding:5px 4px;">4 – 6日前</td><td style="text-align:right;padding:5px 4px;">40%</td></tr><tr><td style="padding:5px 4px;">2 – 3日前</td><td style="text-align:right;padding:5px 4px;">30%</td></tr><tr><td style="padding:5px 4px;">1日前</td><td style="text-align:right;padding:5px 4px;">20%</td></tr><tr><td style="padding:5px 4px;">当日</td><td style="text-align:right;padding:5px 4px;">返金なし</td></tr></table><div style="font-size:.74rem;line-height:1.7;padding-top:6px;border-top:1px solid rgba(13,43,62,.15);">天災など不可抗力により船舶運航停止の場合、全額返金、または半年以内の日程変更を承ります。</div>',
     sendRequest: '予約リクエストを送信',
     selectCheckin: 'チェックイン日を選択', selectCheckout: 'チェックアウト日を選択',
     wdSun: '日', wdMon: '月', wdTue: '火', wdWed: '水', wdThu: '木', wdFri: '金', wdSat: '土',
