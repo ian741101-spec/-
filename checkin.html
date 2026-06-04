@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>in.house B&B — 自助入住</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sand:     #F5F0E8;
+    --sand-mid: #E8E0D0;
+    --ink:      #1A1814;
+    --ink-60:   rgba(26,24,20,0.6);
+    --ink-20:   rgba(26,24,20,0.12);
+    --teal:     #1D6E62;
+    --teal-lt:  #E8F2F0;
+    --coral:    #C4502A;
+    --gold:     #B8873A;
+    --white:    #FDFCFA;
+    --step-done: #1D6E62;
+    --step-active: #1A1814;
+    --step-idle: rgba(26,24,20,0.25);
+    --radius: 12px;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--sand);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--ink-20);
+    background: var(--white);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.3px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .logo span { color: var(--teal); }
+  .header-tag {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-60);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    background: var(--white);
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--ink-20);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--step-idle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--step-idle);
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+  .step.done .step-dot {
+    background: var(--step-done);
+    border-color: var(--step-done);
+    color: white;
+  }
+  .step.active .step-dot {
+    border-color: var(--step-active);
+    color: var(--step-active);
+  }
+  .step-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--step-idle);
+    transition: color 0.3s;
+    white-space: nowrap;
+  }
+  .step.done .step-label { color: var(--step-done); }
+  .step.active .step-label { color: var(--step-active); }
+  .step-line {
+    flex: 1;
+    height: 1px;
+    background: var(--ink-20);
+    margin: 0 8px;
+  }
+  .step-line.done { background: var(--step-done); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    flex: 1;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── STEP PANELS ── */
+  .panel {
+    display: none;
+    animation: fadeUp 0.4s ease both;
+  }
+  .panel.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-head {
+    margin-bottom: 32px;
+  }
+  .panel-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+  }
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .panel-sub {
+    font-size: 15px;
+    color: var(--ink-60);
+    line-height: 1.6;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field-group { margin-bottom: 20px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-60);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  label .req { color: var(--coral); margin-left: 2px; }
+
+  input[type=text], input[type=tel], input[type=email], input[type=date], select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--sand-mid);
+    border-radius: var(--radius);
+    background: var(--white);
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(29,110,98,0.12);
+  }
+  input.error { border-color: var(--coral); }
+
+  /* ── BOOKING CODE VERIFY ── */
+  .code-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .code-row .field-group { flex: 1; margin-bottom: 0; }
+
+  .info-card {
+    background: var(--teal-lt);
+    border: 1px solid rgba(29,110,98,0.2);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .info-card.visible { display: block; animation: fadeUp 0.3s ease both; }
+  .info-card-title { font-size: 13px; font-weight: 500; color: var(--teal); margin-bottom: 12px; }
+  .info-row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; }
+  .info-row .key { color: var(--ink-60); }
+  .info-row .val { font-weight: 500; }
+
+  /* ── ID UPLOAD ── */
+  .upload-zone {
+    border: 2px dashed var(--sand-mid);
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--teal);
+    background: var(--teal-lt);
+  }
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon {
+    width: 48px; height: 48px;
+    background: var(--sand-mid);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    transition: background 0.2s;
+  }
+  .upload-zone:hover .upload-icon { background: rgba(29,110,98,0.15); }
+  .upload-icon svg { width: 22px; height: 22px; stroke: var(--ink-60); }
+  .upload-zone:hover .upload-icon svg { stroke: var(--teal); }
+  .upload-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .upload-sub { font-size: 13px; color: var(--ink-60); }
+
+  .preview-wrap {
+    margin-top: 16px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: none;
+    position: relative;
+    background: var(--ink);
+  }
+  .preview-wrap.visible { display: block; }
+  .preview-wrap img {
+    width: 100%; display: block; max-height: 220px; object-fit: cover;
+  }
+  .preview-remove {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.55);
+    border: none; border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: white; font-size: 14px;
+  }
+
+  /* ── NOTICE BOX ── */
+  .notice {
+    background: #FDF8F0;
+    border: 1px solid rgba(184,135,58,0.3);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--ink-60);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .notice strong { color: var(--ink); font-weight: 500; }
+
+  /* ── CONFIRM PANEL ── */
+  .confirm-section { margin-bottom: 28px; }
+  .confirm-section-title {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-60);
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink-20);
+  }
+  .confirm-row {
+    display: flex; justify-content: space-between;
+    font-size: 14px; padding: 6px 0;
+  }
+  .confirm-row .key { color: var(--ink-60); }
+  .confirm-row .val { font-weight: 500; max-width: 60%; text-align: right; }
+
+  .consent-wrap { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 24px; }
+  .consent-wrap input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--teal); cursor: pointer; }
+  .consent-text { font-size: 13px; color: var(--ink-60); line-height: 1.6; }
+  .consent-text a { color: var(--teal); text-decoration: underline; }
+
+  /* ── SUCCESS PANEL ── */
+  .success-wrap { text-align: center; padding: 24px 0; }
+  .success-icon {
+    width: 72px; height: 72px;
+    background: var(--teal);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-icon svg { width: 32px; height: 32px; stroke: white; stroke-width: 2.5; fill: none; }
+
+  .password-display {
+    background: var(--ink);
+    color: var(--white);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 28px 0;
+    text-align: center;
+  }
+  .password-label { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+  .password-code {
+    font-family: var(--font-display);
+    font-size: 52px;
+    letter-spacing: 12px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .password-note { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+  .info-list { text-align: left; list-style: none; margin-bottom: 28px; }
+  .info-list li {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 14px; color: var(--ink-60);
+    padding: 8px 0; border-bottom: 1px solid var(--ink-20);
+    line-height: 1.5;
+  }
+  .info-list li:last-child { border-bottom: none; }
+  .info-list li::before { content: "›"; color: var(--teal); font-size: 16px; flex-shrink: 0; line-height: 1.4; }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--ink);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { background: #2d2a24; }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { background: var(--sand-mid); color: var(--ink-60); cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--sand-mid);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  .btn-secondary:hover { border-color: var(--ink-60); }
+
+  .btn-teal {
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-teal:hover { background: #175a50; }
+
+  .btn-verify {
+    padding: 13px 20px;
+    background: var(--ink);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-verify:hover { background: #2d2a24; }
+
+  .btn-gap { margin-top: 12px; }
+
+  /* ── ERROR MSG ── */
+  .err-msg { font-size: 12px; color: var(--coral); margin-top: 5px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--ink-60);
+    border-top: 1px solid var(--ink-20);
+    background: var(--white);
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .field-row { grid-template-columns: 1fr; }
+    .panel-title { font-size: 26px; }
+    .password-code { font-size: 40px; letter-spacing: 8px; }
+    header { padding: 16px 20px; }
+    .progress-wrap { padding: 16px 20px; }
+    .step-label { display: none; }
+    main { padding: 28px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">in<span>.</span>house <span style="font-style:italic;color:var(--ink-60)">B&B</span></a>
+  <span class="header-tag">自助入住 · Self Check-in</span>
+</header>
+
+<div class="progress-wrap">
+  <div class="steps">
+    <div class="step active" id="s1">
+      <div class="step-dot">1</div>
+      <span class="step-label">驗證訂單</span>
+    </div>
+    <div class="step-line" id="l1"></div>
+    <div class="step" id="s2">
+      <div class="step-dot">2</div>
+      <span class="step-label">旅客資料</span>
+    </div>
+    <div class="step-line" id="l2"></div>
+    <div class="step" id="s3">
+      <div class="step-dot">3</div>
+      <span class="step-label">身份核驗</span>
+    </div>
+    <div class="step-line" id="l3"></div>
+    <div class="step" id="s4">
+      <div class="step-dot">4</div>
+      <span class="step-label">確認入住</span>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ── PANEL 1: 驗證訂單 ── -->
+  <div class="panel active" id="panel-1">
+    <div class="panel-head">
+      <div class="panel-eyebrow">Step 1</div>
+      <h1 class="panel-title">輸入訂單編號</h1>
+      <p class="panel-sub">請輸入您收到的訂單編號與預留手機號碼後四碼，我們將驗證您的訂房紀錄。</p>
+    </div>
+
+    <div class="code-row field-group">
+      <div class="field-group">
+        <label>訂單編號 <span class="req">*</span></label>
+        <input type="text" id="booking-code" placeholder="例：IH-20250601-001" autocomplete="off">
+        <div class="err-msg" id="code-err"></div>
+      </div>
+      <button class="btn-verify" onclick="verifyBooking()">驗證</button>
+    </div>
+
+    <div class="field-group">
+      <label>手機後四碼 <span class="req">*</span></label>
+      <input type="tel" id="phone-last4" placeholder="1234" maxlength="4" inputmode="numeric">
+    </div>
+
+    <!-- Booking result card -->
+    <div class="info-card" id="booking-card">
+      <div class="info-card-title">✓ 訂單已驗證</div>
+      <div class="info-row"><span class="key">房型</span><span class="val" id="b-room">—</span></div>
+      <div class="info-row"><span class="key">入住日期</span><span class="val" id="b-checkin">—</span></div>
+      <div class="info-row"><span class="key">退房日期</span><span class="val" id="b-checkout">—</span></div>
+      <div class="info-row"><span class="key">住宿人數</span><span class="val" id="b-guests">—</span></div>
+    </div>
+
+    <div class="notice">
+      <strong>注意：</strong>自助 Check-in 開放時間為入住當日 15:00 起。如有問題請撥打 <strong>0912-345-678</strong> 或透過 LINE 聯繫我們。
+    </div>
+
+    <button class="btn-primary" id="next1-btn" onclick="goStep(2)" disabled>下一步：填寫旅客資料</button>
+  </div>
+
+  <!-- ── PANEL 2: 旅客資料 ── -->
+  <div class="panel" id="panel-2">
+    <div class="panel-head">
+      <div class="panel-eyebrow">Step 2</div>
+      <h1 class="panel-title">旅客基本資料</h1>
+      <p class="panel-sub">請填寫代表旅客的姓名與聯絡資訊，作為入住登記之用。</p>
+    </div>
+
+    <div class="field-row field-group">
+      <div>
+        <label>姓名（中文）<span class="req">*</span></label>
+        <input type="text" id="g-name" placeholder="王小明">
+      </div>
+      <div>
+        <label>英文姓名</label>
+        <input type="text" id="g-name-en" placeholder="Wang Xiao Ming">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>手機號碼 <span class="req">*</span></label>
+      <input type="tel" id="g-phone" placeholder="09XX-XXX-XXX" inputmode="tel">
+    </div>
+
+    <div class="field-group">
+      <label>電子郵件</label>
+      <input type="email" id="g-email" placeholder="your@email.com">
+    </div>
+
+    <div class="field-row field-group">
+      <div>
+        <label>預計抵達時間 <span class="req">*</span></label>
+        <select id="g-arrive">
+          <option value="">請選擇</option>
+          <option>15:00–16:00</option>
+          <option>16:00–17:00</option>
+          <option>17:00–18:00</option>
+          <option>18:00–19:00</option>
+          <option>19:00–20:00</option>
+          <option>20:00–21:00</option>
+          <option>21:00 以後</option>
+        </select>
+      </div>
+      <div>
+        <label>交通方式</label>
+        <select id="g-transport">
+          <option value="">請選擇</option>
+          <option>大鵬灣渡輪</option>
+          <option>東港渡輪</option>
+          <option>其他</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>特殊需求（選填）</label>
+      <input type="text" id="g-note" placeholder="例：嬰兒床、素食、過敏...">
+    </div>
+
+    <button class="btn-primary" onclick="goStep(3)">下一步：上傳身份證件</button>
+    <button class="btn-secondary btn-gap" onclick="goStep(1)">← 上一步</button>
+  </div>
+
+  <!-- ── PANEL 3: 身份核驗 ── -->
+  <div class="panel" id="panel-3">
+    <div class="panel-head">
+      <div class="panel-eyebrow">Step 3</div>
+      <h1 class="panel-title">身份核驗</h1>
+      <p class="panel-sub">請上傳代表旅客的身份證正面照片（需清晰可讀）。照片僅用於入住核驗，不作其他用途。</p>
+    </div>
+
+    <div class="notice">
+      <strong>接受文件：</strong>中華民國身份證、護照、居留證。<br>
+      請確保字體清晰、無遮蔽，並避免反光。
+    </div>
+
+    <label>身份證件正面 <span class="req">*</span></label>
+    <div class="upload-zone" id="upload-zone"
+         ondragover="handleDrag(event, true)"
+         ondragleave="handleDrag(event, false)"
+         ondrop="handleDrop(event)">
+      <input type="file" id="id-file" accept="image/*" onchange="handleFile(this.files[0])">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 16V8M12 8l-3 3M12 8l3 3"/>
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+        </svg>
+      </div>
+      <div class="upload-title">點擊上傳或拖放圖片</div>
+      <div class="upload-sub">JPG · PNG · HEIC，最大 10MB</div>
+    </div>
+
+    <div class="preview-wrap" id="id-preview">
+      <img id="preview-img" src="" alt="證件預覽">
+      <button class="preview-remove" onclick="removeFile()" title="移除">✕</button>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <button class="btn-primary" id="next3-btn" onclick="goStep(4)" disabled>下一步：確認入住資料</button>
+      <button class="btn-secondary btn-gap" onclick="goStep(2)">← 上一步</button>
+    </div>
+  </div>
+
+  <!-- ── PANEL 4: 確認入住 ── -->
+  <div class="panel" id="panel-4">
+    <div class="panel-head">
+      <div class="panel-eyebrow">Step 4</div>
+      <h1 class="panel-title">確認入住資料</h1>
+      <p class="panel-sub">請仔細確認以下資訊無誤後，勾選同意並送出。</p>
+    </div>
+
+    <div class="confirm-section">
+      <div class="confirm-section-title">訂房資訊</div>
+      <div class="confirm-row"><span class="key">訂單編號</span><span class="val" id="c-code">—</span></div>
+      <div class="confirm-row"><span class="key">房型</span><span class="val" id="c-room">—</span></div>
+      <div class="confirm-row"><span class="key">入住</span><span class="val" id="c-cin">—</span></div>
+      <div class="confirm-row"><span class="key">退房</span><span class="val" id="c-cout">—</span></div>
+    </div>
+
+    <div class="confirm-section">
+      <div class="confirm-section-title">旅客資訊</div>
+      <div class="confirm-row"><span class="key">姓名</span><span class="val" id="c-name">—</span></div>
+      <div class="confirm-row"><span class="key">手機</span><span class="val" id="c-phone">—</span></div>
+      <div class="confirm-row"><span class="key">預計抵達</span><span class="val" id="c-arrive">—</span></div>
+      <div class="confirm-row"><span class="key">特殊需求</span><span class="val" id="c-note">—</span></div>
+    </div>
+
+    <div class="consent-wrap">
+      <input type="checkbox" id="consent" onchange="toggleSubmit()">
+      <span class="consent-text">
+        本人同意 in.house B&B 依據<a href="#" onclick="return false">隱私政策</a>收集並儲存上述資料，且保證所提供資訊屬實。身份證照片將於退房後三日內刪除。
+      </span>
+    </div>
+
+    <button class="btn-primary" id="submit-btn" onclick="submitCheckin()" disabled>送出入住申請</button>
+    <button class="btn-secondary btn-gap" onclick="goStep(3)">← 上一步</button>
+  </div>
+
+  <!-- ── PANEL 5: 完成 ── -->
+  <div class="panel" id="panel-5">
+    <div class="success-wrap">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+
+      <div class="panel-eyebrow">入住確認</div>
+      <h1 class="panel-title" style="text-align:center; margin-bottom:8px;">歡迎來到<br>in.house B&B</h1>
+      <p class="panel-sub" style="text-align:center; margin-bottom:4px;">您的門鎖密碼已發送至手機簡訊</p>
+    </div>
+
+    <div class="password-display">
+      <div class="password-label">房門密碼</div>
+      <div class="password-code" id="final-pw">——</div>
+      <div class="password-note">退房前有效 · 請勿外洩</div>
+    </div>
+
+    <ul class="info-list">
+      <li>停車場在民宿右側巷內，機車請停指定區域</li>
+      <li>早餐時間 07:30–09:30，餐廳在一樓右側</li>
+      <li>退房時間為 11:00 前，如需延退請提前聯繫</li>
+      <li>海灘毛巾可在 1F 服務台借用，押金 NT$200</li>
+      <li>任何問題請撥 <strong>0912-345-678</strong> 或 LINE 客服</li>
+    </ul>
+
+    <button class="btn-teal" onclick="window.print()">列印入住資訊</button>
+  </div>
+
+</main>
+
+<footer>
+  &copy; 2025 in.house B&B · 小琉球 · <a href="tel:0912345678">0912-345-678</a> · <a href="#">LINE 客服</a>
+</footer>
+
+<script>
+  // ── Mock booking data (will be replaced by Airtable API call) ──
+  const MOCK_BOOKINGS = {
+    'IH-20250601-001': { room:'海景雙人房', checkin:'2025-06-01', checkout:'2025-06-03', guests:'2 位', phone4:'5678' },
+    'IH-20250615-002': { room:'珊瑚三人房', checkin:'2025-06-15', checkout:'2025-06-17', guests:'3 位', phone4:'2345' },
+    'IH-20250620-003': { room:'背包4床位',  checkin:'2025-06-20', checkout:'2025-06-21', guests:'1 位', phone4:'8899' },
+  };
+
+  let booking = null;
+  let currentStep = 1;
+
+  // ── Step navigation ──
+  function goStep(n) {
+    document.getElementById('panel-' + currentStep).classList.remove('active');
+    document.getElementById('panel-' + n).classList.add('active');
+
+    // Update progress
+    for (let i = 1; i <= 4; i++) {
+      const s = document.getElementById('s' + i);
+      const dot = s.querySelector('.step-dot');
+      s.className = 'step';
+      if (i < n) {
+        s.classList.add('done');
+        dot.innerHTML = '✓';
+      } else if (i === n) {
+        s.classList.add('active');
+        dot.innerHTML = i;
+      } else {
+        dot.innerHTML = i;
+      }
+      if (i < 4) {
+        const l = document.getElementById('l' + i);
+        l.className = 'step-line' + (i < n ? ' done' : '');
+      }
+    }
+
+    // Fill confirm panel
+    if (n === 4 && booking) {
+      document.getElementById('c-code').textContent   = document.getElementById('booking-code').value;
+      document.getElementById('c-room').textContent   = booking.room;
+      document.getElementById('c-cin').textContent    = formatDate(booking.checkin);
+      document.getElementById('c-cout').textContent   = formatDate(booking.checkout);
+      document.getElementById('c-name').textContent   = document.getElementById('g-name').value || '—';
+      document.getElementById('c-phone').textContent  = document.getElementById('g-phone').value || '—';
+      document.getElementById('c-arrive').textContent = document.getElementById('g-arrive').value || '—';
+      document.getElementById('c-note').textContent   = document.getElementById('g-note').value || '無';
+    }
+
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    const [y, m, day] = d.split('-');
+    return `${y} 年 ${parseInt(m)} 月 ${parseInt(day)} 日`;
+  }
+
+  // ── Booking verification (mock; replace with fetch to Cloudflare Worker) ──
+  function verifyBooking() {
+    const code  = document.getElementById('booking-code').value.trim().toUpperCase();
+    const phone = document.getElementById('phone-last4').value.trim();
+    const err   = document.getElementById('code-err');
+    const btn   = document.getElementById('next1-btn');
+    const card  = document.getElementById('booking-card');
+
+    err.textContent = '';
+    card.classList.remove('visible');
+    btn.disabled = true;
+    booking = null;
+
+    if (!code) { err.textContent = '請輸入訂單編號'; return; }
+    if (!phone || phone.length !== 4) { err.textContent = '請輸入手機後四碼'; return; }
+
+    const found = MOCK_BOOKINGS[code];
+    if (!found) { err.textContent = '找不到此訂單，請確認編號是否正確'; return; }
+    if (found.phone4 !== phone) { err.textContent = '手機號碼驗證失敗，請確認'; return; }
+
+    booking = found;
+    document.getElementById('b-room').textContent    = found.room;
+    document.getElementById('b-checkin').textContent  = formatDate(found.checkin);
+    document.getElementById('b-checkout').textContent = formatDate(found.checkout);
+    document.getElementById('b-guests').textContent   = found.guests;
+
+    card.classList.add('visible');
+    btn.disabled = false;
+  }
+
+  // Enter key triggers verify
+  document.getElementById('phone-last4').addEventListener('keydown', e => {
+    if (e.key === 'Enter') verifyBooking();
+  });
+  document.getElementById('booking-code').addEventListener('keydown', e => {
+    if (e.key === 'Enter') verifyBooking();
+  });
+
+  // ── File upload ──
+  function handleFile(file) {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { alert('圖片大小不可超過 10MB'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('preview-img').src = e.target.result;
+      document.getElementById('id-preview').classList.add('visible');
+      document.getElementById('next3-btn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeFile() {
+    document.getElementById('id-file').value = '';
+    document.getElementById('id-preview').classList.remove('visible');
+    document.getElementById('preview-img').src = '';
+    document.getElementById('next3-btn').disabled = true;
+  }
+
+  function handleDrag(e, over) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.toggle('dragover', over);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  }
+
+  // ── Consent toggle ──
+  function toggleSubmit() {
+    document.getElementById('submit-btn').disabled = !document.getElementById('consent').checked;
+  }
+
+  // ── Submit (mock; replace with fetch to Cloudflare Worker) ──
+  function submitCheckin() {
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = '處理中...';
+    btn.disabled = true;
+
+    // Simulate API call
+    setTimeout(() => {
+      const pw = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById('final-pw').textContent = pw;
+
+      // Hide progress bar on success
+      document.querySelector('.progress-wrap').style.display = 'none';
+      goStep(5);
+    }, 1800);
+  }
+</script>
+</body>
+</html>
