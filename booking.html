@@ -366,10 +366,16 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     <input class="form-input" id="name-input" type="text" placeholder="Full name" data-i18n-placeholder="phName">
   </div>
 
-  <!-- Contact -->
+  <!-- Phone -->
   <div class="form-section">
-    <label class="form-label"><span data-i18n="contact">WhatsApp / Email</span> <span class="form-req">*</span></label>
-    <input class="form-input" id="contact-input" type="text" placeholder="So we can reach you" data-i18n-placeholder="phContact">
+    <label class="form-label"><span data-i18n="phone">手機號碼 / Mobile</span> <span class="form-req">*</span></label>
+    <input class="form-input" id="phone-input" type="tel" inputmode="tel" placeholder="09XX-XXX-XXX" data-i18n-placeholder="phPhone">
+  </div>
+
+  <!-- Email -->
+  <div class="form-section">
+    <label class="form-label"><span data-i18n="email">Email</span> <span style="font-size:.72rem;color:var(--text-light);" data-i18n="optional">(optional)</span></label>
+    <input class="form-input" id="email-input" type="email" inputmode="email" placeholder="your@email.com" data-i18n-placeholder="phEmail">
   </div>
 
   <!-- Notes -->
@@ -713,10 +719,11 @@ function submitForm() {
   const checkout = document.getElementById('checkout-text').textContent;
   const room     = document.getElementById('room-select').value;
   const name     = document.getElementById('name-input').value.trim();
-  const contact  = document.getElementById('contact-input').value.trim();
+  const phone    = document.getElementById('phone-input').value.trim();
+  const email    = document.getElementById('email-input').value.trim();
   const notes    = document.getElementById('notes-input').value.trim();
 
-  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !contact) {
+  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !phone) {
     alert(getDict().fillRequired);
     return;
   }
@@ -727,10 +734,10 @@ function submitForm() {
 
   const templateParams = {
     guest_name:    name,
-    guest_email:   contact,
-    guest_phone:   contact,
-    to_email:      contact,
-    guest_contact: contact,
+    guest_email:   email || '',
+    guest_phone:   phone,
+    to_email:      email || phone,
+    guest_contact: phone,
     room_type:     room,
     checkin_date:  checkin,
     checkout_date: checkout,
@@ -752,7 +759,9 @@ function submitForm() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       guest_name:    name,
-      guest_contact: contact,
+      guest_contact: phone,
+      guest_phone:   phone,
+      guest_email:   email || '',
       room_type:     room,
       checkin_date:  toISO(checkin),
       checkout_date: toISO(checkout),
@@ -784,7 +793,8 @@ function submitForm() {
       `📅 <strong>${_d.checkout}:</strong> ${checkout}<br>` +
       `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
-      `✉️ <strong>${_d.contact}:</strong> ${contact}`;
+      `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}` +
+      (email ? `<br>✉️ <strong>Email:</strong> ${email}` : '');
     document.getElementById('confirmScreen').classList.add('show');
     window.scrollTo(0, 0);
   })
