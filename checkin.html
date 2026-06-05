@@ -441,6 +441,11 @@
   }
   footer a { color: var(--teal); text-decoration: none; }
 
+  /* ── LANG SWITCHER ── */
+  .lang-switcher { display: flex; gap: 4px; }
+  .lang-btn { padding: 4px 10px; font-size: 12px; font-weight: 500; border: 1px solid var(--ink-20); border-radius: 20px; background: transparent; color: var(--ink-60); cursor: pointer; transition: all 0.2s; }
+  .lang-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 480px) {
     .field-row { grid-template-columns: 1fr; }
@@ -457,7 +462,11 @@
 
 <header>
   <a class="logo" href="#">in<span>.</span>house <span style="font-style:italic;color:var(--ink-60)">B&B</span></a>
-  <span class="header-tag">自助入住 · Self Check-in</span>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('ja')">日本語</button>
+  </div>
 </header>
 
 <div class="progress-wrap">
@@ -571,7 +580,7 @@
         <label>交通方式</label>
         <select id="g-transport">
           <option value="">請選擇</option>
-          <option>大鵬灣渡輪</option>
+          <option>鹽埔渡輪</option>
           <option>東港渡輪</option>
           <option>其他</option>
         </select>
@@ -684,10 +693,10 @@
 
     <ul class="info-list">
       <li>停車場在民宿右側巷內，機車請停指定區域</li>
-      <li>早餐時間 07:30–09:30，餐廳在一樓右側</li>
+      <li>早餐可以加購，價格為 NT$200</li>
       <li>退房時間為 11:00 前，如需延退請提前聯繫</li>
-      <li>海灘毛巾可在 1F 服務台借用，押金 NT$200</li>
-      <li>任何問題請撥 <strong>0912-345-678</strong> 或 LINE 客服</li>
+      <li>野餐墊可以向服務人員借用，押金 NT$200</li>
+      <li>任何問題請透過 LINE 客服聯繫我們</li>
     </ul>
 
     <button class="btn-teal" onclick="window.print()">列印入住資訊</button>
@@ -696,7 +705,7 @@
 </main>
 
 <footer>
-  &copy; 2025 in.house B&B · 小琉球 · <a href="tel:0912345678">0912-345-678</a> · <a href="#">LINE 客服</a>
+  &copy; 2025 in.house B&B · 小琉球 · <a href="#">LINE 客服</a>
 </footer>
 
 <script>
@@ -884,6 +893,208 @@
       btn.disabled = false;
       console.error(e);
     }
+  }
+  // ── 多語言字典 ──
+  const I18N = {
+    zh: {
+      headerTag: '自助入住 · Self Check-in',
+      step1: '驗證訂單', step2: '旅客資料', step3: '身份核驗', step4: '確認入住',
+      s1eyebrow: 'Step 1', s1title: '輸入訂單編號',
+      s1sub: '請輸入您收到的訂單編號與預留手機號碼後四碼，我們將驗證您的訂房紀錄。',
+      labelCode: '訂單編號', phCode: '例：IH-20250601-001', labelPhone4: '手機後四碼',
+      btnVerify: '驗證', cardTitle: '✓ 訂單已驗證',
+      keyRoom: '房型', keyCin: '入住日期', keyCout: '退房日期', keyGuests: '住宿人數',
+      notice: '<strong>注意：</strong>自助 Check-in 開放時間為入住當日 15:00 起。如有問題請透過 LINE 聯繫我們。',
+      btnNext1: '下一步：填寫旅客資料',
+      s2eyebrow: 'Step 2', s2title: '旅客基本資料',
+      s2sub: '請填寫代表旅客的姓名與聯絡資訊，作為入住登記之用。',
+      labelName: '姓名', phName: '王小明', labelNameEn: '英文姓名', phNameEn: 'Wang Xiao Ming',
+      labelGPhone: '手機號碼', phGPhone: '09XX-XXX-XXX', labelEmail: '電子郵件',
+      labelArrive: '預計抵達時間', labelTransport: '交通方式',
+      optArrive: ['請選擇','15:00–16:00','16:00–17:00','17:00–18:00','18:00–19:00','19:00–20:00','20:00–21:00','21:00 以後'],
+      optTransport: ['請選擇','鹽埔渡輪','東港渡輪','其他'],
+      labelNote: '特殊需求（選填）', phNote: '例：嬰兒床、素食、過敏...',
+      btnNext2: '下一步：上傳身份證件', btnBack: '← 上一步',
+      s3eyebrow: 'Step 3', s3title: '身份核驗',
+      s3sub: '請上傳代表旅客的身份證正面照片（需清晰可讀）。照片僅用於入住核驗，不作其他用途。',
+      noticeID: '<strong>接受文件：</strong>中華民國身份證、護照、居留證。<br>請確保字體清晰、無遮蔽，並避免反光。',
+      labelIDFile: '身份證件正面', uploadTitle: '點擊上傳或拖放圖片', uploadSub: 'JPG · PNG · HEIC，最大 10MB',
+      btnNext3: '下一步：確認入住資料',
+      s4eyebrow: 'Step 4', s4title: '確認入住資料',
+      s4sub: '請仔細確認以下資訊無誤後，勾選同意並送出。',
+      secBooking: '訂房資訊', secGuest: '旅客資訊',
+      keyCode: '訂單編號', keyRoomC: '房型', keyCinC: '入住', keyCoutC: '退房',
+      keyNameC: '姓名', keyPhoneC: '手機', keyArriveC: '預計抵達', keyNoteC: '特殊需求',
+      consent: '本人同意 in.house B&B 依據<a href="#" onclick="return false">隱私政策</a>收集並儲存上述資料，且保證所提供資訊屬實。身份證照片將於退房後三日內刪除。',
+      btnSubmit: '送出入住申請',
+      s5eyebrow: '入住確認', s5title: '歡迎來到<br>in.house B&B',
+      s5sub: '您的門鎖密碼已產生，請妥善保管',
+      pwLabel: '房門密碼', pwNote: '退房前有效 · 請勿外洩',
+      info: ['停車場在民宿右側巷內，機車請停指定區域','早餐可以加購，價格為 NT$200','退房時間為 11:00 前，如需延退請提前聯繫','野餐墊可以向服務人員借用，押金 NT$200','任何問題請透過 LINE 客服聯繫我們'],
+      btnPrint: '列印入住資訊',
+      errNoCode: '請輸入訂單編號', errPhone4: '請輸入手機後四碼（4位數字）',
+      errNetwork: '網路錯誤，請確認連線後重試',
+      errSubmitFail: '送出失敗，請稍後再試或聯繫民宿',
+      submitting: '提交中…', btnSubmitDefault: '送出入住申請',
+    },
+    en: {
+      headerTag: 'Self Check-in',
+      step1: 'Verify', step2: 'Guest Info', step3: 'ID Check', step4: 'Confirm',
+      s1eyebrow: 'Step 1', s1title: 'Enter Booking Code',
+      s1sub: 'Please enter your booking code and the last 4 digits of your mobile number to verify your reservation.',
+      labelCode: 'Booking Code', phCode: 'e.g. IH-20250601-001', labelPhone4: 'Last 4 digits of mobile',
+      btnVerify: 'Verify', cardTitle: '✓ Booking Verified',
+      keyRoom: 'Room', keyCin: 'Check-in', keyCout: 'Check-out', keyGuests: 'Guests',
+      notice: '<strong>Note:</strong> Self check-in is available from 15:00 on your arrival day. For assistance, please contact us via LINE.',
+      btnNext1: 'Next: Guest Information',
+      s2eyebrow: 'Step 2', s2title: 'Guest Information',
+      s2sub: 'Please fill in the primary guest\'s name and contact details for check-in registration.',
+      labelName: 'Full Name', phName: 'John Smith', labelNameEn: 'Name (as in passport)', phNameEn: 'John Smith',
+      labelGPhone: 'Mobile Number', phGPhone: '+886 9XX-XXX-XXX', labelEmail: 'Email',
+      labelArrive: 'Estimated Arrival', labelTransport: 'Transport',
+      optArrive: ['Select','15:00–16:00','16:00–17:00','17:00–18:00','18:00–19:00','19:00–20:00','20:00–21:00','After 21:00'],
+      optTransport: ['Select','Yanpu Ferry','Donggang Ferry','Other'],
+      labelNote: 'Special Requests (optional)', phNote: 'e.g. crib, vegetarian, allergies...',
+      btnNext2: 'Next: Upload ID Document', btnBack: '← Back',
+      s3eyebrow: 'Step 3', s3title: 'Identity Verification',
+      s3sub: 'Please upload the front of your ID document (must be clearly readable). Photo is used for check-in verification only.',
+      noticeID: '<strong>Accepted documents:</strong> National ID, Passport, ARC.<br>Please ensure the text is clear and unobstructed.',
+      labelIDFile: 'ID Document (front)', uploadTitle: 'Click to upload or drag & drop', uploadSub: 'JPG · PNG · HEIC, max 10MB',
+      btnNext3: 'Next: Confirm Check-in Details',
+      s4eyebrow: 'Step 4', s4title: 'Confirm Check-in',
+      s4sub: 'Please review your details carefully, then agree and submit.',
+      secBooking: 'Booking Details', secGuest: 'Guest Details',
+      keyCode: 'Booking Code', keyRoomC: 'Room', keyCinC: 'Check-in', keyCoutC: 'Check-out',
+      keyNameC: 'Name', keyPhoneC: 'Mobile', keyArriveC: 'Est. Arrival', keyNoteC: 'Special Requests',
+      consent: 'I agree to in.house B&B\'s <a href="#" onclick="return false">Privacy Policy</a> and confirm all information provided is accurate. ID photo will be deleted within 3 days after checkout.',
+      btnSubmit: 'Submit Check-in',
+      s5eyebrow: 'Check-in Confirmed', s5title: 'Welcome to<br>in.house B&B',
+      s5sub: 'Your door lock code has been generated. Please keep it safe.',
+      pwLabel: 'Door Lock Code', pwNote: 'Valid until checkout · Do not share',
+      info: ['Parking is in the alley to the right of the property','Breakfast is available for purchase at NT$200','Check-out is by 11:00. Contact us in advance for late check-out','Picnic mats are available to borrow from staff, NT$200 deposit','For any questions, please contact us via LINE'],
+      btnPrint: 'Print Check-in Info',
+      errNoCode: 'Please enter your booking code', errPhone4: 'Please enter the last 4 digits of your mobile',
+      errNetwork: 'Network error. Please check your connection and try again.',
+      errSubmitFail: 'Submission failed. Please try again or contact the property.',
+      submitting: 'Submitting…', btnSubmitDefault: 'Submit Check-in',
+    },
+    ja: {
+      headerTag: 'セルフチェックイン',
+      step1: '予約確認', step2: 'ゲスト情報', step3: '本人確認', step4: '確認',
+      s1eyebrow: 'Step 1', s1title: '予約番号を入力',
+      s1sub: '予約番号と登録された携帯電話番号の下4桁を入力してください。',
+      labelCode: '予約番号', phCode: '例：IH-20250601-001', labelPhone4: '携帯番号下4桁',
+      btnVerify: '確認', cardTitle: '✓ 予約が確認されました',
+      keyRoom: '部屋タイプ', keyCin: 'チェックイン', keyCout: 'チェックアウト', keyGuests: '宿泊人数',
+      notice: '<strong>ご注意：</strong>セルフチェックインはご到着日の15:00以降にご利用いただけます。ご不明な点はLINEにてお問い合わせください。',
+      btnNext1: '次へ：ゲスト情報の入力',
+      s2eyebrow: 'Step 2', s2title: 'ゲスト情報',
+      s2sub: 'チェックイン登録のため、代表者のお名前と連絡先をご入力ください。',
+      labelName: 'お名前', phName: '山田太郎', labelNameEn: '英語表記のお名前', phNameEn: 'Taro Yamada',
+      labelGPhone: '携帯電話番号', phGPhone: '09XX-XXX-XXX', labelEmail: 'メールアドレス',
+      labelArrive: '到着予定時刻', labelTransport: '交通手段',
+      optArrive: ['選択してください','15:00–16:00','16:00–17:00','17:00–18:00','18:00–19:00','19:00–20:00','20:00–21:00','21:00以降'],
+      optTransport: ['選択してください','塩埔フェリー','東港フェリー','その他'],
+      labelNote: 'ご要望（任意）', phNote: '例：ベビーベッド、ベジタリアン、アレルギー...',
+      btnNext2: '次へ：身分証明書のアップロード', btnBack: '← 戻る',
+      s3eyebrow: 'Step 3', s3title: '本人確認',
+      s3sub: '身分証明書の表面をアップロードしてください（鮮明に読めるもの）。写真はチェックイン確認のみに使用されます。',
+      noticeID: '<strong>受付可能な書類：</strong>パスポート、在留カード。<br>文字が鮮明で遮蔽物がないことをご確認ください。',
+      labelIDFile: '身分証明書（表面）', uploadTitle: 'クリックしてアップロードまたはドラッグ＆ドロップ', uploadSub: 'JPG · PNG · HEIC、最大10MB',
+      btnNext3: '次へ：チェックイン内容の確認',
+      s4eyebrow: 'Step 4', s4title: 'チェックイン内容の確認',
+      s4sub: '内容をご確認の上、同意してご送信ください。',
+      secBooking: '予約情報', secGuest: 'ゲスト情報',
+      keyCode: '予約番号', keyRoomC: '部屋タイプ', keyCinC: 'チェックイン', keyCoutC: 'チェックアウト',
+      keyNameC: 'お名前', keyPhoneC: '携帯番号', keyArriveC: '到着予定', keyNoteC: 'ご要望',
+      consent: 'in.house B&Bの<a href="#" onclick="return false">プライバシーポリシー</a>に同意し、提供した情報が正確であることを確認します。身分証の写真はチェックアウト後3日以内に削除されます。',
+      btnSubmit: 'チェックインを送信',
+      s5eyebrow: 'チェックイン完了', s5title: 'in.house B&Bへ<br>ようこそ',
+      s5sub: 'ドアロックコードが発行されました。大切に保管してください。',
+      pwLabel: 'ドアロックコード', pwNote: 'チェックアウトまで有効 · 他の方に教えないでください',
+      info: ['駐輪場は宿の右側の路地にあります','朝食はNT$200でご購入いただけます','チェックアウトは11:00までです。延長の場合は事前にご連絡ください','ピクニックマットはスタッフよりお借りいただけます（デポジットNT$200）','ご不明な点はLINEにてお問い合わせください'],
+      btnPrint: 'チェックイン情報を印刷',
+      errNoCode: '予約番号を入力してください', errPhone4: '携帯番号の下4桁を入力してください',
+      errNetwork: 'ネットワークエラーです。接続を確認してもう一度お試しください。',
+      errSubmitFail: '送信に失敗しました。もう一度お試しいただくか、宿までご連絡ください。',
+      submitting: '送信中…', btnSubmitDefault: 'チェックインを送信',
+    }
+  };
+
+  let currentLang = 'zh';
+
+  function setLang(lang) {
+    currentLang = lang;
+    const t = I18N[lang];
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === (lang==='zh'?'中文':lang==='en'?'EN':'日本語')));
+
+    // Header
+    document.querySelector('.header-tag') && (document.querySelector('.header-tag') || {}).remove;
+
+    // Steps
+    document.querySelector('#s1 .step-label').textContent = t.step1;
+    document.querySelector('#s2 .step-label').textContent = t.step2;
+    document.querySelector('#s3 .step-label').textContent = t.step3;
+    document.querySelector('#s4 .step-label').textContent = t.step4;
+
+    // Panel 1
+    document.querySelector('#panel-1 .panel-eyebrow').textContent = t.s1eyebrow;
+    document.querySelector('#panel-1 .panel-title').textContent = t.s1title;
+    document.querySelector('#panel-1 .panel-sub').textContent = t.s1sub;
+    document.querySelector('label[for-booking]') ;
+    document.getElementById('booking-code').placeholder = t.phCode;
+    document.querySelector('.btn-verify').textContent = t.btnVerify;
+    document.getElementById('booking-card').querySelector('.info-card-title').textContent = t.cardTitle;
+    document.querySelector('#panel-1 .notice').innerHTML = t.notice;
+    document.getElementById('next1-btn').textContent = t.btnNext1;
+
+    // Panel 2
+    document.querySelector('#panel-2 .panel-eyebrow').textContent = t.s2eyebrow;
+    document.querySelector('#panel-2 .panel-title').textContent = t.s2title;
+    document.querySelector('#panel-2 .panel-sub').textContent = t.s2sub;
+    document.getElementById('g-name').placeholder = t.phName;
+    document.getElementById('g-name-en').placeholder = t.phNameEn;
+    document.getElementById('g-phone').placeholder = t.phGPhone;
+    document.getElementById('g-note').placeholder = t.phNote;
+    // Arrival select
+    const arrSel = document.getElementById('g-arrive');
+    [...arrSel.options].forEach((o,i) => { if(t.optArrive[i]) o.text = t.optArrive[i]; });
+    const trSel = document.getElementById('g-transport');
+    [...trSel.options].forEach((o,i) => { if(t.optTransport[i]) o.text = t.optTransport[i]; });
+
+    // Panel 3
+    document.querySelector('#panel-3 .panel-eyebrow').textContent = t.s3eyebrow;
+    document.querySelector('#panel-3 .panel-title').textContent = t.s3title;
+    document.querySelector('#panel-3 .panel-sub').textContent = t.s3sub;
+    document.querySelector('#panel-3 .notice').innerHTML = t.noticeID;
+    document.querySelector('.upload-title').textContent = t.uploadTitle;
+    document.querySelector('.upload-sub').textContent = t.uploadSub;
+    document.getElementById('next3-btn').textContent = t.btnNext3;
+
+    // Panel 4
+    document.querySelector('#panel-4 .panel-eyebrow').textContent = t.s4eyebrow;
+    document.querySelector('#panel-4 .panel-title').textContent = t.s4title;
+    document.querySelector('#panel-4 .panel-sub').textContent = t.s4sub;
+    document.querySelector('.consent-text').innerHTML = t.consent;
+    document.getElementById('submit-btn').textContent = t.btnSubmit;
+
+    // Panel 5
+    document.querySelector('#panel-5 .panel-eyebrow').textContent = t.s5eyebrow;
+    document.querySelector('#panel-5 .panel-title').innerHTML = t.s5title;
+    document.querySelector('#panel-5 .panel-sub').textContent = t.s5sub;
+    document.querySelector('.password-label').textContent = t.pwLabel;
+    document.querySelector('.password-note').textContent = t.pwNote;
+    const infoList = document.querySelectorAll('.info-list li');
+    t.info.forEach((txt, i) => { if(infoList[i]) infoList[i].textContent = txt; });
+    document.querySelector('.btn-teal').textContent = t.btnPrint;
+
+    // All back buttons
+    document.querySelectorAll('.btn-secondary.btn-gap').forEach(b => b.textContent = t.btnBack);
+
+    // Section titles
+    const sections = document.querySelectorAll('.confirm-section-title');
+    if(sections[0]) sections[0].textContent = t.secBooking;
+    if(sections[1]) sections[1].textContent = t.secGuest;
   }
 </script>
 </body>
