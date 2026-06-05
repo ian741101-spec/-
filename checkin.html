@@ -700,14 +700,13 @@
 </footer>
 
 <script>
-  // ── Mock booking data (will be replaced by Airtable API call) ──
-  const MOCK_BOOKINGS = {
-    'IH-20250601-001': { room:'海景雙人房', checkin:'2025-06-01', checkout:'2025-06-03', guests:'2 位', phone4:'5678' },
-    'IH-20250615-002': { room:'珊瑚三人房', checkin:'2025-06-15', checkout:'2025-06-17', guests:'3 位', phone4:'2345' },
-    'IH-20250620-003': { room:'背包4床位',  checkin:'2025-06-20', checkout:'2025-06-21', guests:'1 位', phone4:'8899' },
-  };
+  // ════════════════════════════════════════════
+  //  設定：部署後將下面的網址換成你的 Worker URL
+  // ════════════════════════════════════════════
+  const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
 
-  let booking = null;
+  let booking   = null;   // 從 /booking API 取得的訂單物件
+  let recordId  = null;   // Airtable record ID，提交時用
   let currentStep = 1;
 
   // ── Step navigation ──
@@ -715,40 +714,32 @@
     document.getElementById('panel-' + currentStep).classList.remove('active');
     document.getElementById('panel-' + n).classList.add('active');
 
-    // Update progress
     for (let i = 1; i <= 4; i++) {
-      const s = document.getElementById('s' + i);
+      const s   = document.getElementById('s' + i);
       const dot = s.querySelector('.step-dot');
       s.className = 'step';
-      if (i < n) {
-        s.classList.add('done');
-        dot.innerHTML = '✓';
-      } else if (i === n) {
-        s.classList.add('active');
-        dot.innerHTML = i;
-      } else {
-        dot.innerHTML = i;
-      }
+      if (i < n)      { s.classList.add('done');   dot.innerHTML = '✓'; }
+      else if (i ===n){ s.classList.add('active'); dot.innerHTML = i;   }
+      else             { dot.innerHTML = i; }
       if (i < 4) {
-        const l = document.getElementById('l' + i);
-        l.className = 'step-line' + (i < n ? ' done' : '');
+        document.getElementById('l' + i).className = 'step-line' + (i < n ? ' done' : '');
       }
     }
 
-    // Fill confirm panel
-    if (n === 4 && booking) {
-      document.getElementById('c-code').textContent   = document.getElementById('booking-code').value;
-      document.getElementById('c-room').textContent   = booking.room;
-      document.getElementById('c-cin').textContent    = formatDate(booking.checkin);
-      document.getElementById('c-cout').textContent   = formatDate(booking.checkout);
-      document.getElementById('c-name').textContent   = document.getElementById('g-name').value || '—';
-      document.getElementById('c-phone').textContent  = document.getElementById('g-phone').value || '—';
-      document.getElementById('c-arrive').textContent = document.getElementById('g-arrive').value || '—';
-      document.getElementById('c-note').textContent   = document.getElementById('g-note').value || '無';
-    }
-
+    if (n === 4 && booking) fillConfirmPanel();
     currentStep = n;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function fillConfirmPanel() {
+    document.getElementById('c-code').textContent   = document.getElementById('booking-code').value.trim().toUpperCase();
+    document.getElementById('c-room').textContent   = booking.room    || '—';
+    document.getElementById('c-cin').textContent    = formatDate(booking.checkin);
+    document.getElementById('c-cout').textContent   = formatDate(booking.checkout);
+    document.getElementById('c-name').textContent   = document.getElementById('g-name').value    || '—';
+    document.getElementById('c-phone').textContent  = document.getElementById('g-phone').value   || '—';
+    document.getElementById('c-arrive').textContent = document.getElementById('g-arrive').value  || '—';
+    document.getElementById('c-note').textContent   = document.getElementById('g-note').value    || '無';
   }
 
   function formatDate(d) {
@@ -757,51 +748,68 @@
     return `${y} 年 ${parseInt(m)} 月 ${parseInt(day)} 日`;
   }
 
-  // ── Booking verification (mock; replace with fetch to Cloudflare Worker) ──
-  function verifyBooking() {
-    const code  = document.getElementById('booking-code').value.trim().toUpperCase();
-    const phone = document.getElementById('phone-last4').value.trim();
-    const err   = document.getElementById('code-err');
-    const btn   = document.getElementById('next1-btn');
-    const card  = document.getElementById('booking-card');
+  // ── 訂單驗證（呼叫 Worker GET /booking）──
+  async function verifyBooking() {
+    const code   = document.getElementById('booking-code').value.trim().toUpperCase();
+    const phone4 = document.getElementById('phone-last4').value.trim();
+    const err    = document.getElementById('code-err');
+    const btn    = document.getElementById('next1-btn');
+    const card   = document.getElementById('booking-card');
+    const verBtn = document.querySelector('.btn-verify');
 
     err.textContent = '';
     card.classList.remove('visible');
     btn.disabled = true;
-    booking = null;
+    booking = null; recordId = null;
 
-    if (!code) { err.textContent = '請輸入訂單編號'; return; }
-    if (!phone || phone.length !== 4) { err.textContent = '請輸入手機後四碼'; return; }
+    if (!code)                    { err.textContent = '請輸入訂單編號'; return; }
+    if (phone4.length !== 4)      { err.textContent = '請輸入手機後四碼（4位數字）'; return; }
 
-    const found = MOCK_BOOKINGS[code];
-    if (!found) { err.textContent = '找不到此訂單，請確認編號是否正確'; return; }
-    if (found.phone4 !== phone) { err.textContent = '手機號碼驗證失敗，請確認'; return; }
+    verBtn.textContent = '驗證中…';
+    verBtn.disabled = true;
 
-    booking = found;
-    document.getElementById('b-room').textContent    = found.room;
-    document.getElementById('b-checkin').textContent  = formatDate(found.checkin);
-    document.getElementById('b-checkout').textContent = formatDate(found.checkout);
-    document.getElementById('b-guests').textContent   = found.guests;
+    try {
+      const res  = await fetch(`${WORKER_URL}/checkin/verify?code=${encodeURIComponent(code)}&phone4=${phone4}`);
+      const data = await res.json();
 
-    card.classList.add('visible');
-    btn.disabled = false;
+      if (!res.ok || !data.ok) {
+        err.textContent = data.error || '驗證失敗，請確認資料後重試';
+        return;
+      }
+
+      booking  = data.booking;
+      recordId = data.recordId;
+
+      document.getElementById('b-room').textContent     = booking.room     || '—';
+      document.getElementById('b-checkin').textContent  = formatDate(booking.checkin);
+      document.getElementById('b-checkout').textContent = formatDate(booking.checkout);
+      document.getElementById('b-guests').textContent   = booking.guests   || '—';
+
+      card.classList.add('visible');
+      btn.disabled = false;
+
+    } catch (e) {
+      err.textContent = '網路錯誤，請確認連線後重試';
+      console.error(e);
+    } finally {
+      verBtn.textContent = '驗證';
+      verBtn.disabled = false;
+    }
   }
 
-  // Enter key triggers verify
-  document.getElementById('phone-last4').addEventListener('keydown', e => {
-    if (e.key === 'Enter') verifyBooking();
-  });
-  document.getElementById('booking-code').addEventListener('keydown', e => {
-    if (e.key === 'Enter') verifyBooking();
-  });
+  document.getElementById('phone-last4').addEventListener('keydown', e => { if (e.key==='Enter') verifyBooking(); });
+  document.getElementById('booking-code').addEventListener('keydown', e => { if (e.key==='Enter') verifyBooking(); });
 
-  // ── File upload ──
+  // ── 身份證圖片上傳 ──
+  let idBase64 = null;
+
   function handleFile(file) {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) { alert('圖片大小不可超過 10MB'); return; }
     const reader = new FileReader();
     reader.onload = e => {
-      document.getElementById('preview-img').src = e.target.result;
+      idBase64 = e.target.result;
+      document.getElementById('preview-img').src = idBase64;
       document.getElementById('id-preview').classList.add('visible');
       document.getElementById('next3-btn').disabled = false;
     };
@@ -809,6 +817,7 @@
   }
 
   function removeFile() {
+    idBase64 = null;
     document.getElementById('id-file').value = '';
     document.getElementById('id-preview').classList.remove('visible');
     document.getElementById('preview-img').src = '';
@@ -831,21 +840,50 @@
     document.getElementById('submit-btn').disabled = !document.getElementById('consent').checked;
   }
 
-  // ── Submit (mock; replace with fetch to Cloudflare Worker) ──
-  function submitCheckin() {
+  // ── 送出入住（呼叫 Worker POST /checkin）──
+  async function submitCheckin() {
     const btn = document.getElementById('submit-btn');
-    btn.textContent = '處理中...';
+    btn.textContent = '提交中…';
     btn.disabled = true;
 
-    // Simulate API call
-    setTimeout(() => {
-      const pw = Math.floor(100000 + Math.random() * 900000).toString();
-      document.getElementById('final-pw').textContent = pw;
+    const payload = {
+      recordId,
+      name:        document.getElementById('g-name').value.trim(),
+      nameEn:      document.getElementById('g-name-en').value.trim(),
+      phone:       document.getElementById('g-phone').value.trim(),
+      email:       document.getElementById('g-email').value.trim(),
+      arrivalTime: document.getElementById('g-arrive').value,
+      transport:   document.getElementById('g-transport').value,
+      note:        document.getElementById('g-note').value.trim(),
+      idImageBase64: idBase64 || null,
+    };
 
-      // Hide progress bar on success
+    try {
+      const res  = await fetch(`${WORKER_URL}/checkin/submit`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        alert(data.error || '送出失敗，請稍後再試或聯繫民宿');
+        btn.textContent = '送出入住申請';
+        btn.disabled = false;
+        return;
+      }
+
+      // 顯示密碼並跳到成功頁
+      document.getElementById('final-pw').textContent = data.lockCode;
       document.querySelector('.progress-wrap').style.display = 'none';
       goStep(5);
-    }, 1800);
+
+    } catch (e) {
+      alert('網路錯誤，請確認連線後重試');
+      btn.textContent = '送出入住申請';
+      btn.disabled = false;
+      console.error(e);
+    }
   }
 </script>
 </body>
