@@ -883,7 +883,7 @@
       }
 
       // 顯示密碼並跳到成功頁
-      document.getElementById('final-pw').textContent = data.lockCode;
+      document.getElementById('final-pw').textContent = data.lockCode || '請聯繫民宿取得密碼 / Contact us for the door code';
       document.querySelector('.progress-wrap').style.display = 'none';
       goStep(5);
 

@@ -7,16 +7,19 @@
 //   GET  /availability?room_type=xxx        → 查詢封鎖日期
 //   POST /booking                           → 建立新訂單（自動產生 booking_code）
 //   GET  /checkin/verify?code=xxx&phone4=xx → 驗證訂單 + 手機後四碼
-//   POST /checkin/submit                    → 提交 check-in + 產生門鎖密碼
+//   POST /checkin/submit                    → 提交 check-in + 回傳該房固定門鎖密碼
 //   GET  /health                            → 健康檢查
 //
 // Airtable 欄位清單（15個，無重複）：
 //   訂房：booking_code, guest_name, guest_phone, guest_email,
 //         room_type, checkin_date, checkout_date, guests, notes, status
 //   Check-in：checkin_status, arrival_time, transport, lock_code, checkin_at
+// rooms 表（每房固定密碼，硬體不聯網、密碼人工設定於鎖上）：
+//   room_type（需與訂房表 room_type 完全一致）, lock_code
 
 const AIRTABLE_BASE  = 'app8ObqmBPie5o3WJ';
 const AIRTABLE_TABLE = 'tblVoUuOMnrZW0b1d';
+const AIRTABLE_ROOMS = 'rooms';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -38,8 +41,9 @@ export default {
       return new Response(null, { headers: CORS });
     }
 
-    const TOKEN    = env.AIRTABLE_TOKEN;
-    const BASE_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+    const TOKEN     = env.AIRTABLE_TOKEN;
+    const BASE_URL  = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+    const ROOMS_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_ROOMS}`;
     const url      = new URL(request.url);
 
     // ── GET /health ──
@@ -171,7 +175,25 @@ export default {
           return json({ error: '缺少必填欄位：recordId, name, phone, arrivalTime' }, 400);
         }
 
-        const lockCode = generateLockCode();
+        // 依訂單房型查 rooms 表的固定門鎖密碼；查不到不擋 check-in，lockCode 為 null
+        let lockCode = null;
+        try {
+          const bookingRes  = await fetch(`${BASE_URL}/${recordId}`, {
+            headers: { Authorization: `Bearer ${TOKEN}` },
+          });
+          const bookingData = await bookingRes.json();
+          const roomType    = bookingData.fields && bookingData.fields.room_type;
+          if (roomType) {
+            const roomFilter = `{room_type}="${roomType}"`;
+            const roomRes  = await fetch(`${ROOMS_URL}?filterByFormula=${encodeURIComponent(roomFilter)}&maxRecords=1`, {
+              headers: { Authorization: `Bearer ${TOKEN}` },
+            });
+            const roomData = await roomRes.json();
+            if (roomData.records && roomData.records.length > 0) {
+              lockCode = roomData.records[0].fields.lock_code || null;
+            }
+          }
+        } catch (_) {}
 
         const patchFields = {
           guest_name:     name,
@@ -179,7 +201,7 @@ export default {
           arrival_time:   arrivalTime,
           transport:      body.transport || '',
           notes:          body.note ? body.note : undefined,
-          lock_code:      lockCode,
+          lock_code:      lockCode || undefined,
           checkin_at:     new Date().toISOString().slice(0, 10),
           status:         'Confirmed',
         };
@@ -217,14 +239,4 @@ function generateBookingCode(checkinDate) {
   const d   = checkinDate ? checkinDate.replace(/-/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const seq = String(Math.floor(Math.random() * 900) + 100);
   return `IH-${d}-${seq}`;
-}
-
-// ── 產生六位門鎖密碼（排除 0/1 避免混淆）──
-function generateLockCode() {
-  const chars = '23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
 }
