@@ -152,6 +152,18 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 .gallery-dots{position:absolute;bottom:11px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2;}
 .gallery-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.45);transition:all .25s;}
 .gallery-dot.active{background:white;width:18px;border-radius:3px;}
+.gallery-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:34px;height:34px;border-radius:50%;background:rgba(13,43,62,.45);color:white;display:flex;align-items:center;justify-content:center;font-size:1rem;opacity:0;transition:opacity .2s;backdrop-filter:blur(4px);}
+.gallery-arrow.prev{left:10px;}
+.gallery-arrow.next{right:10px;}
+.card-image:hover .gallery-arrow{opacity:1;}
+@media (hover:none){.gallery-arrow{opacity:.55;}}
+.card-image{cursor:zoom-in;}
+.common-item img,.gear-photo img,.bathroom-img img{cursor:zoom-in;}
+/* ── LIGHTBOX ── */
+.lightbox{position:fixed;inset:0;z-index:200;background:rgba(6,20,30,.94);display:none;align-items:center;justify-content:center;padding:20px;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 48px rgba(0,0,0,.6);}
+.lightbox-close{position:absolute;top:calc(env(safe-area-inset-top,0px) + 16px);right:18px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);color:white;font-size:1.3rem;display:flex;align-items:center;justify-content:center;}
 
 .card-body{padding:18px 20px 22px;}
 .card-capacity{display:flex;align-items:center;gap:4px;font-size:.74rem;color:var(--text-light);margin-bottom:6px;}
@@ -277,8 +289,8 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <article class="room-card" data-type="couple">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_4.jpg" alt="Ocean Double Room" loading="eager"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_3.jpg" alt="Ocean Double Room full view" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-ocean-double-1.webp" alt="Ocean Double Room" loading="eager"></div>
+        <div class="gallery-slide"><img src="images/room-ocean-double-2.webp" alt="Ocean Double Room full view" loading="lazy"></div>
       </div>
       <span class="card-badge" data-i18n="badgeFeatured">Featured</span>
       <span class="card-type-badge" data-i18n="typeCouplesPick">Couples Pick</span>
@@ -301,11 +313,10 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <article class="room-card" data-type="private">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_10.jpg" alt="Twin Wanderer Room" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_9.jpg" alt="Twin Wanderer Room full view" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-twin-wanderer-1.webp" alt="Twin Wanderer Room" loading="lazy"></div>
       </div>
       <span class="card-type-badge" data-i18n="typeTwin">Twin Room</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+      <div class="gallery-dots" style="display:none;"></div>
     </div>
     <div class="card-body">
       <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
@@ -324,11 +335,12 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <article class="room-card" data-type="private">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_8.jpg" alt="Just Right Room" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_7.jpg" alt="Just Right Room twin beds" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-1.webp" alt="Just Right Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-2.webp" alt="Just Right Room another angle" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-3.webp" alt="Just Right Room entrance view" loading="lazy"></div>
       </div>
       <span class="card-type-badge" data-i18n="typeMusic">Music Theme</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
       <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
@@ -347,7 +359,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <article class="room-card" data-type="private">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_11.jpg" alt="Freediver Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-freediver-1.webp" alt="Freediver Room" loading="lazy"></div>
       </div>
       <span class="card-type-badge" data-i18n="typeSingle">Single Room</span>
       <div class="gallery-dots" style="display:none;"></div>
@@ -369,8 +381,8 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <article class="room-card" data-type="dorm">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_6.jpg" alt="Intertidal Bunk Dorm" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/LINE_NOTE_260425_5.jpg" alt="Intertidal Bunk full view" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-dorm-1.webp" alt="Intertidal Bunk Dorm" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-dorm-2.webp" alt="Intertidal Bunk lounge corner" loading="lazy"></div>
       </div>
       <span class="card-badge" data-i18n="badgeBackpacker">Backpacker</span>
       <span class="card-type-badge" data-i18n="typeBunk">Bunk Dorm</span>
@@ -400,11 +412,11 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     <p data-i18n="commonDesc">A place to put your phone down and actually talk to people.</p>
   </div>
   <div class="common-scroll">
-    <div class="common-item"><img src="images/LINE_NOTE_260425_17.jpg" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="lobbyTitle">Lobby</div><div class="common-label-sub" data-i18n="lobbySub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_18.jpg" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="loungeTitle">Lounge</div><div class="common-label-sub" data-i18n="loungeSub">Put your phone down and talk to someone :)</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_19.jpg" alt="Feature Wall" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="featureTitle">Feature Wall · Shop</div><div class="common-label-sub" data-i18n="featureSub">Dive gear · Books · Skateboard</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_14.jpg" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="gardenTitle">Front Garden</div><div class="common-label-sub" data-i18n="gardenSub">Pallet tables · String lights · Greenery</div></div></div>
-    <div class="common-item"><img src="images/LINE_NOTE_260425_15.jpg" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="balconyTitle">Green Balcony</div><div class="common-label-sub" data-i18n="balconySub">Hanging plants · Lava stones · Mountain view</div></div></div>
+    <div class="common-item"><img src="images/lobby-stairs.webp" alt="Lobby" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="lobbyTitle">Lobby</div><div class="common-label-sub" data-i18n="lobbySub">Terrazzo floors · Corona neon · There's a cat</div></div></div>
+    <div class="common-item"><img src="images/lobby-hall.webp" alt="Lounge" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="loungeTitle">Lounge</div><div class="common-label-sub" data-i18n="loungeSub">Put your phone down and talk to someone :)</div></div></div>
+    <div class="common-item"><img src="images/dive-corner.webp" alt="Feature Wall" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="featureTitle">Feature Wall · Shop</div><div class="common-label-sub" data-i18n="featureSub">Dive gear · Books · Skateboard</div></div></div>
+    <div class="common-item"><img src="images/porch-seating.webp" alt="Front Garden" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="gardenTitle">Front Garden</div><div class="common-label-sub" data-i18n="gardenSub">Pallet tables · String lights · Greenery</div></div></div>
+    <div class="common-item"><img src="images/balcony-plants.webp" alt="Balcony" loading="lazy"><div class="common-label"><div class="common-label-title" data-i18n="balconyTitle">Green Balcony</div><div class="common-label-sub" data-i18n="balconySub">Hanging plants · Lava stones · Mountain view</div></div></div>
   </div>
 </section>
 
@@ -426,9 +438,9 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     </div>
   </div>
   <div class="gear-photos">
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_1.jpg" alt="Safety Line" loading="lazy"></div>
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_2.jpg" alt="Weight Belt" loading="lazy"></div>
-    <div class="gear-photo"><img src="images/LINE_NOTE_260425_13.jpg" alt="Gear Station" loading="lazy"></div>
+    <div class="gear-photo"><img src="images/ropes-drying.webp" alt="Safety Lines" loading="lazy"></div>
+    <div class="gear-photo"><img src="images/gear-belts.webp" alt="Weight Belts" loading="lazy"></div>
+    <div class="gear-photo"><img src="images/gear-wall.webp" alt="Gear Station" loading="lazy"></div>
   </div>
 </section>
 
@@ -436,7 +448,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 
 <!-- BATHROOM -->
 <section class="bathroom-section">
-  <div class="bathroom-img"><img src="images/LINE_NOTE_260425_12.jpg" alt="Vintage Blue Tile Bathroom" loading="lazy"></div>
+  <div class="bathroom-img"><img src="images/bathroom.webp" alt="Vintage Blue Tile Bathroom" loading="lazy"></div>
   <div class="bathroom-text">
     <div class="section-label" data-i18n="bathroom">Bathroom</div>
     <h2 data-i18n="bathroomTitle">Vintage Tile Bathroom</h2>
@@ -662,25 +674,62 @@ function openWhatsApp() {
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
 
-// Touch swipe gallery
+// Touch swipe gallery + desktop arrows
 document.querySelectorAll('.card-image').forEach(gallery => {
   const track = gallery.querySelector('.gallery-track');
   const dots  = gallery.querySelectorAll('.gallery-dot');
   const total = gallery.querySelectorAll('.gallery-slide').length;
+  gallery._cur = 0;
   if (total <= 1) return;
-  let cur = 0, startX = 0, moved = false;
+  let startX = 0, moved = false;
   function goTo(i) {
-    cur = Math.max(0, Math.min(i, total - 1));
-    track.style.transform = `translateX(${-cur * 100}%)`;
-    dots.forEach((d, idx) => d.classList.toggle('active', idx === cur));
+    gallery._cur = (i + total) % total;
+    track.style.transform = `translateX(${-gallery._cur * 100}%)`;
+    dots.forEach((d, idx) => d.classList.toggle('active', idx === gallery._cur));
   }
   gallery.addEventListener('touchstart', e => { startX = e.touches[0].clientX; moved = false; }, {passive:true});
   gallery.addEventListener('touchmove',  e => { moved = Math.abs(e.touches[0].clientX - startX) > 6; }, {passive:true});
   gallery.addEventListener('touchend',   e => {
     const dx = e.changedTouches[0].clientX - startX;
-    if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? cur + 1 : cur - 1);
+    if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? gallery._cur + 1 : gallery._cur - 1);
   });
-  dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+  dots.forEach((dot, i) => dot.addEventListener('click', e => { e.stopPropagation(); goTo(i); }));
+  [['prev','‹',-1],['next','›',1]].forEach(([cls, sym, dir]) => {
+    const btn = document.createElement('button');
+    btn.className = `gallery-arrow ${cls}`;
+    btn.textContent = sym;
+    btn.setAttribute('aria-label', cls === 'prev' ? 'Previous photo' : 'Next photo');
+    btn.addEventListener('click', e => { e.stopPropagation(); goTo(gallery._cur + dir); });
+    gallery.appendChild(btn);
+  });
+});
+
+// Lightbox
+const lightbox = document.createElement('div');
+lightbox.className = 'lightbox';
+lightbox.innerHTML = '<img alt=""><button class="lightbox-close" aria-label="Close">✕</button>';
+document.body.appendChild(lightbox);
+function openLightbox(src, alt) {
+  const img = lightbox.querySelector('img');
+  img.src = src; img.alt = alt || '';
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+lightbox.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.querySelectorAll('.card-image').forEach(gallery => {
+  gallery.addEventListener('click', () => {
+    const slides = gallery.querySelectorAll('.gallery-slide img');
+    const img = slides[gallery._cur || 0];
+    if (img) openLightbox(img.src, img.alt);
+  });
+});
+document.querySelectorAll('.common-item img, .gear-photo img, .bathroom-img img').forEach(img => {
+  img.addEventListener('click', () => openLightbox(img.src, img.alt));
 });
 </script>
 </body>

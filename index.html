@@ -4,33 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>in.house — Xiaoliuqiu B&B</title>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400&family=Noto+Sans+JP:wght@300;400&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<meta name="description" content="in.house — a freediving-friendly guesthouse in an old island home on Xiaoliuqiu, Taiwan. Self check-in, gear-drying space, and a cat.">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 <style>
 :root {
   --ocean-deep: #0d2b3e;
   --ocean-mid:  #1a4a6b;
   --seafoam:    #7ebfb5;
   --cream:      #faf7f2;
+  --sand:       #f3ede3;
   --text-light: rgba(255,255,255,.6);
-  --safe-top:    env(safe-area-inset-top, 62px);
-  --safe-bottom: env(safe-area-inset-bottom, 34px);
+  --text-dark:  #2a3b47;
+  --text-mid:   #5b6f7d;
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
   --touch: 52px;
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { -webkit-text-size-adjust:100%; }
-body { background:#000; overflow:hidden; height:100svh; font-family:'Noto Sans TC','Noto Sans JP',sans-serif; }
-button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; border:none; }
-img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:none; }
+html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body { background:var(--cream); font-family:'Noto Sans TC','Noto Sans JP',sans-serif; color:var(--text-dark); }
+button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; border:none; font-family:inherit; }
+img { display:block; max-width:100%; }
 
 /* ── LANGUAGE SWITCHER ── */
 .lang-switch {
-  position: absolute;
-  top: calc(var(--safe-top) + 8px);
+  position: fixed;
+  top: calc(var(--safe-top) + 14px);
   right: 16px;
-  z-index: 50;
-  display: flex;
-  gap: 2px;
-  background: rgba(255,255,255,.12);
+  z-index: 90;
+  display: flex; gap: 2px;
+  background: rgba(20,40,55,.35);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 100px;
@@ -38,124 +41,66 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
 }
 .lang-btn {
   background: transparent;
-  color: rgba(255,255,255,.7);
-  font-size: .68rem;
-  letter-spacing: .08em;
-  padding: 6px 10px;
-  border-radius: 100px;
-  font-family: inherit;
-  font-weight: 400;
-  transition: all .2s;
-  min-width: 38px;
+  color: rgba(255,255,255,.75);
+  font-size: .68rem; letter-spacing: .08em;
+  padding: 6px 10px; border-radius: 100px;
+  font-weight: 400; transition: all .2s; min-width: 38px;
 }
-.lang-btn.active {
-  background: white;
-  color: var(--ocean-deep);
-}
-.lang-btn:active { transform: scale(.94); }
+.lang-btn.active { background:white; color:var(--ocean-deep); }
+.lang-btn:active { transform:scale(.94); }
 
 /* ── HERO SLIDESHOW ── */
-.hero {
-  position:relative; width:100%; height:100svh; overflow:hidden;
-}
-.slides {
-  display:flex; height:100%;
-  transition:transform .85s cubic-bezier(.77,0,.18,1);
-  will-change:transform;
-}
+.hero { position:relative; width:100%; height:100svh; overflow:hidden; background:#000; }
+.slides { display:flex; height:100%; transition:transform .85s cubic-bezier(.77,0,.18,1); will-change:transform; }
 .slide { flex:0 0 100%; height:100%; position:relative; }
-.slide img { width:100%; height:100%; object-fit:cover; filter:brightness(.52); }
-
+.slide img { width:100%; height:100%; object-fit:cover; filter:brightness(.55); pointer-events:none; user-select:none; }
 .overlay {
   position:absolute; inset:0;
-  background:linear-gradient(to bottom,
-    rgba(13,43,62,.25) 0%, transparent 35%,
-    transparent 45%, rgba(13,43,62,.75) 100%);
+  background:linear-gradient(to bottom, rgba(13,43,62,.25) 0%, transparent 35%, transparent 45%, rgba(13,43,62,.78) 100%);
   pointer-events:none;
 }
-
-/* ── CONTENT ── */
-.content {
+.hero-content {
   position:absolute; bottom:0; left:0; right:0;
-  padding:0 28px calc(52px + var(--safe-bottom));
-  display:flex; flex-direction:column;
-  align-items:center; text-align:center; gap:6px;
+  padding:0 28px calc(56px + var(--safe-bottom));
+  display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px;
 }
-.label {
-  font-family:'Playfair Display',serif;
-  font-style:italic;
-  color:var(--seafoam);
-  font-size:.76rem; letter-spacing:.3em;
+.hero-label {
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--seafoam); font-size:.76rem; letter-spacing:.3em;
   text-transform:uppercase; opacity:.9;
 }
-.name {
+.hero-name {
   font-family:'Dancing Script',cursive;
-  font-size:clamp(3.2rem,14vw,5.2rem);
-  font-weight:700; color:white; line-height:1;
-  text-shadow:0 2px 32px rgba(0,0,0,.4);
+  font-size:clamp(3.2rem,14vw,5.2rem); font-weight:700;
+  color:white; line-height:1; text-shadow:0 2px 32px rgba(0,0,0,.4);
   letter-spacing:.04em;
 }
-.sub {
-  font-size:.8rem; color:var(--text-light);
-  letter-spacing:.2em; margin-bottom:24px;
-}
-
-/* ── NAV BUTTONS ── */
-.nav-btns {
-  display:flex; gap:10px; width:100%;
-}
+.hero-sub { font-size:.8rem; color:var(--text-light); letter-spacing:.2em; margin-bottom:24px; }
+.nav-btns { display:flex; gap:10px; width:100%; max-width:420px; }
 .btn-primary {
-  flex:1.6; height:var(--touch);
-  background:white; color:var(--ocean-deep);
-  font-size:.8rem; letter-spacing:.16em;
-  font-family:'Noto Sans TC','Noto Sans JP',sans-serif; font-weight:400;
-  border-radius:2px;
-  box-shadow:0 4px 20px rgba(0,0,0,.3);
-  transition:all .2s;
+  flex:1.6; height:var(--touch); background:white; color:var(--ocean-deep);
+  font-size:.8rem; letter-spacing:.16em; font-weight:400; border-radius:2px;
+  box-shadow:0 4px 20px rgba(0,0,0,.3); transition:all .2s;
 }
 .btn-primary:active { transform:scale(.96); opacity:.85; }
 .btn-secondary {
-  flex:1; height:var(--touch);
-  background:rgba(255,255,255,.15);
-  backdrop-filter:blur(8px);
-  color:white; border:1px solid rgba(255,255,255,.35);
-  font-size:.8rem; letter-spacing:.14em;
-  font-family:'Noto Sans TC','Noto Sans JP',sans-serif; font-weight:300;
-  border-radius:2px;
-  transition:all .2s;
+  flex:1; height:var(--touch); background:rgba(255,255,255,.15);
+  backdrop-filter:blur(8px); color:white; border:1px solid rgba(255,255,255,.35);
+  font-size:.8rem; letter-spacing:.14em; font-weight:300; border-radius:2px; transition:all .2s;
 }
 .btn-secondary:active { background:rgba(255,255,255,.25); }
-
-/* ── DOTS ── */
 .dots {
-  position:absolute;
-  bottom:calc(160px + var(--safe-bottom));
-  left:50%; transform:translateX(-50%);
-  display:flex; gap:6px; z-index:10;
+  position:absolute; bottom:calc(168px + var(--safe-bottom));
+  left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:10;
 }
-.dot {
-  width:5px; height:5px; border-radius:50%;
-  background:rgba(255,255,255,.4);
-  transition:all .35s; cursor:pointer;
-}
+.dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.4); transition:all .35s; cursor:pointer; }
 .dot.active { background:white; width:20px; border-radius:3px; }
-
-/* ── PROGRESS BAR ── */
-.progress {
-  position:absolute; bottom:0; left:0;
-  height:2px; background:var(--seafoam);
-  width:0%; transition:width linear; z-index:10;
-}
-
-/* ── SCROLL HINT ── */
+.progress { position:absolute; bottom:0; left:0; height:2px; background:var(--seafoam); width:0%; transition:width linear; z-index:10; }
 .scroll-hint {
-  position:absolute;
-  bottom:calc(18px + var(--safe-bottom));
+  position:absolute; bottom:calc(14px + var(--safe-bottom));
   left:50%; transform:translateX(-50%);
-  display:flex; flex-direction:column;
-  align-items:center; gap:3px;
-  opacity:.5; animation:bounce 2.2s infinite;
-  cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  opacity:.55; animation:bounce 2.2s infinite; cursor:pointer; background:none;
 }
 .scroll-hint span { font-size:.62rem; letter-spacing:.18em; color:white; }
 @keyframes bounce {
@@ -163,12 +108,118 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
   50%{transform:translateX(-50%) translateY(7px)}
 }
 
-/* ── DYNAMIC ISLAND SAFE ── */
-.top-safe {
-  position:absolute; top:0; left:0; right:0;
-  height:calc(var(--safe-top) + 16px);
-  pointer-events:none;
+/* ── SECTION BASICS ── */
+section { padding:72px 24px; }
+.sec-inner { max-width:960px; margin:0 auto; }
+.sec-label {
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:#3e8ba8; font-size:.74rem; letter-spacing:.3em;
+  text-transform:uppercase; margin-bottom:10px;
 }
+.sec-title { font-size:clamp(1.5rem,5vw,2.1rem); font-weight:500; color:var(--ocean-deep); line-height:1.3; margin-bottom:18px; }
+.sec-desc { font-size:.92rem; font-weight:300; color:var(--text-mid); line-height:2; max-width:640px; }
+
+/* ── ABOUT ── */
+.about { background:var(--cream); }
+.about-grid { display:grid; grid-template-columns:1fr; gap:32px; align-items:center; }
+@media (min-width:760px){ .about-grid{ grid-template-columns:1.1fr 1fr; } }
+.about-photos { position:relative; padding-bottom:34px; }
+.about-photos .ph-main { border-radius:4px; box-shadow:0 12px 40px rgba(13,43,62,.18); }
+.about-photos .ph-small {
+  position:absolute; right:-4px; bottom:0; width:46%;
+  border:5px solid var(--cream); border-radius:4px;
+  box-shadow:0 10px 30px rgba(13,43,62,.22);
+}
+.about-points { list-style:none; margin-top:22px; display:flex; flex-direction:column; gap:12px; }
+.about-points li { display:flex; gap:10px; font-size:.88rem; font-weight:300; color:var(--text-mid); line-height:1.7; }
+.about-points li::before { content:'—'; color:var(--seafoam); flex:0 0 auto; }
+
+/* ── ROOMS PREVIEW ── */
+.rooms-preview { background:var(--ocean-deep); }
+.rooms-preview .sec-label { color:var(--seafoam); }
+.rooms-preview .sec-title { color:white; }
+.rooms-preview .sec-desc { color:rgba(255,255,255,.55); }
+.rp-scroller { display:flex; gap:14px; overflow-x:auto; padding:26px 0 8px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.rp-scroller::-webkit-scrollbar{ display:none; }
+.rp-card {
+  flex:0 0 78%; max-width:300px; scroll-snap-align:start;
+  border-radius:4px; overflow:hidden; background:var(--ocean-mid);
+  text-decoration:none; color:inherit; display:block;
+}
+.rp-card img { height:190px; width:100%; object-fit:cover; }
+.rp-body { padding:14px 16px 18px; }
+.rp-name { color:white; font-size:1rem; font-weight:400; letter-spacing:.02em; }
+.rp-sub { color:rgba(255,255,255,.5); font-size:.74rem; margin-top:3px; letter-spacing:.06em; }
+.rp-cap { color:var(--seafoam); font-size:.72rem; margin-top:8px; letter-spacing:.08em; }
+.rp-more {
+  margin-top:24px; display:inline-block; color:white; font-size:.8rem; letter-spacing:.14em;
+  border:1px solid rgba(255,255,255,.4); padding:13px 26px; border-radius:2px; text-decoration:none; transition:all .2s;
+}
+.rp-more:active { background:rgba(255,255,255,.15); }
+
+/* ── FREEDIVE ── */
+.freedive { background:var(--sand); }
+.fd-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:28px; }
+@media (min-width:760px){ .fd-grid{ grid-template-columns:repeat(4,1fr); } }
+.fd-item { position:relative; border-radius:4px; overflow:hidden; aspect-ratio:1/1.15; cursor:zoom-in; }
+.fd-item img { width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+.fd-item:active img { transform:scale(1.04); }
+.fd-cap {
+  position:absolute; left:0; right:0; bottom:0;
+  padding:26px 12px 10px; font-size:.72rem; letter-spacing:.08em; color:white;
+  background:linear-gradient(to top, rgba(13,43,62,.85), transparent);
+}
+
+/* ── SELF CHECK-IN ── */
+.selfcheck { background:var(--cream); }
+.steps { display:grid; grid-template-columns:1fr; gap:18px; margin-top:30px; counter-reset:step; }
+@media (min-width:760px){ .steps{ grid-template-columns:repeat(3,1fr); } }
+.step { background:white; border-radius:4px; padding:24px 22px; box-shadow:0 6px 24px rgba(13,43,62,.07); position:relative; }
+.step::before {
+  counter-increment:step; content:counter(step,decimal-leading-zero);
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--seafoam); font-size:1.5rem; display:block; margin-bottom:10px;
+}
+.step h3 { font-size:.95rem; font-weight:500; color:var(--ocean-deep); margin-bottom:8px; }
+.step p { font-size:.82rem; font-weight:300; color:var(--text-mid); line-height:1.9; }
+
+/* ── LOCATION ── */
+.location { background:var(--ocean-mid); }
+.location .sec-label{ color:var(--seafoam); }
+.location .sec-title{ color:white; }
+.loc-grid { display:grid; grid-template-columns:1fr; gap:26px; margin-top:8px; }
+@media (min-width:760px){ .loc-grid{ grid-template-columns:1fr 1fr; align-items:center; } }
+.loc-list { list-style:none; display:flex; flex-direction:column; gap:16px; }
+.loc-list li { color:rgba(255,255,255,.75); font-size:.86rem; font-weight:300; line-height:1.9; display:flex; gap:12px; }
+.loc-ico { flex:0 0 auto; width:22px; height:22px; color:var(--seafoam); }
+.loc-photo { border-radius:4px; overflow:hidden; box-shadow:0 12px 36px rgba(0,0,0,.3); }
+
+/* ── FAQ ── */
+.faq { background:var(--cream); }
+.faq-item { border-bottom:1px solid rgba(13,43,62,.12); }
+.faq-q {
+  width:100%; text-align:left; background:none; padding:18px 4px;
+  display:flex; justify-content:space-between; align-items:center; gap:14px;
+  font-size:.9rem; font-weight:400; color:var(--ocean-deep);
+}
+.faq-q::after { content:'+'; font-size:1.2rem; color:var(--seafoam); transition:transform .25s; }
+.faq-item.open .faq-q::after { transform:rotate(45deg); }
+.faq-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
+.faq-a p { padding:0 4px 18px; font-size:.84rem; font-weight:300; color:var(--text-mid); line-height:2; }
+
+/* ── FOOTER ── */
+footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-bottom)); text-align:center; }
+.ft-name { font-family:'Dancing Script',cursive; font-size:2.2rem; color:white; }
+.ft-sub { color:rgba(255,255,255,.45); font-size:.74rem; letter-spacing:.22em; margin-top:6px; }
+.ft-links { display:flex; justify-content:center; gap:26px; margin-top:26px; flex-wrap:wrap; }
+.ft-links a { color:rgba(255,255,255,.7); font-size:.8rem; letter-spacing:.1em; text-decoration:none; }
+.ft-note { color:rgba(255,255,255,.3); font-size:.68rem; margin-top:30px; letter-spacing:.06em; }
+
+/* ── LIGHTBOX ── */
+.lightbox{position:fixed;inset:0;z-index:200;background:rgba(6,20,30,.94);display:none;align-items:center;justify-content:center;padding:20px;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 48px rgba(0,0,0,.6);}
+.lightbox-close{position:absolute;top:calc(var(--safe-top) + 16px);right:18px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);color:white;font-size:1.3rem;display:flex;align-items:center;justify-content:center;}
 </style>
 </head>
 <body>
@@ -180,18 +231,16 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
   <button class="lang-btn" data-lang="ja">日本語</button>
 </div>
 
+<!-- HERO -->
 <div class="hero" id="hero">
   <div class="slides" id="slides">
-    <div class="slide"><img src="images/LINE_NOTE_260425_14.jpg" alt="in.house — Front Garden" loading="eager"></div>
-    <div class="slide"><img src="images/LINE_NOTE_260425_16.jpg" alt="in.house — Ocean Double Room" loading="lazy"></div>
-    <div class="slide"><img src="images/LINE_NOTE_260425_17.jpg" alt="in.house — Lobby" loading="lazy"></div>
-    <div class="slide"><img src="images/LINE_NOTE_260425_15.jpg" alt="in.house — Balcony" loading="lazy"></div>
-    <div class="slide"><img src="images/LINE_NOTE_260425_1.jpg" alt="in.house — Dive Gear" loading="lazy"></div>
+    <div class="slide"><img src="images/facade.webp" alt="in.house — Facade" loading="eager"></div>
+    <div class="slide"><img src="images/lobby-stairs.webp" alt="in.house — Lobby" loading="lazy"></div>
+    <div class="slide"><img src="images/room-ocean-double-1.webp" alt="in.house — Ocean Double Room" loading="lazy"></div>
+    <div class="slide"><img src="images/dive-corner.webp" alt="in.house — Dive Corner" loading="lazy"></div>
+    <div class="slide"><img src="images/balcony-plants.webp" alt="in.house — Green Balcony" loading="lazy"></div>
   </div>
-
   <div class="overlay"></div>
-  <div class="top-safe"></div>
-
   <div class="dots" id="dots">
     <span class="dot active" onclick="goTo(0)"></span>
     <span class="dot" onclick="goTo(1)"></span>
@@ -199,51 +248,299 @@ img { display:block; pointer-events:none; user-select:none; -webkit-user-drag:no
     <span class="dot" onclick="goTo(3)"></span>
     <span class="dot" onclick="goTo(4)"></span>
   </div>
-
-  <div class="content">
-    <div class="label" data-i18n="label">Xiaoliuqiu · Taiwan</div>
-    <h1 class="name">in.house</h1>
-    <p class="sub" data-i18n="sub">小琉球 · B&B</p>
+  <div class="hero-content">
+    <div class="hero-label" data-i18n="label">Xiaoliuqiu · Taiwan</div>
+    <h1 class="hero-name">in.house</h1>
+    <p class="hero-sub" data-i18n="sub">Xiaoliuqiu · B&B</p>
     <div class="nav-btns">
       <button class="btn-primary" data-i18n="bookNow" onclick="location.href='booking.html'">Book Now</button>
       <button class="btn-secondary" data-i18n="ourRooms" onclick="location.href='rooms.html'">Our Rooms</button>
     </div>
   </div>
-
   <div class="progress" id="progress"></div>
-
-  <div class="scroll-hint" onclick="location.href='rooms.html'">
+  <button class="scroll-hint" onclick="document.getElementById('about').scrollIntoView()">
     <span data-i18n="explore">Explore</span>
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-  </div>
+  </button>
 </div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="sec-inner about-grid">
+    <div class="about-photos">
+      <img class="ph-main" src="images/lobby-hall.webp" alt="in.house lounge" loading="lazy">
+      <img class="ph-small" src="images/porch-seating.webp" alt="in.house front porch" loading="lazy">
+    </div>
+    <div>
+      <div class="sec-label" data-i18n="aboutLabel">About in.house</div>
+      <h2 class="sec-title" data-i18n="aboutTitle">An old island house,<br>slowed down for divers.</h2>
+      <p class="sec-desc" data-i18n="aboutDesc">in.house is a renovated old home on Xiaoliuqiu, a small coral island off Taiwan's southwest coast. Terrazzo floors, potted greens, a wall that says "put down your phone and talk to the people around you" — and a resident cat who takes the lobby shift.</p>
+      <ul class="about-points">
+        <li data-i18n="aboutP1">A freediving-friendly stay: gear-drying racks, rinse space, weights and buoys at home here.</li>
+        <li data-i18n="aboutP2">Self check-in — book online, verify your booking, get your door code. No front-desk queue.</li>
+        <li data-i18n="aboutP3">Five rooms, one old house: doubles, twins, a single, and a bunk dorm.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ROOMS PREVIEW -->
+<section class="rooms-preview">
+  <div class="sec-inner">
+    <div class="sec-label" data-i18n="roomsLabel">Rooms</div>
+    <h2 class="sec-title" data-i18n="roomsTitle">Find your corner on this blue island</h2>
+    <p class="sec-desc" data-i18n="roomsDesc">Every room tells a story of the sea — pick the one that sounds like yours.</p>
+    <div class="rp-scroller">
+      <a class="rp-card" href="rooms.html">
+        <img src="images/room-ocean-double-1.webp" alt="Ocean Double" loading="lazy">
+        <div class="rp-body">
+          <div class="rp-name" data-i18n="rp1">Ocean Double</div>
+          <div class="rp-sub">Double Room</div>
+          <div class="rp-cap" data-i18n="cap12">1 – 2 guests</div>
+        </div>
+      </a>
+      <a class="rp-card" href="rooms.html">
+        <img src="images/room-twin-wanderer-1.webp" alt="Twin Wanderer" loading="lazy">
+        <div class="rp-body">
+          <div class="rp-name" data-i18n="rp2">Twin Wanderer</div>
+          <div class="rp-sub">Twin Room</div>
+          <div class="rp-cap" data-i18n="cap12">1 – 2 guests</div>
+        </div>
+      </a>
+      <a class="rp-card" href="rooms.html">
+        <img src="images/room-just-right-1.webp" alt="Just Right Room" loading="lazy">
+        <div class="rp-body">
+          <div class="rp-name" data-i18n="rp3">Just Right Room</div>
+          <div class="rp-sub">Twin Room</div>
+          <div class="rp-cap" data-i18n="cap12">1 – 2 guests</div>
+        </div>
+      </a>
+      <a class="rp-card" href="rooms.html">
+        <img src="images/room-freediver-1.webp" alt="Freediver Room" loading="lazy">
+        <div class="rp-body">
+          <div class="rp-name" data-i18n="rp4">Freediver Room</div>
+          <div class="rp-sub">Single Room</div>
+          <div class="rp-cap" data-i18n="cap1">1 guest</div>
+        </div>
+      </a>
+      <a class="rp-card" href="rooms.html">
+        <img src="images/room-dorm-1.webp" alt="Intertidal Bunk" loading="lazy">
+        <div class="rp-body">
+          <div class="rp-name" data-i18n="rp5">Intertidal Bunk</div>
+          <div class="rp-sub">Dorm · per bed</div>
+          <div class="rp-cap" data-i18n="capBed">Book by the bed</div>
+        </div>
+      </a>
+    </div>
+    <a class="rp-more" href="rooms.html" data-i18n="rpMore">View all rooms →</a>
+  </div>
+</section>
+
+<!-- FREEDIVE FRIENDLY -->
+<section class="freedive">
+  <div class="sec-inner">
+    <div class="sec-label" data-i18n="fdLabel">Freedive Friendly</div>
+    <h2 class="sec-title" data-i18n="fdTitle">Built around people who dive</h2>
+    <p class="sec-desc" data-i18n="fdDesc">Come back from the water, rinse off, hang everything up, and go find dinner. The house is set up so salt water and wetsuits are never a problem.</p>
+    <div class="fd-grid">
+      <div class="fd-item"><img src="images/gear-wall.webp" alt="Gear drying wall" loading="lazy"><div class="fd-cap" data-i18n="fd1">Gear drying wall</div></div>
+      <div class="fd-item"><img src="images/ropes-drying.webp" alt="Safety lines" loading="lazy"><div class="fd-cap" data-i18n="fd2">Safety lines & floats</div></div>
+      <div class="fd-item"><img src="images/gear-belts.webp" alt="Weight belts" loading="lazy"><div class="fd-cap" data-i18n="fd3">Weights & dive flags</div></div>
+      <div class="fd-item"><img src="images/dive-corner.webp" alt="Dive corner" loading="lazy"><div class="fd-cap" data-i18n="fd4">Dive corner & shop</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SELF CHECK-IN -->
+<section class="selfcheck">
+  <div class="sec-inner">
+    <div class="sec-label" data-i18n="scLabel">Self Check-in</div>
+    <h2 class="sec-title" data-i18n="scTitle">No front desk. No waiting.</h2>
+    <div class="steps">
+      <div class="step">
+        <h3 data-i18n="sc1T">Book online</h3>
+        <p data-i18n="sc1D">Pick a room and date. You'll get a booking code like IH-20260715-001 — keep it.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="sc2T">Verify on arrival day</h3>
+        <p data-i18n="sc2D">Open the check-in page, enter your booking code and the last 4 digits of your phone.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="sc3T">Get your door code</h3>
+        <p data-i18n="sc3D">Your room's door code appears right on the screen. Walk in, drop your bags, go see the ocean.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="location">
+  <div class="sec-inner">
+    <div class="sec-label" data-i18n="locLabel">Getting Here</div>
+    <h2 class="sec-title" data-i18n="locTitle">A small island, 25 minutes from Donggang</h2>
+    <div class="loc-grid">
+      <ul class="loc-list">
+        <li>
+          <svg class="loc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h18M5 17l1.5-6h11L19 17M12 11V7m-3 4V8m6 3V8"/></svg>
+          <span data-i18n="loc1">Take the ferry from Donggang Harbor (Pingtung) — about 25–30 minutes to Xiaoliuqiu.</span>
+        </li>
+        <li>
+          <svg class="loc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17h6l3-8h4M9 9h4"/></svg>
+          <span data-i18n="loc2">On the island, a scooter or electric bike is the easiest way around — rentals cluster near the harbor.</span>
+        </li>
+        <li>
+          <svg class="loc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-5.5-7-11a7 7 0 0114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <span data-i18n="loc3">The exact address and a walking map are included in your booking confirmation.</span>
+        </li>
+      </ul>
+      <div class="loc-photo"><img src="images/facade.webp" alt="in.house facade" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+  <div class="sec-inner">
+    <div class="sec-label">FAQ</div>
+    <h2 class="sec-title" data-i18n="faqTitle">Good to know</h2>
+    <div class="faq-item">
+      <button class="faq-q" data-i18n="q1">How does self check-in work?</button>
+      <div class="faq-a"><p data-i18n="a1">After booking you'll receive a booking code. On arrival day, open our check-in page, verify with your code and the last 4 digits of your phone number, fill in your details, and your door code will be shown on screen.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" data-i18n="q2">I didn't get my door code — what do I do?</button>
+      <div class="faq-a"><p data-i18n="a2">Don't worry. Message us through the contact info in your booking confirmation and we'll sort you out right away.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" data-i18n="q3">I'm new to freediving — is this place for me?</button>
+      <div class="faq-a"><p data-i18n="a3">Absolutely. Many guests come to Xiaoliuqiu to take courses with local schools. The house has space to rinse and dry gear, and you'll meet plenty of divers in the lobby.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" data-i18n="q4">Is there really a cat?</button>
+      <div class="faq-a"><p data-i18n="a4">Yes. The lobby is technically the cat's. We just work here.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-name">in.house</div>
+  <div class="ft-sub" data-i18n="ftSub">XIAOLIUQIU · TAIWAN</div>
+  <div class="ft-links">
+    <a href="rooms.html" data-i18n="ftRooms">Rooms</a>
+    <a href="booking.html" data-i18n="ftBook">Book</a>
+    <a href="checkin.html" data-i18n="ftCheckin">Self Check-in</a>
+  </div>
+  <div class="ft-note">© in.house · Xiaoliuqiu B&B</div>
+</footer>
 
 <script>
 /* ── i18n DICTIONARY ── */
 const i18n = {
   en: {
-    title:    'in.house — Xiaoliuqiu B&B',
-    label:    'Xiaoliuqiu · Taiwan',
-    sub:      'Xiaoliuqiu · B&B',
-    bookNow:  'Book Now',
-    ourRooms: 'Our Rooms',
-    explore:  'Explore',
+    title: 'in.house — Xiaoliuqiu B&B',
+    label: 'Xiaoliuqiu · Taiwan', sub: 'Xiaoliuqiu · B&B',
+    bookNow: 'Book Now', ourRooms: 'Our Rooms', explore: 'Explore',
+    aboutLabel: 'About in.house',
+    aboutTitle: 'An old island house,<br>slowed down for divers.',
+    aboutDesc: 'in.house is a renovated old home on Xiaoliuqiu, a small coral island off Taiwan\'s southwest coast. Terrazzo floors, potted greens, a wall that says "put down your phone and talk to the people around you" — and a resident cat who takes the lobby shift.',
+    aboutP1: 'A freediving-friendly stay: gear-drying racks, rinse space, weights and buoys at home here.',
+    aboutP2: 'Self check-in — book online, verify your booking, get your door code. No front-desk queue.',
+    aboutP3: 'Five rooms, one old house: doubles, twins, a single, and a bunk dorm.',
+    roomsLabel: 'Rooms', roomsTitle: 'Find your corner on this blue island',
+    roomsDesc: 'Every room tells a story of the sea — pick the one that sounds like yours.',
+    rp1: 'Ocean Double', rp2: 'Twin Wanderer', rp3: 'Just Right Room', rp4: 'Freediver Room', rp5: 'Intertidal Bunk',
+    cap12: '1 – 2 guests', cap1: '1 guest', capBed: 'Book by the bed', rpMore: 'View all rooms →',
+    fdLabel: 'Freedive Friendly', fdTitle: 'Built around people who dive',
+    fdDesc: 'Come back from the water, rinse off, hang everything up, and go find dinner. The house is set up so salt water and wetsuits are never a problem.',
+    fd1: 'Gear drying wall', fd2: 'Safety lines & floats', fd3: 'Weights & dive flags', fd4: 'Dive corner & shop',
+    scLabel: 'Self Check-in', scTitle: 'No front desk. No waiting.',
+    sc1T: 'Book online', sc1D: 'Pick a room and date. You\'ll get a booking code like IH-20260715-001 — keep it.',
+    sc2T: 'Verify on arrival day', sc2D: 'Open the check-in page, enter your booking code and the last 4 digits of your phone.',
+    sc3T: 'Get your door code', sc3D: 'Your room\'s door code appears right on the screen. Walk in, drop your bags, go see the ocean.',
+    locLabel: 'Getting Here', locTitle: 'A small island, 25 minutes from Donggang',
+    loc1: 'Take the ferry from Donggang Harbor (Pingtung) — about 25–30 minutes to Xiaoliuqiu.',
+    loc2: 'On the island, a scooter or electric bike is the easiest way around — rentals cluster near the harbor.',
+    loc3: 'The exact address and a walking map are included in your booking confirmation.',
+    faqTitle: 'Good to know',
+    q1: 'How does self check-in work?',
+    a1: 'After booking you\'ll receive a booking code. On arrival day, open our check-in page, verify with your code and the last 4 digits of your phone number, fill in your details, and your door code will be shown on screen.',
+    q2: 'I didn\'t get my door code — what do I do?',
+    a2: 'Don\'t worry. Message us through the contact info in your booking confirmation and we\'ll sort you out right away.',
+    q3: 'I\'m new to freediving — is this place for me?',
+    a3: 'Absolutely. Many guests come to Xiaoliuqiu to take courses with local schools. The house has space to rinse and dry gear, and you\'ll meet plenty of divers in the lobby.',
+    q4: 'Is there really a cat?', a4: 'Yes. The lobby is technically the cat\'s. We just work here.',
+    ftSub: 'XIAOLIUQIU · TAIWAN', ftRooms: 'Rooms', ftBook: 'Book', ftCheckin: 'Self Check-in',
   },
   zh: {
-    title:    'in.house — 小琉球',
-    label:    '小琉球 · 台灣',
-    sub:      '小琉球',
-    bookNow:  '立即訂房',
-    ourRooms: '房型介紹',
-    explore:  '了解更多',
+    title: 'in.house — 小琉球民宿',
+    label: '小琉球 · 台灣', sub: '小琉球 · 民宿',
+    bookNow: '立即訂房', ourRooms: '房型介紹', explore: '了解更多',
+    aboutLabel: '關於 in.house',
+    aboutTitle: '一棟島上老屋,<br>為潛水的人慢下來。',
+    aboutDesc: 'in.house 是小琉球島上一棟改建老屋——磨石子地板、滿屋綠植,牆上寫著「放下手機,和你身邊的人聊聊天吧」,還有一隻常駐大廳的貓。',
+    aboutP1: '自由潛水友善:裝備晾曬架、沖洗空間,配重與浮球在這裡都有地方住。',
+    aboutP2: '自助入住——線上訂房、驗證訂單、取得門鎖密碼,不用排隊等櫃檯。',
+    aboutP3: '一棟老屋、五種房型:雙人房、雙床房、單人房與上下舖背包房。',
+    roomsLabel: '房型', roomsTitle: '在這座藍色小島,找到你的角落',
+    roomsDesc: '每個房間都藏著一段海的故事——挑一間聽起來像你的。',
+    rp1: '海洋雙人房', rp2: '漫遊雙床房', rp3: '剛剛好房', rp4: '自由潛水單人房', rp5: '潮間帶背包房',
+    cap12: '1 – 2 位', cap1: '1 位', capBed: '以床位計', rpMore: '看所有房型 →',
+    fdLabel: '潛水友善', fdTitle: '為潛水的人設計的家',
+    fdDesc: '從海裡回來,沖掉鹽分、把裝備掛好,就能出門覓食。溼防寒衣和海水,在這裡從來不是問題。',
+    fd1: '裝備晾曬牆', fd2: '安全繩與浮球', fd3: '配重帶與潛水旗', fd4: '潛水角落與小店',
+    scLabel: '自助入住', scTitle: '不用櫃檯,不用等待。',
+    sc1T: '線上訂房', sc1D: '選好房型與日期,你會拿到一組訂單編號(例如 IH-20260715-001),請妥善保存。',
+    sc2T: '入住當天驗證', sc2D: '打開自助入住頁面,輸入訂單編號與手機後四碼完成驗證。',
+    sc3T: '取得門鎖密碼', sc3D: '房間門鎖密碼會直接顯示在畫面上。進門、放行李,去看海。',
+    locLabel: '如何抵達', locTitle: '從東港出發,25 分鐘的小島',
+    loc1: '從屏東東港碼頭搭乘交通船,約 25–30 分鐘抵達小琉球。',
+    loc2: '島上以機車或電動車代步最方便,碼頭附近就有許多租車行。',
+    loc3: '詳細地址與路線指引,會附在你的訂房確認資訊中。',
+    faqTitle: '入住須知',
+    q1: '自助入住怎麼進行?',
+    a1: '訂房後你會收到訂單編號。入住當天打開自助入住頁面,以訂單編號與手機後四碼驗證,填妥資料後,門鎖密碼會直接顯示在畫面上。',
+    q2: '沒有拿到門鎖密碼怎麼辦?',
+    a2: '別擔心,透過訂房確認資訊中的聯絡方式找我們,馬上為你處理。',
+    q3: '我是自由潛水新手,適合住這裡嗎?',
+    a3: '非常適合。許多房客就是來小琉球上課的,島上有多家潛水教學單位;民宿有沖洗與晾曬裝備的空間,大廳也總能遇到同好。',
+    q4: '真的有貓嗎?', a4: '有。嚴格來說大廳是貓的,我們只是在這裡工作。',
+    ftSub: '小琉球 · 台灣', ftRooms: '房型', ftBook: '訂房', ftCheckin: '自助入住',
   },
   ja: {
-    title:    'in.house — 小琉球ゲストハウス',
-    label:    '小琉球 · 台湾',
-    sub:      '小琉球 · ゲストハウス',
-    bookNow:  '今すぐ予約',
-    ourRooms: '客室紹介',
-    explore:  'もっと見る',
+    title: 'in.house — 小琉球ゲストハウス',
+    label: '小琉球 · 台湾', sub: '小琉球 · ゲストハウス',
+    bookNow: '今すぐ予約', ourRooms: '客室紹介', explore: 'もっと見る',
+    aboutLabel: 'in.house について',
+    aboutTitle: '島の古民家で、<br>ダイバーのための時間を。',
+    aboutDesc: 'in.house は台湾南西の離島・小琉球にあるリノベーション古民家です。人研ぎの床、緑の植物、「スマホを置いて、隣の人と話そう」と書かれた壁——そしてロビーには看板猫がいます。',
+    aboutP1: 'フリーダイビングに優しい宿:器材干しラック、洗い場、ウェイトやブイの置き場も完備。',
+    aboutP2: 'セルフチェックイン——オンライン予約、予約確認、ドアコード取得。フロントに並ぶ必要はありません。',
+    aboutP3: '一棟の古民家に5タイプの客室:ダブル、ツイン、シングル、二段ベッドのドミトリー。',
+    roomsLabel: '客室', roomsTitle: 'この青い島で、あなたの居場所を',
+    roomsDesc: 'どの部屋にも海の物語があります——あなたらしい一室をどうぞ。',
+    rp1: 'オーシャンダブル', rp2: 'ツインワンダラー', rp3: 'ジャストライト', rp4: 'フリーダイバールーム', rp5: 'インタータイダルバンク',
+    cap12: '1〜2名', cap1: '1名', capBed: 'ベッド単位で予約', rpMore: 'すべての客室を見る →',
+    fdLabel: 'ダイバーフレンドリー', fdTitle: '潜る人のためにつくられた家',
+    fdDesc: '海から帰ったら、塩を流して器材を掛けて、夕食へ。ウェットスーツも海水も、ここでは困りごとになりません。',
+    fd1: '器材干しウォール', fd2: 'セーフティロープとブイ', fd3: 'ウェイトとダイブフラッグ', fd4: 'ダイブコーナーとショップ',
+    scLabel: 'セルフチェックイン', scTitle: 'フロントなし。待ち時間なし。',
+    sc1T: 'オンライン予約', sc1D: '客室と日程を選ぶと、予約番号(例:IH-20260715-001)が発行されます。大切に保管してください。',
+    sc2T: '当日、予約を確認', sc2D: 'チェックインページで予約番号と電話番号の下4桁を入力して認証します。',
+    sc3T: 'ドアコードを取得', sc3D: '部屋のドアコードが画面に表示されます。荷物を置いて、海を見に行きましょう。',
+    locLabel: 'アクセス', locTitle: '東港から25分の小さな島',
+    loc1: '屏東・東港港からフェリーで約25〜30分、小琉球に到着します。',
+    loc2: '島内の移動はスクーターか電動バイクが便利。港の近くにレンタル店が多くあります。',
+    loc3: '詳しい住所と道順は、予約確認のご案内に記載しています。',
+    faqTitle: 'ご案内',
+    q1: 'セルフチェックインの流れは?',
+    a1: 'ご予約後に予約番号をお送りします。当日チェックインページで予約番号と電話番号の下4桁を入力して認証し、必要事項を記入すると、ドアコードが画面に表示されます。',
+    q2: 'ドアコードが表示されない場合は?',
+    a2: 'ご安心ください。予約確認のご案内にある連絡先までご連絡いただければ、すぐに対応します。',
+    q3: 'フリーダイビング初心者でも大丈夫?',
+    a3: 'もちろんです。小琉球にはダイビングスクールが多く、講習のために滞在するゲストもたくさんいます。器材の洗い場・干し場もあり、ロビーでは仲間にも出会えます。',
+    q4: '本当に猫がいますか?', a4: 'います。正確にはロビーは猫のものです。私たちはそこで働いているだけです。',
+    ftSub: '小琉球 · 台湾', ftRooms: '客室', ftBook: '予約', ftCheckin: 'セルフチェックイン',
   }
 };
 
@@ -256,7 +553,6 @@ function detectLang() {
   if (browser.startsWith('ja')) return 'ja';
   return 'en';
 }
-
 function applyLang(lang) {
   if (!i18n[lang]) lang = 'en';
   const dict = i18n[lang];
@@ -264,18 +560,18 @@ function applyLang(lang) {
   document.title = dict.title;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (dict[key]) el.textContent = dict[key];
+    if (!dict[key]) return;
+    if (dict[key].includes('<br>')) el.innerHTML = dict[key];
+    else el.textContent = dict[key];
   });
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
   localStorage.setItem('lang', lang);
 }
-
 document.querySelectorAll('.lang-btn').forEach(btn => {
   btn.addEventListener('click', () => applyLang(btn.dataset.lang));
 });
-
 applyLang(detectLang());
 
 /* ── HERO SLIDESHOW ── */
@@ -285,7 +581,6 @@ applyLang(detectLang());
   const bar    = document.getElementById('progress');
   const TOTAL  = 5, DELAY = 4200;
   let cur = 0, timer, startX = 0, moved = false;
-
   function goTo(i) {
     cur = (i + TOTAL) % TOTAL;
     slides.style.transform = `translateX(${-cur * 100}%)`;
@@ -296,10 +591,8 @@ applyLang(detectLang());
       bar.style.width = '100%';
     });
   }
-
   window.goTo = goTo;
   function auto() { clearInterval(timer); timer = setInterval(() => goTo(cur+1), DELAY); }
-
   const hero = document.getElementById('hero');
   hero.addEventListener('touchstart', e => { startX = e.touches[0].clientX; moved = false; clearInterval(timer); }, {passive:true});
   hero.addEventListener('touchmove',  e => { moved = Math.abs(e.touches[0].clientX - startX) > 8; }, {passive:true});
@@ -308,9 +601,34 @@ applyLang(detectLang());
     if (moved && Math.abs(dx) > 40) goTo(dx < 0 ? cur+1 : cur-1);
     auto();
   });
-
   goTo(0); auto();
 })();
+
+/* ── FAQ ACCORDION ── */
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    const ans  = item.querySelector('.faq-a');
+    const open = item.classList.toggle('open');
+    ans.style.maxHeight = open ? ans.scrollHeight + 'px' : '0';
+  });
+});
+
+/* ── LIGHTBOX (freedive photos) ── */
+const lightbox = document.createElement('div');
+lightbox.className = 'lightbox';
+lightbox.innerHTML = '<img alt=""><button class="lightbox-close" aria-label="Close">✕</button>';
+document.body.appendChild(lightbox);
+lightbox.addEventListener('click', () => { lightbox.classList.remove('open'); document.body.style.overflow=''; });
+document.querySelectorAll('.fd-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const img = item.querySelector('img');
+    lightbox.querySelector('img').src = img.src;
+    lightbox.querySelector('img').alt = img.alt;
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  });
+});
 </script>
 </body>
 </html>
