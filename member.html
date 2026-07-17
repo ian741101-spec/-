@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>in.house — Member</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ocean-deep: #0d2b3e;
+  --ocean-mid:  #1a4a6b;
+  --seafoam:    #7ebfb5;
+  --cream:      #faf7f2;
+  --text-mid:   #5b6f7d;
+  --line-green: #06C755;
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--cream); font-family:'Noto Sans TC','Noto Sans JP',sans-serif; color:#2a3b47; min-height:100svh; }
+button { -webkit-tap-highlight-color:transparent; cursor:pointer; border:none; font-family:inherit; }
+a { color:inherit; }
+
+/* header */
+.topbar {
+  background:var(--ocean-deep);
+  padding:calc(var(--safe-top) + 14px) 20px 14px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.tb-name { font-family:'Dancing Script',cursive; font-size:1.5rem; color:white; text-decoration:none; }
+.lang-switch { display:flex; gap:2px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); border-radius:100px; padding:3px; }
+.lang-btn { background:transparent; color:rgba(255,255,255,.75); font-size:.66rem; letter-spacing:.06em; padding:5px 9px; border-radius:100px; min-width:36px; }
+.lang-btn.active { background:white; color:var(--ocean-deep); }
+
+.wrap { max-width:560px; margin:0 auto; padding:28px 20px calc(48px + var(--safe-bottom)); }
+.sec-label { font-family:'Playfair Display',serif; font-style:italic; color:#3e8ba8; font-size:.74rem; letter-spacing:.3em; text-transform:uppercase; margin-bottom:8px; }
+h1 { font-size:1.4rem; font-weight:500; color:var(--ocean-deep); margin-bottom:20px; }
+
+/* login card */
+.login-card { background:white; border-radius:6px; padding:36px 26px; text-align:center; box-shadow:0 8px 30px rgba(13,43,62,.08); }
+.login-card p { font-size:.86rem; font-weight:300; color:var(--text-mid); line-height:1.9; margin-bottom:24px; }
+.line-btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; height:52px; background:var(--line-green); color:white;
+  font-size:.92rem; font-weight:500; border-radius:6px; transition:opacity .2s;
+}
+.line-btn:active { opacity:.85; }
+.line-btn svg { flex:0 0 auto; }
+
+/* profile */
+.profile-card { background:white; border-radius:6px; padding:22px; display:flex; align-items:center; gap:16px; box-shadow:0 8px 30px rgba(13,43,62,.08); }
+.avatar { width:62px; height:62px; border-radius:50%; object-fit:cover; background:#dde6ec; }
+.p-name { font-size:1.05rem; font-weight:500; color:var(--ocean-deep); }
+.p-points { font-size:.8rem; color:var(--text-mid); margin-top:4px; }
+.p-points b { color:#3e8ba8; font-weight:500; }
+.logout { margin-left:auto; background:none; color:#98a8b3; font-size:.74rem; letter-spacing:.06em; text-decoration:underline; }
+
+/* bookings */
+.bk-section { margin-top:30px; }
+.bk-card { background:white; border-radius:6px; padding:18px 20px; box-shadow:0 6px 22px rgba(13,43,62,.06); margin-bottom:12px; }
+.bk-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.bk-room { font-size:.95rem; font-weight:500; color:var(--ocean-deep); }
+.bk-status { font-size:.68rem; letter-spacing:.08em; padding:3px 9px; border-radius:100px; background:#eef4f0; color:#4b8a6e; white-space:nowrap; }
+.bk-status.cancelled { background:#f7ecec; color:#a05b5b; }
+.bk-status.pending { background:#f5f1e6; color:#96803e; }
+.bk-dates { font-size:.8rem; color:var(--text-mid); margin-top:7px; }
+.bk-code { font-size:.72rem; color:#98a8b3; margin-top:5px; letter-spacing:.05em; }
+.empty { text-align:center; color:var(--text-mid); font-size:.85rem; font-weight:300; padding:34px 10px; line-height:1.9; }
+.cta {
+  display:block; text-align:center; margin-top:20px; background:var(--ocean-deep); color:white;
+  padding:15px; border-radius:4px; text-decoration:none; font-size:.85rem; letter-spacing:.12em;
+}
+.note { margin-top:26px; font-size:.74rem; color:#98a8b3; line-height:1.9; text-align:center; }
+.loading { text-align:center; padding:60px 0; color:var(--text-mid); font-size:.85rem; }
+.hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="tb-name" href="index.html">in.house</a>
+  <div class="lang-switch">
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="zh">繁中</button>
+    <button class="lang-btn" data-lang="ja">日本語</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="sec-label" data-i18n="label">Member</div>
+  <h1 data-i18n="title">會員專區</h1>
+
+  <!-- 登入前 -->
+  <div id="view-login" class="login-card hidden">
+    <p data-i18n="loginDesc">Sign in with LINE to see your bookings, points, and faster check-out next time.</p>
+    <button class="line-btn" id="line-login">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.13c0 4.03 3.58 7.4 8.42 8.04.33.07.77.22.89.5.1.26.07.66.03.92l-.14.86c-.04.26-.2 1.01.89.55 1.09-.46 5.87-3.46 8.01-5.92C21.66 13.44 22 11.86 22 10.13 22 5.64 17.52 2 12 2z"/></svg>
+      <span data-i18n="loginBtn">使用 LINE 登入</span>
+    </button>
+  </div>
+
+  <!-- 登入後 -->
+  <div id="view-member" class="hidden">
+    <div class="profile-card">
+      <img class="avatar" id="m-avatar" alt="">
+      <div>
+        <div class="p-name" id="m-name"></div>
+        <div class="p-points"><span data-i18n="points">Points</span>:<b id="m-points">0</b></div>
+      </div>
+      <button class="logout" id="logout" data-i18n="logout">登出</button>
+    </div>
+
+    <div class="bk-section">
+      <div class="sec-label" data-i18n="bkLabel">My Bookings</div>
+      <div id="bk-list"></div>
+      <a class="cta" href="booking.html" data-i18n="bookCta">預訂下一趟旅程 →</a>
+    </div>
+
+    <p class="note" data-i18n="note">積分回饋規則即將推出,住宿紀錄會自動累積在這裡。</p>
+  </div>
+
+  <div id="view-loading" class="loading" data-i18n="loading">載入中⋯</div>
+</div>
+
+<script>
+const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
+
+/* ── i18n ── */
+const i18n = {
+  en: {
+    title2:'in.house — Member', label:'Member', title:'Member Area',
+    loginDesc:'Sign in with LINE to keep your bookings in one place, collect points, and book faster next time.',
+    loginBtn:'Log in with LINE', points:'Points', logout:'Log out',
+    bkLabel:'My Bookings', bookCta:'Book your next stay →',
+    empty:'No bookings linked to this account yet.\nBookings made while logged in will show up here.',
+    note:'Point rewards are coming soon — your stays are already being recorded here.',
+    loading:'Loading…', night:'night(s)', guests:'guest(s)',
+    stPending:'Pending', stConfirmed:'Confirmed', stCancelled:'Cancelled', stCheckedin:'Checked-in',
+  },
+  zh: {
+    title2:'in.house — 會員專區', label:'Member', title:'會員專區',
+    loginDesc:'使用 LINE 登入,訂房紀錄集中保存、累積點數,下次訂房更快速。',
+    loginBtn:'使用 LINE 登入', points:'點數', logout:'登出',
+    bkLabel:'我的訂房', bookCta:'預訂下一趟旅程 →',
+    empty:'這個帳號還沒有訂房紀錄。\n登入狀態下完成的訂房會自動出現在這裡。',
+    note:'積分回饋規則即將推出,你的住宿紀錄已經開始累積。',
+    loading:'載入中⋯', night:'晚', guests:'位',
+    stPending:'待確認', stConfirmed:'已確認', stCancelled:'已取消', stCheckedin:'已入住',
+  },
+  ja: {
+    title2:'in.house — 会員ページ', label:'Member', title:'会員ページ',
+    loginDesc:'LINEでログインすると、予約履歴の確認やポイントの積立、次回のスムーズな予約ができます。',
+    loginBtn:'LINEでログイン', points:'ポイント', logout:'ログアウト',
+    bkLabel:'予約履歴', bookCta:'次の旅を予約する →',
+    empty:'このアカウントに紐づく予約はまだありません。\nログイン中に行った予約がここに表示されます。',
+    note:'ポイント特典は準備中です。宿泊履歴はすでに記録されています。',
+    loading:'読み込み中⋯', night:'泊', guests:'名',
+    stPending:'確認待ち', stConfirmed:'確定', stCancelled:'キャンセル', stCheckedin:'チェックイン済',
+  }
+};
+let LANG = 'en';
+function detectLang() {
+  const saved = localStorage.getItem('lang');
+  if (saved && i18n[saved]) return saved;
+  const b = (navigator.language || 'en').toLowerCase();
+  return b.startsWith('zh') ? 'zh' : b.startsWith('ja') ? 'ja' : 'en';
+}
+function applyLang(lang) {
+  LANG = i18n[lang] ? lang : 'en';
+  const dict = i18n[LANG];
+  document.documentElement.lang = LANG === 'zh' ? 'zh-TW' : LANG;
+  document.title = dict.title2;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (dict[k]) el.textContent = dict[k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+  localStorage.setItem('lang', LANG);
+  if (lastData) renderBookings(lastData.bookings);
+}
+document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+
+/* ── token 處理 ── */
+(function captureToken() {
+  const m = location.hash.match(/token=([^&]+)/);
+  if (m) {
+    localStorage.setItem('memberToken', m[1]);
+    history.replaceState(null, '', location.pathname);
+  }
+})();
+function token() { return localStorage.getItem('memberToken'); }
+
+const $ = id => document.getElementById(id);
+function show(view) {
+  ['view-login','view-member','view-loading'].forEach(v => $(v).classList.toggle('hidden', v !== view));
+}
+
+$('line-login').addEventListener('click', () => location.href = `${WORKER_URL}/auth/line/login`);
+$('logout').addEventListener('click', () => { localStorage.removeItem('memberToken'); show('view-login'); });
+
+/* ── 載入會員資料 ── */
+let lastData = null;
+function statusInfo(b) {
+  const d = i18n[LANG];
+  if (b.status === 'Cancelled') return [d.stCancelled, 'cancelled'];
+  if (b.checkinStatus === 'Checked-in') return [d.stCheckedin, ''];
+  if (b.status === 'Pending') return [d.stPending, 'pending'];
+  return [d.stConfirmed, ''];
+}
+function renderBookings(bookings) {
+  const list = $('bk-list');
+  const d = i18n[LANG];
+  if (!bookings || bookings.length === 0) {
+    list.innerHTML = `<div class="bk-card empty">${d.empty.replace('\n','<br>')}</div>`;
+    return;
+  }
+  list.innerHTML = bookings.map(b => {
+    const [label, cls] = statusInfo(b);
+    return `<div class="bk-card">
+      <div class="bk-top"><div class="bk-room">${b.room}</div><div class="bk-status ${cls}">${label}</div></div>
+      <div class="bk-dates">${b.checkin} → ${b.checkout} · ${b.guests} ${d.guests}</div>
+      <div class="bk-code">${b.code}</div>
+    </div>`;
+  }).join('');
+}
+async function load() {
+  if (!token()) { show('view-login'); return; }
+  show('view-loading');
+  try {
+    const res = await fetch(`${WORKER_URL}/auth/me`, { headers: { Authorization: `Bearer ${token()}` } });
+    if (res.status === 401) { localStorage.removeItem('memberToken'); show('view-login'); return; }
+    const data = await res.json();
+    lastData = data;
+    $('m-name').textContent = data.member.display_name || '';
+    $('m-points').textContent = data.member.points || 0;
+    if (data.member.picture_url) $('m-avatar').src = data.member.picture_url;
+    renderBookings(data.bookings);
+    show('view-member');
+  } catch (e) {
+    show('view-login');
+  }
+}
+
+applyLang(detectLang());
+load();
+</script>
+</body>
+</html>

@@ -691,6 +691,29 @@ try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch(e) { console.erro
 /* ── CLOUDFLARE WORKER (Airtable proxy — no token in HTML) ── */
 const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
 
+/* ── 會員自動帶入(登入過的會員,以最近一筆訂單資料預填)── */
+(function prefillFromMember() {
+  const t = localStorage.getItem('memberToken');
+  if (!t) return;
+  fetch(`${WORKER_URL}/auth/me`, { headers: { Authorization: `Bearer ${t}` } })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.ok) return;
+      const last = (data.bookings || [])[0];
+      const nameEl  = document.getElementById('name-input');
+      const phoneEl = document.getElementById('phone-input');
+      const emailEl = document.getElementById('email-input');
+      if (last) {
+        if (!nameEl.value  && last.name)  nameEl.value  = last.name;
+        if (!phoneEl.value && last.phone) phoneEl.value = last.phone;
+        if (!emailEl.value && last.email) emailEl.value = last.email;
+      } else if (!nameEl.value && data.member.display_name) {
+        nameEl.value = data.member.display_name;
+      }
+    })
+    .catch(() => {});
+})();
+
 /* ── BLOCKED DATES (per room type) ── */
 var blockedDates = [];
 
@@ -752,10 +775,11 @@ function submitForm() {
     return isNaN(d) ? str : d.toISOString().slice(0, 10);
   }
 
-  // Step 1: Write to Airtable via Worker
+  // Step 1: Write to Airtable via Worker(會員登入時附上 token 綁定訂單)
+  const memberToken = localStorage.getItem('memberToken');
   fetch(`${WORKER_URL}/booking`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(memberToken ? { Authorization: `Bearer ${memberToken}` } : {}) },
     body: JSON.stringify({
       guest_name:    name,
       guest_phone:   phone,

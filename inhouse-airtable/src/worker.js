@@ -17,14 +17,53 @@
 // rooms 表（每房固定密碼，硬體不聯網、密碼人工設定於鎖上）：
 //   room_type（需與訂房表 room_type 完全一致）, lock_code
 
-const AIRTABLE_BASE  = 'app8ObqmBPie5o3WJ';
-const AIRTABLE_TABLE = 'tblVoUuOMnrZW0b1d';
-const AIRTABLE_ROOMS = 'rooms';
+const AIRTABLE_BASE    = 'app8ObqmBPie5o3WJ';
+const AIRTABLE_TABLE   = 'tblVoUuOMnrZW0b1d';
+const AIRTABLE_ROOMS   = 'rooms';
+const AIRTABLE_MEMBERS = 'members';
+
+// LINE Login(secrets:LINE_CHANNEL_SECRET、SESSION_SECRET)
+const LINE_CHANNEL_ID = '2010742540';
+const SITE_URL        = 'https://inhouse-dcc.pages.dev';
+
+// ── 簽章工具(HMAC-SHA256,無狀態 token)──
+const te = new TextEncoder();
+function b64u(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64uJson(obj) {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64uParse(s) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))))); }
+  catch (_) { return null; }
+}
+async function hmac(secret, data) {
+  const key = await crypto.subtle.importKey('raw', te.encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  return b64u(await crypto.subtle.sign('HMAC', key, te.encode(data)));
+}
+async function makeToken(payload, secret) {
+  const p = b64uJson(payload);
+  return `${p}.${await hmac(secret, p)}`;
+}
+async function verifyToken(token, secret) {
+  if (!token || !token.includes('.')) return null;
+  const [p, sig] = token.split('.');
+  if (sig !== await hmac(secret, p)) return null;
+  const payload = b64uParse(p);
+  if (!payload || (payload.exp && Date.now() > payload.exp)) return null;
+  return payload;
+}
+async function memberFromRequest(request, env) {
+  const auth = request.headers.get('Authorization') || '';
+  if (!auth.startsWith('Bearer ')) return null;
+  return verifyToken(auth.slice(7), env.SESSION_SECRET);
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
 function json(data, status = 200) {
@@ -49,6 +88,133 @@ export default {
     // ── GET /health ──
     if (request.method === 'GET' && url.pathname === '/health') {
       return json({ ok: true, ts: Date.now() });
+    }
+
+    const MEMBERS_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_MEMBERS}`;
+
+    // ── GET /auth/line/login → 導向 LINE 授權頁 ──
+    if (request.method === 'GET' && url.pathname === '/auth/line/login') {
+      const state = await makeToken({ t: Date.now() }, env.SESSION_SECRET);
+      const authorize = 'https://access.line.me/oauth2/v2.1/authorize'
+        + '?response_type=code'
+        + `&client_id=${LINE_CHANNEL_ID}`
+        + `&redirect_uri=${encodeURIComponent(url.origin + '/auth/line/callback')}`
+        + `&state=${encodeURIComponent(state)}`
+        + `&scope=${encodeURIComponent('profile openid')}`;
+      return Response.redirect(authorize, 302);
+    }
+
+    // ── GET /auth/line/callback → 換 token、抓 profile、upsert 會員、發 session ──
+    if (request.method === 'GET' && url.pathname === '/auth/line/callback') {
+      try {
+        const code  = url.searchParams.get('code');
+        const state = await verifyToken(url.searchParams.get('state') || '', env.SESSION_SECRET);
+        if (!code || !state || Date.now() - state.t > 10 * 60 * 1000) {
+          return Response.redirect(`${SITE_URL}/member?error=state`, 302);
+        }
+        const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            grant_type:    'authorization_code',
+            code,
+            redirect_uri:  url.origin + '/auth/line/callback',
+            client_id:     LINE_CHANNEL_ID,
+            client_secret: env.LINE_CHANNEL_SECRET,
+          }),
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenData.access_token) return Response.redirect(`${SITE_URL}/member?error=token`, 302);
+
+        const profRes = await fetch('https://api.line.me/v2/profile', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        const prof = await profRes.json();
+        if (!prof.userId) return Response.redirect(`${SITE_URL}/member?error=profile`, 302);
+
+        // upsert 會員(members 表尚未建立時不擋登入)
+        try {
+          const filter = `{line_user_id}="${prof.userId}"`;
+          const found  = await fetch(`${MEMBERS_URL}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`, {
+            headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}` },
+          }).then(r => r.json());
+          if (found.records && found.records.length > 0) {
+            await fetch(`${MEMBERS_URL}/${found.records[0].id}`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fields: { display_name: prof.displayName || '', picture_url: prof.pictureUrl || '' } }),
+            });
+          } else if (!found.error) {
+            await fetch(MEMBERS_URL, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fields: {
+                line_user_id: prof.userId,
+                display_name: prof.displayName || '',
+                picture_url:  prof.pictureUrl || '',
+                points:       0,
+                created_at:   new Date().toISOString().slice(0, 10),
+              } }),
+            });
+          }
+        } catch (_) {}
+
+        const session = await makeToken({
+          sub:  prof.userId,
+          name: prof.displayName || '',
+          pic:  prof.pictureUrl || '',
+          exp:  Date.now() + 30 * 24 * 60 * 60 * 1000,
+        }, env.SESSION_SECRET);
+        return Response.redirect(`${SITE_URL}/member#token=${session}`, 302);
+      } catch (e) {
+        return Response.redirect(`${SITE_URL}/member?error=server`, 302);
+      }
+    }
+
+    // ── GET /auth/me → 會員資料 + 訂房紀錄 ──
+    if (request.method === 'GET' && url.pathname === '/auth/me') {
+      const session = await memberFromRequest(request, env);
+      if (!session) return json({ error: 'unauthorized' }, 401);
+
+      let member = { display_name: session.name, picture_url: session.pic, points: 0 };
+      try {
+        const filter = `{line_user_id}="${session.sub}"`;
+        const found  = await fetch(`${MEMBERS_URL}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`, {
+          headers: { Authorization: `Bearer ${TOKEN}` },
+        }).then(r => r.json());
+        if (found.records && found.records.length > 0) {
+          const f = found.records[0].fields;
+          member = {
+            display_name: f.display_name || session.name,
+            picture_url:  f.picture_url  || session.pic,
+            points:       f.points || 0,
+          };
+        }
+      } catch (_) {}
+
+      let bookings = [];
+      try {
+        const bFilter = `{line_user_id}="${session.sub}"`;
+        const bRes = await fetch(`${BASE_URL}?filterByFormula=${encodeURIComponent(bFilter)}&sort%5B0%5D%5Bfield%5D=checkin_date&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=20`, {
+          headers: { Authorization: `Bearer ${TOKEN}` },
+        }).then(r => r.json());
+        if (bRes.records) {
+          bookings = bRes.records.map(r => ({
+            code:     r.fields.booking_code   || '',
+            room:     r.fields.room_type      || '',
+            checkin:  r.fields.checkin_date   || '',
+            checkout: r.fields.checkout_date  || '',
+            guests:   r.fields.guests         || 1,
+            status:   r.fields.status         || '',
+            checkinStatus: r.fields.checkin_status || '',
+            name:     r.fields.guest_name     || '',
+            phone:    r.fields.guest_phone    || '',
+            email:    r.fields.guest_email    || '',
+          }));
+        }
+      } catch (_) {}
+
+      return json({ ok: true, member, bookings });
     }
 
     // ── GET /availability?room_type=xxx ──
@@ -95,12 +261,26 @@ export default {
           status:        'Pending',
         };
 
-        const res  = await fetch(BASE_URL, {
+        // 會員登入時綁定 LINE 使用者(bookings 表需有 line_user_id 欄位;沒有就自動退回不綁)
+        const session = await memberFromRequest(request, env);
+        if (session) fields.line_user_id = session.sub;
+
+        let res  = await fetch(BASE_URL, {
           method: 'POST',
           headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ fields })
         });
-        const data = await res.json();
+        let data = await res.json();
+
+        if (data.error && fields.line_user_id && /UNKNOWN_FIELD_NAME/i.test(JSON.stringify(data.error))) {
+          delete fields.line_user_id;
+          res  = await fetch(BASE_URL, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields })
+          });
+          data = await res.json();
+        }
 
         if (data.error) return json({ ok: false, error: data.error }, 400);
         return json({ ok: true, id: data.id, booking_code: fields.booking_code });
