@@ -89,8 +89,18 @@ img { display:block; max-width:100%; }
   font-size:.8rem; letter-spacing:.14em; font-weight:300; border-radius:2px; transition:all .2s;
 }
 .btn-secondary:active { background:rgba(255,255,255,.25); }
+.btn-member {
+  width:100%; max-width:420px; height:46px; margin-top:10px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  background:rgba(126,191,181,.18); backdrop-filter:blur(8px);
+  color:#c4e8e1; border:1px solid rgba(126,191,181,.6);
+  font-size:.8rem; letter-spacing:.14em; font-weight:400;
+  font-family:'Noto Sans TC','Noto Sans JP',sans-serif;
+  border-radius:2px; transition:all .2s;
+}
+.btn-member:active { background:rgba(126,191,181,.32); transform:scale(.98); }
 .dots {
-  position:absolute; bottom:calc(168px + var(--safe-bottom));
+  position:absolute; bottom:calc(226px + var(--safe-bottom));
   left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:10;
 }
 .dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.4); transition:all .35s; cursor:pointer; }
@@ -256,6 +266,10 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
       <button class="btn-primary" data-i18n="bookNow" onclick="location.href='booking.html'">Book Now</button>
       <button class="btn-secondary" data-i18n="ourRooms" onclick="location.href='rooms.html'">Our Rooms</button>
     </div>
+    <button class="btn-member" onclick="location.href='member.html'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex:0 0 auto"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      <span data-i18n="memberBtn">Member Area</span>
+    </button>
   </div>
   <div class="progress" id="progress"></div>
   <button class="scroll-hint" onclick="document.getElementById('about').scrollIntoView()">
@@ -313,14 +327,6 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
           <div class="rp-name" data-i18n="rp3">Just Right Room</div>
           <div class="rp-sub">Twin Room</div>
           <div class="rp-cap" data-i18n="cap12">1 – 2 guests</div>
-        </div>
-      </a>
-      <a class="rp-card" href="rooms.html">
-        <img src="images/room-freediver-1.webp" alt="Freediver Room" loading="lazy">
-        <div class="rp-body">
-          <div class="rp-name" data-i18n="rp4">Freediver Room</div>
-          <div class="rp-sub">Single Room</div>
-          <div class="rp-cap" data-i18n="cap1">1 guest</div>
         </div>
       </a>
       <a class="rp-card" href="rooms.html">
@@ -450,8 +456,8 @@ const i18n = {
     aboutP3: 'Five rooms, one old house: doubles, twins, a single, and a bunk dorm.',
     roomsLabel: 'Rooms', roomsTitle: 'Find your corner on this blue island',
     roomsDesc: 'Every room tells a story of the sea — pick the one that sounds like yours.',
-    rp1: 'Ocean Double', rp2: 'Twin Wanderer', rp3: 'Just Right Room', rp4: 'Freediver Room', rp5: 'Intertidal Bunk',
-    cap12: '1 – 2 guests', cap1: '1 guest', capBed: 'Book by the bed', rpMore: 'View all rooms →',
+    rp1: 'Ocean Double', rp2: 'Twin Wanderer', rp3: 'Just Right Room', rp5: 'Intertidal Bunk',
+    cap12: '1 – 2 guests', capBed: 'Book by the bed', rpMore: 'View all rooms →', memberBtn: 'Member Area',
     fdLabel: 'Freedive Friendly', fdTitle: 'Built around people who dive',
     fdDesc: 'Come back from the water, rinse off, hang everything up, and go find dinner. The house is set up so salt water and wetsuits are never a problem.',
     fd1: 'Gear drying wall', fd2: 'Safety lines & floats', fd3: 'Weights & dive flags', fd4: 'Dive corner & shop',
@@ -485,8 +491,8 @@ const i18n = {
     aboutP3: '一棟老屋、五種房型:雙人房、雙床房、單人房與上下舖背包房。',
     roomsLabel: '房型', roomsTitle: '在這座藍色小島,找到你的角落',
     roomsDesc: '每個房間都藏著一段海的故事——挑一間聽起來像你的。',
-    rp1: '海洋雙人房', rp2: '漫遊雙床房', rp3: '剛剛好房', rp4: '自由潛水單人房', rp5: '潮間帶背包房',
-    cap12: '1 – 2 位', cap1: '1 位', capBed: '以床位計', rpMore: '看所有房型 →',
+    rp1: '海洋雙人房', rp2: '漫遊雙床房', rp3: '剛剛好房', rp5: '潮間帶背包房',
+    cap12: '1 – 2 位', capBed: '以床位計', rpMore: '看所有房型 →', memberBtn: '會員專區',
     fdLabel: '潛水友善', fdTitle: '為潛水的人設計的家',
     fdDesc: '從海裡回來,沖掉鹽分、把裝備掛好,就能出門覓食。溼防寒衣和海水,在這裡從來不是問題。',
     fd1: '裝備晾曬牆', fd2: '安全繩與浮球', fd3: '配重帶與潛水旗', fd4: '潛水角落與小店',
@@ -520,8 +526,8 @@ const i18n = {
     aboutP3: '一棟の古民家に5タイプの客室:ダブル、ツイン、シングル、二段ベッドのドミトリー。',
     roomsLabel: '客室', roomsTitle: 'この青い島で、あなたの居場所を',
     roomsDesc: 'どの部屋にも海の物語があります——あなたらしい一室をどうぞ。',
-    rp1: 'オーシャンダブル', rp2: 'ツインワンダラー', rp3: 'ジャストライト', rp4: 'フリーダイバールーム', rp5: 'インタータイダルバンク',
-    cap12: '1〜2名', cap1: '1名', capBed: 'ベッド単位で予約', rpMore: 'すべての客室を見る →',
+    rp1: 'オーシャンダブル', rp2: 'ツインワンダラー', rp3: 'ジャストライト', rp5: 'インタータイダルバンク',
+    cap12: '1〜2名', capBed: 'ベッド単位で予約', rpMore: 'すべての客室を見る →', memberBtn: '会員ページ',
     fdLabel: 'ダイバーフレンドリー', fdTitle: '潜る人のためにつくられた家',
     fdDesc: '海から帰ったら、塩を流して器材を掛けて、夕食へ。ウェットスーツも海水も、ここでは困りごとになりません。',
     fd1: '器材干しウォール', fd2: 'セーフティロープとブイ', fd3: 'ウェイトとダイブフラッグ', fd4: 'ダイブコーナーとショップ',
