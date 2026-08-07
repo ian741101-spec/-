@@ -8,7 +8,15 @@
 //   POST /booking                           → 建立新訂單（自動產生 booking_code）
 //   GET  /checkin/verify?code=xxx&phone4=xx → 驗證訂單 + 手機後四碼
 //   POST /checkin/submit                    → 提交 check-in + 回傳該房固定門鎖密碼
+//   GET  /auth/me                           → 會員資料+點數+訂房+兌換紀錄
+//   POST /member/birthday                   → 設定生日月份
+//   POST /member/redeem                     → 點數兌換申請
 //   GET  /health                            → 健康檢查
+//
+// members 表:line_user_id, display_name, picture_url, points(棄用,改即時計算),
+//            created_at, birthday_month(1-12), points_adjust(手動加減點)
+// redemptions 表:line_user_id, member_name, item, label, points_cost,
+//            status(Pending/Approved/Used/Rejected), coupon_code, created_at, expires_at
 //
 // Airtable 欄位清單（15個，無重複）：
 //   訂房：booking_code, guest_name, guest_phone, guest_email,
@@ -25,6 +33,117 @@ const AIRTABLE_MEMBERS = 'members';
 // LINE Login(secrets:LINE_CHANNEL_SECRET、SESSION_SECRET)
 const LINE_CHANNEL_ID = '2010742540';
 const SITE_URL        = 'https://inhouse-dcc.pages.dev';
+
+// ── 住宿集點規則(2026-08 海報版)──
+// 每晚計點:Intertidal Bunk 1 點,其餘房型 2 點
+// 加倍(擇優不疊加):11–4 月的週一~週四晚 ×2;生日當月 ×2(需會員填 birthday_month)
+// 入點時機:完成入住(checkin_status = Checked-in 且 status != Cancelled)
+// 點數 = 累積(訂房計算) + points_adjust(members 表手動調整,推薦好友等) − 已兌換
+const AIRTABLE_REDEMPTIONS = 'redemptions';
+const ROOM_POINTS_DEFAULT  = 2;
+const ROOM_POINTS          = { 'Intertidal Bunk': 1 };
+const REWARDS = {
+  gift10:    { cost: 10, label: '小禮物或飲品' },
+  coupon300: { cost: 20, label: 'NT$300 住宿折價券' },
+  coupon500: { cost: 40, label: 'NT$500 住宿折價券' },
+  upgrade:   { cost: 40, label: '房型升等(依房況)' },
+};
+
+const MEMBERS_API     = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_MEMBERS}`;
+const BOOKINGS_API    = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+const REDEMPTIONS_API = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_REDEMPTIONS}`;
+
+function atGet(apiUrl, token) {
+  return fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
+}
+
+// 單筆訂單可得點數(逐晚計算,含加倍;90 晚上限防呆)
+function bookingPoints(f, birthdayMonth) {
+  if (!f.checkin_date || !f.checkout_date) return 0;
+  const start = new Date(f.checkin_date + 'T00:00:00Z');
+  const end   = new Date(f.checkout_date + 'T00:00:00Z');
+  if (isNaN(start) || isNaN(end) || end <= start) return 0;
+  const base = ROOM_POINTS[f.room_type] !== undefined ? ROOM_POINTS[f.room_type] : ROOM_POINTS_DEFAULT;
+  let total = 0, n = 0;
+  for (const d = new Date(start); d < end && n < 90; d.setUTCDate(d.getUTCDate() + 1), n++) {
+    const m  = d.getUTCMonth() + 1;
+    const dw = d.getUTCDay();
+    const weekdayDouble  = (m >= 11 || m <= 4) && dw >= 1 && dw <= 4;
+    const birthdayDouble = !!birthdayMonth && m === birthdayMonth;
+    total += base * ((weekdayDouble || birthdayDouble) ? 2 : 1);
+  }
+  return total;
+}
+function bookingCounted(f) {
+  return f.status !== 'Cancelled' && f.checkin_status === 'Checked-in';
+}
+
+// 會員總覽:會員記錄 + 訂房(含每筆點數)+ 兌換紀錄 + 點數結算
+async function loadMemberData(sub, TOKEN) {
+  const filter = encodeURIComponent(`{line_user_id}="${sub}"`);
+
+  let memberRec = null;
+  try {
+    const found = await atGet(`${MEMBERS_API}?filterByFormula=${filter}&maxRecords=1`, TOKEN);
+    if (found.records && found.records.length > 0) memberRec = found.records[0];
+  } catch (_) {}
+  const mf = memberRec ? memberRec.fields : {};
+  const birthdayMonth = Number(mf.birthday_month) >= 1 && Number(mf.birthday_month) <= 12
+    ? Number(mf.birthday_month) : null;
+  const adjust = Number(mf.points_adjust) || 0;
+
+  let earned = 0;
+  let bookings = [];
+  try {
+    const bRes = await atGet(`${BOOKINGS_API}?filterByFormula=${filter}&sort%5B0%5D%5Bfield%5D=checkin_date&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=100`, TOKEN);
+    if (bRes.records) {
+      bookings = bRes.records.map(r => {
+        const f = r.fields;
+        const pts     = bookingPoints(f, birthdayMonth);
+        const counted = bookingCounted(f);
+        if (counted) earned += pts;
+        return {
+          code:     f.booking_code   || '',
+          room:     f.room_type      || '',
+          checkin:  f.checkin_date   || '',
+          checkout: f.checkout_date  || '',
+          guests:   f.guests         || 1,
+          status:   f.status         || '',
+          checkinStatus: f.checkin_status || '',
+          points:   pts,
+          counted,
+        };
+      });
+    }
+  } catch (_) {}
+
+  let redeemed = 0;
+  let redemptions = [];
+  try {
+    const rRes = await atGet(`${REDEMPTIONS_API}?filterByFormula=${filter}&maxRecords=100`, TOKEN);
+    if (rRes.records) {
+      redemptions = rRes.records.map(r => {
+        const f = r.fields;
+        const cost = Number(f.points_cost) || 0;
+        if (f.status !== 'Rejected') redeemed += cost;   // 退回的兌換不扣點
+        return {
+          item:    f.item        || '',
+          label:   f.label       || '',
+          cost,
+          status:  f.status      || 'Pending',
+          code:    f.coupon_code || '',
+          expires: f.expires_at  || '',
+          created: f.created_at  || '',
+        };
+      }).sort((a, b) => (b.created || '').localeCompare(a.created || ''));
+    }
+  } catch (_) {}
+
+  return {
+    memberRec, birthdayMonth, bookings, redemptions,
+    points: { earned, adjust, redeemed, available: earned + adjust - redeemed },
+  };
+}
 
 // ── 簽章工具(HMAC-SHA256,無狀態 token)──
 const te = new TextEncoder();
@@ -100,7 +219,8 @@ export default {
         + `&client_id=${LINE_CHANNEL_ID}`
         + `&redirect_uri=${encodeURIComponent(url.origin + '/auth/line/callback')}`
         + `&state=${encodeURIComponent(state)}`
-        + `&scope=${encodeURIComponent('profile openid')}`;
+        + `&scope=${encodeURIComponent('profile openid')}`
+        + '&bot_prompt=normal';   // 官方帳號連結後,登入頁會出現「加入好友」選項
       return Response.redirect(authorize, 302);
     }
 
@@ -171,50 +291,105 @@ export default {
       }
     }
 
-    // ── GET /auth/me → 會員資料 + 訂房紀錄 ──
+    // ── GET /auth/me → 會員資料 + 點數結算 + 訂房紀錄 + 兌換紀錄 ──
     if (request.method === 'GET' && url.pathname === '/auth/me') {
       const session = await memberFromRequest(request, env);
       if (!session) return json({ error: 'unauthorized' }, 401);
 
-      let member = { display_name: session.name, picture_url: session.pic, points: 0 };
-      try {
-        const filter = `{line_user_id}="${session.sub}"`;
-        const found  = await fetch(`${MEMBERS_URL}?filterByFormula=${encodeURIComponent(filter)}&maxRecords=1`, {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        }).then(r => r.json());
-        if (found.records && found.records.length > 0) {
-          const f = found.records[0].fields;
-          member = {
-            display_name: f.display_name || session.name,
-            picture_url:  f.picture_url  || session.pic,
-            points:       f.points || 0,
-          };
-        }
-      } catch (_) {}
+      const data = await loadMemberData(session.sub, TOKEN);
+      const mf   = data.memberRec ? data.memberRec.fields : {};
+      return json({
+        ok: true,
+        member: {
+          display_name:   mf.display_name || session.name,
+          picture_url:    mf.picture_url  || session.pic,
+          birthday_month: data.birthdayMonth,
+          points:         data.points,
+        },
+        bookings:    data.bookings,
+        redemptions: data.redemptions,
+      });
+    }
 
-      let bookings = [];
+    // ── POST /member/birthday → 設定生日月份(當月入住點數雙倍)──
+    if (request.method === 'POST' && url.pathname === '/member/birthday') {
+      const session = await memberFromRequest(request, env);
+      if (!session) return json({ error: 'unauthorized' }, 401);
       try {
-        const bFilter = `{line_user_id}="${session.sub}"`;
-        const bRes = await fetch(`${BASE_URL}?filterByFormula=${encodeURIComponent(bFilter)}&sort%5B0%5D%5Bfield%5D=checkin_date&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=20`, {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        }).then(r => r.json());
-        if (bRes.records) {
-          bookings = bRes.records.map(r => ({
-            code:     r.fields.booking_code   || '',
-            room:     r.fields.room_type      || '',
-            checkin:  r.fields.checkin_date   || '',
-            checkout: r.fields.checkout_date  || '',
-            guests:   r.fields.guests         || 1,
-            status:   r.fields.status         || '',
-            checkinStatus: r.fields.checkin_status || '',
-            name:     r.fields.guest_name     || '',
-            phone:    r.fields.guest_phone    || '',
-            email:    r.fields.guest_email    || '',
-          }));
-        }
-      } catch (_) {}
+        const body  = await request.json();
+        const month = Number(body.month);
+        if (!(month >= 1 && month <= 12)) return json({ ok: false, error: 'month 需為 1-12' }, 400);
 
-      return json({ ok: true, member, bookings });
+        const filter = encodeURIComponent(`{line_user_id}="${session.sub}"`);
+        const found  = await atGet(`${MEMBERS_API}?filterByFormula=${filter}&maxRecords=1`, TOKEN);
+        if (!found.records || found.records.length === 0) {
+          return json({ ok: false, error: '會員資料不存在,請重新登入' }, 404);
+        }
+        const res = await fetch(`${MEMBERS_API}/${found.records[0].id}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: { birthday_month: month } }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          const msg = /UNKNOWN_FIELD_NAME/i.test(JSON.stringify(data.error))
+            ? 'members 表缺少 birthday_month 欄位,請先到 Airtable 新增'
+            : JSON.stringify(data.error);
+          return json({ ok: false, error: msg }, 502);
+        }
+        return json({ ok: true, birthday_month: month });
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 500);
+      }
+    }
+
+    // ── POST /member/redeem → 點數兌換申請(點數即扣,店家於 Airtable 核准)──
+    // Body: { item: gift10 | coupon300 | coupon500 | upgrade }
+    if (request.method === 'POST' && url.pathname === '/member/redeem') {
+      const session = await memberFromRequest(request, env);
+      if (!session) return json({ error: 'unauthorized' }, 401);
+      try {
+        const body   = await request.json();
+        const reward = REWARDS[body.item];
+        if (!reward) return json({ ok: false, error: '無效的兌換項目' }, 400);
+
+        const data = await loadMemberData(session.sub, TOKEN);
+        if (data.points.available < reward.cost) {
+          return json({ ok: false, error: 'points', available: data.points.available }, 400);
+        }
+
+        const code    = 'IH-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+        const expires = new Date();
+        expires.setUTCMonth(expires.getUTCMonth() + 6);   // 效期 6 個月
+        const res = await fetch(REDEMPTIONS_API, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            typecast: true,
+            fields: {
+              line_user_id: session.sub,
+              member_name:  session.name || '',
+              item:         body.item,
+              label:        reward.label,
+              points_cost:  reward.cost,
+              status:       'Pending',
+              coupon_code:  code,
+              created_at:   new Date().toISOString().slice(0, 10),
+              expires_at:   expires.toISOString().slice(0, 10),
+            },
+          }),
+        });
+        const created = await res.json();
+        if (created.error) {
+          const msg = /NOT_FOUND|TABLE_NOT_FOUND/i.test(JSON.stringify(created.error))
+            ? 'redemptions 表尚未建立,請先到 Airtable 新增'
+            : JSON.stringify(created.error);
+          return json({ ok: false, error: msg }, 502);
+        }
+        return json({ ok: true, code, remaining: data.points.available - reward.cost });
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 500);
+      }
     }
 
     // ── GET /availability?room_type=xxx ──

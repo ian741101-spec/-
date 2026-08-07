@@ -52,8 +52,32 @@ h1 { font-size:1.4rem; font-weight:500; color:var(--ocean-deep); margin-bottom:2
 .avatar { width:62px; height:62px; border-radius:50%; object-fit:cover; background:#dde6ec; }
 .p-name { font-size:1.05rem; font-weight:500; color:var(--ocean-deep); }
 .p-points { font-size:.8rem; color:var(--text-mid); margin-top:4px; }
-.p-points b { color:#3e8ba8; font-weight:500; }
+.p-points b { color:#3e8ba8; font-weight:500; font-size:1.05rem; }
+.p-break { font-size:.7rem; color:#98a8b3; margin-top:2px; }
 .logout { margin-left:auto; background:none; color:#98a8b3; font-size:.74rem; letter-spacing:.06em; text-decoration:underline; }
+
+/* birthday */
+.bday-card { background:white; border-radius:6px; padding:14px 18px; margin-top:12px; box-shadow:0 6px 22px rgba(13,43,62,.06);
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:.8rem; color:var(--text-mid); }
+.bday-card select { font-family:inherit; font-size:.85rem; padding:6px 8px; border:1px solid #d6e0e6; border-radius:4px; background:white; color:#2a3b47; }
+.bday-save { background:var(--ocean-deep); color:white; font-size:.76rem; padding:7px 16px; border-radius:4px; }
+.bday-set { font-size:.8rem; }
+
+/* rewards */
+.rw-section { margin-top:30px; }
+.rw-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rw-card { background:white; border-radius:6px; padding:16px 14px; box-shadow:0 6px 22px rgba(13,43,62,.06);
+  display:flex; flex-direction:column; gap:8px; }
+.rw-cost { font-size:.68rem; letter-spacing:.08em; color:#3e8ba8; font-weight:500; }
+.rw-name { font-size:.84rem; font-weight:500; color:var(--ocean-deep); line-height:1.5; flex:1; }
+.rw-btn { background:var(--ocean-deep); color:white; font-size:.76rem; letter-spacing:.1em; padding:9px 0; border-radius:4px; }
+.rw-btn:disabled { background:#dde6ec; color:#98a8b3; cursor:default; }
+
+/* redemptions */
+.cp-card { background:white; border-radius:6px; padding:15px 18px; box-shadow:0 6px 22px rgba(13,43,62,.06); margin-bottom:10px; }
+.cp-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.cp-name { font-size:.86rem; font-weight:500; color:var(--ocean-deep); }
+.cp-meta { font-size:.72rem; color:#98a8b3; margin-top:5px; letter-spacing:.04em; }
 
 /* bookings */
 .bk-section { margin-top:30px; }
@@ -63,14 +87,17 @@ h1 { font-size:1.4rem; font-weight:500; color:var(--ocean-deep); margin-bottom:2
 .bk-status { font-size:.68rem; letter-spacing:.08em; padding:3px 9px; border-radius:100px; background:#eef4f0; color:#4b8a6e; white-space:nowrap; }
 .bk-status.cancelled { background:#f7ecec; color:#a05b5b; }
 .bk-status.pending { background:#f5f1e6; color:#96803e; }
+.bk-status.used { background:#eef1f4; color:#7a8a96; }
 .bk-dates { font-size:.8rem; color:var(--text-mid); margin-top:7px; }
 .bk-code { font-size:.72rem; color:#98a8b3; margin-top:5px; letter-spacing:.05em; }
+.bk-pts { font-size:.72rem; color:#3e8ba8; margin-top:5px; font-weight:500; }
+.bk-pts.future { color:#98a8b3; font-weight:300; }
 .empty { text-align:center; color:var(--text-mid); font-size:.85rem; font-weight:300; padding:34px 10px; line-height:1.9; }
 .cta {
   display:block; text-align:center; margin-top:20px; background:var(--ocean-deep); color:white;
   padding:15px; border-radius:4px; text-decoration:none; font-size:.85rem; letter-spacing:.12em;
 }
-.note { margin-top:26px; font-size:.74rem; color:#98a8b3; line-height:1.9; text-align:center; }
+.note { margin-top:26px; font-size:.74rem; color:#98a8b3; line-height:1.9; text-align:left; }
 .loading { text-align:center; padding:60px 0; color:var(--text-mid); font-size:.85rem; }
 .hidden { display:none; }
 </style>
@@ -106,8 +133,21 @@ h1 { font-size:1.4rem; font-weight:500; color:var(--ocean-deep); margin-bottom:2
       <div>
         <div class="p-name" id="m-name"></div>
         <div class="p-points"><span data-i18n="points">Points</span>:<b id="m-points">0</b></div>
+        <div class="p-break" id="m-break"></div>
       </div>
       <button class="logout" id="logout" data-i18n="logout">登出</button>
+    </div>
+
+    <div class="bday-card" id="bday-card"></div>
+
+    <div class="rw-section">
+      <div class="sec-label" data-i18n="rwLabel">Rewards</div>
+      <div class="rw-grid" id="rw-grid"></div>
+    </div>
+
+    <div class="bk-section" id="cp-section">
+      <div class="sec-label" data-i18n="cpLabel">My Redemptions</div>
+      <div id="cp-list"></div>
     </div>
 
     <div class="bk-section">
@@ -116,7 +156,7 @@ h1 { font-size:1.4rem; font-weight:500; color:var(--ocean-deep); margin-bottom:2
       <a class="cta" href="booking.html" data-i18n="bookCta">預訂下一趟旅程 →</a>
     </div>
 
-    <p class="note" data-i18n="note">積分回饋規則即將推出,住宿紀錄會自動累積在這裡。</p>
+    <p class="note" id="rules-note"></p>
   </div>
 
   <div id="view-loading" class="loading" data-i18n="loading">載入中⋯</div>
@@ -131,9 +171,20 @@ const i18n = {
     title2:'in.house — Member', label:'Member', title:'Member Area',
     loginDesc:'Sign in with LINE to keep your bookings in one place, collect points, and book faster next time.',
     loginBtn:'Log in with LINE', points:'Points', logout:'Log out',
+    ptsBreak:'Earned {e} · Redeemed {r}',
+    bdayPrompt:'🎂 Add your birthday month — double points on stays that month', bdaySave:'Save',
+    bdaySet:'🎂 Birthday month: {m} — double points on stays that month', bdayFail:'Could not save, please try again.',
+    rwLabel:'Rewards', rwBtn:'Redeem', rwPts:'{n} pts',
+    rwGift10:'Small gift or drink', rwCoupon300:'NT$300 stay coupon', rwCoupon500:'NT$500 stay coupon', rwUpgrade:'Room upgrade (subject to availability)',
+    rwConfirm:'Redeem "{label}" for {cost} points? Points are deducted right away; the reward is confirmed by the guesthouse.',
+    rwDone:'Request sent! Your code is {code}. It becomes valid once confirmed by the guesthouse.',
+    rwFail:'Redemption failed: ', rwShort:'Not enough points.',
+    cpLabel:'My Redemptions', cpEmpty:'No redemptions yet.', cpExpires:'Valid until',
+    rdPending:'Reviewing', rdApproved:'Ready to use', rdUsed:'Used', rdRejected:'Returned',
     bkLabel:'My Bookings', bookCta:'Book your next stay →',
     empty:'No bookings linked to this account yet.\nBookings made while logged in will show up here.',
-    note:'Point rewards are coming soon — your stays are already being recorded here.',
+    bkPts:'+{n} pts earned', bkPtsFuture:'+{n} pts after check-in',
+    rules:'How points work: 2 pts per night for private rooms, 1 pt per night for bunk beds, credited after check-in. Double points on Mon–Thu nights from Nov to Apr, and during your birthday month (whichever is higher, not stacked). One coupon per stay · valid 6 months · no cash value · non-transferable.',
     loading:'Loading…', night:'night(s)', guests:'guest(s)',
     stPending:'Pending', stConfirmed:'Confirmed', stCancelled:'Cancelled', stCheckedin:'Checked-in',
   },
@@ -141,9 +192,20 @@ const i18n = {
     title2:'in.house — 會員專區', label:'Member', title:'會員專區',
     loginDesc:'使用 LINE 登入,訂房紀錄集中保存、累積點數,下次訂房更快速。',
     loginBtn:'使用 LINE 登入', points:'點數', logout:'登出',
+    ptsBreak:'累積 {e} ・ 已兌換 {r}',
+    bdayPrompt:'🎂 填寫生日月份,當月入住點數雙倍', bdaySave:'儲存',
+    bdaySet:'🎂 生日月份:{m} 月(當月入住點數雙倍)', bdayFail:'儲存失敗,請再試一次。',
+    rwLabel:'點數兌換', rwBtn:'兌換', rwPts:'{n} 點',
+    rwGift10:'小禮物或飲品', rwCoupon300:'NT$300 住宿折價券', rwCoupon500:'NT$500 住宿折價券', rwUpgrade:'房型升等(依房況)',
+    rwConfirm:'確定使用 {cost} 點兌換「{label}」?送出後點數立即扣除,經民宿確認後生效。',
+    rwDone:'兌換申請已送出!券號 {code},民宿確認後即可使用。',
+    rwFail:'兌換失敗:', rwShort:'點數不足。',
+    cpLabel:'我的兌換', cpEmpty:'尚無兌換紀錄。', cpExpires:'效期至',
+    rdPending:'審核中', rdApproved:'可使用', rdUsed:'已使用', rdRejected:'已退回',
     bkLabel:'我的訂房', bookCta:'預訂下一趟旅程 →',
     empty:'這個帳號還沒有訂房紀錄。\n登入狀態下完成的訂房會自動出現在這裡。',
-    note:'積分回饋規則即將推出,你的住宿紀錄已經開始累積。',
+    bkPts:'已獲得 +{n} 點', bkPtsFuture:'入住後 +{n} 點',
+    rules:'集點說明:以每晚計點,雙人房/雙床房/剛剛好房每晚 2 點、背包床位每晚 1 點,完成入住後入點。11–4 月週一至週四晚點數雙倍;生日當月入住點數雙倍(兩者擇優,不重複累計)。折價券每次住宿限用 1 張、效期 6 個月、不得折現找零、不可轉贈。',
     loading:'載入中⋯', night:'晚', guests:'位',
     stPending:'待確認', stConfirmed:'已確認', stCancelled:'已取消', stCheckedin:'已入住',
   },
@@ -151,13 +213,33 @@ const i18n = {
     title2:'in.house — 会員ページ', label:'Member', title:'会員ページ',
     loginDesc:'LINEでログインすると、予約履歴の確認やポイントの積立、次回のスムーズな予約ができます。',
     loginBtn:'LINEでログイン', points:'ポイント', logout:'ログアウト',
+    ptsBreak:'獲得 {e} ・ 交換済 {r}',
+    bdayPrompt:'🎂 誕生月を登録すると、その月の宿泊はポイント2倍', bdaySave:'保存',
+    bdaySet:'🎂 誕生月:{m}月(その月の宿泊はポイント2倍)', bdayFail:'保存できませんでした。もう一度お試しください。',
+    rwLabel:'ポイント交換', rwBtn:'交換', rwPts:'{n} pt',
+    rwGift10:'プチギフトまたはドリンク', rwCoupon300:'NT$300 宿泊クーポン', rwCoupon500:'NT$500 宿泊クーポン', rwUpgrade:'ルームアップグレード(空室状況による)',
+    rwConfirm:'{cost}ポイントで「{label}」と交換しますか?送信後ポイントは即時差し引かれ、宿の確認後に有効になります。',
+    rwDone:'交換申請を送信しました!クーポン番号 {code}。宿の確認後にご利用いただけます。',
+    rwFail:'交換に失敗しました:', rwShort:'ポイントが不足しています。',
+    cpLabel:'交換履歴', cpEmpty:'交換履歴はまだありません。', cpExpires:'有効期限',
+    rdPending:'確認中', rdApproved:'利用可能', rdUsed:'使用済', rdRejected:'返却済',
     bkLabel:'予約履歴', bookCta:'次の旅を予約する →',
     empty:'このアカウントに紐づく予約はまだありません。\nログイン中に行った予約がここに表示されます。',
-    note:'ポイント特典は準備中です。宿泊履歴はすでに記録されています。',
+    bkPts:'+{n} pt 獲得', bkPtsFuture:'チェックイン後 +{n} pt',
+    rules:'ポイントについて:1泊ごとに加算(個室 2pt/泊、ドミトリー 1pt/泊)、チェックイン完了後に付与。11〜4月の月〜木曜泊は2倍、誕生月の宿泊も2倍(いずれか高い方、重複なし)。クーポンは1滞在につき1枚・有効期限6ヶ月・換金不可・譲渡不可。',
     loading:'読み込み中⋯', night:'泊', guests:'名',
     stPending:'確認待ち', stConfirmed:'確定', stCancelled:'キャンセル', stCheckedin:'チェックイン済',
   }
 };
+const REWARDS = [
+  { id:'gift10',    cost:10, key:'rwGift10' },
+  { id:'coupon300', cost:20, key:'rwCoupon300' },
+  { id:'coupon500', cost:40, key:'rwCoupon500' },
+  { id:'upgrade',   cost:40, key:'rwUpgrade' },
+];
+function fmt(str, vars) {
+  return str.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : ''));
+}
 let LANG = 'en';
 function detectLang() {
   const saved = localStorage.getItem('lang');
@@ -176,7 +258,7 @@ function applyLang(lang) {
   });
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
   localStorage.setItem('lang', LANG);
-  if (lastData) renderBookings(lastData.bookings);
+  if (lastData) renderMember(lastData);
 }
 document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 
@@ -198,8 +280,9 @@ function show(view) {
 $('line-login').addEventListener('click', () => location.href = `${WORKER_URL}/auth/line/login`);
 $('logout').addEventListener('click', () => { localStorage.removeItem('memberToken'); show('view-login'); });
 
-/* ── 載入會員資料 ── */
+/* ── 渲染 ── */
 let lastData = null;
+
 function statusInfo(b) {
   const d = i18n[LANG];
   if (b.status === 'Cancelled') return [d.stCancelled, 'cancelled'];
@@ -207,6 +290,89 @@ function statusInfo(b) {
   if (b.status === 'Pending') return [d.stPending, 'pending'];
   return [d.stConfirmed, ''];
 }
+
+function renderBirthday(member) {
+  const d = i18n[LANG];
+  const card = $('bday-card');
+  if (member.birthday_month) {
+    card.innerHTML = `<span class="bday-set">${fmt(d.bdaySet, { m: member.birthday_month })}</span>`;
+    return;
+  }
+  const opts = Array.from({ length: 12 }, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+  card.innerHTML = `<span style="flex:1;min-width:180px">${d.bdayPrompt}</span>
+    <select id="bday-month">${opts}</select>
+    <button class="bday-save" id="bday-save">${d.bdaySave}</button>`;
+  $('bday-save').addEventListener('click', async () => {
+    const month = Number($('bday-month').value);
+    try {
+      const res = await fetch(`${WORKER_URL}/member/birthday`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ month }),
+      });
+      const out = await res.json();
+      if (!out.ok) throw new Error(out.error || '');
+      load();
+    } catch (e) {
+      alert(i18n[LANG].bdayFail);
+    }
+  });
+}
+
+function renderRewards(points) {
+  const d = i18n[LANG];
+  $('rw-grid').innerHTML = REWARDS.map(r => `
+    <div class="rw-card">
+      <div class="rw-cost">${fmt(d.rwPts, { n: r.cost })}</div>
+      <div class="rw-name">${d[r.key]}</div>
+      <button class="rw-btn" data-item="${r.id}" data-cost="${r.cost}" ${points.available < r.cost ? 'disabled' : ''}>${d.rwBtn}</button>
+    </div>`).join('');
+  document.querySelectorAll('.rw-btn[data-item]').forEach(btn => btn.addEventListener('click', async () => {
+    const dict = i18n[LANG];
+    const r = REWARDS.find(x => x.id === btn.dataset.item);
+    if (!confirm(fmt(dict.rwConfirm, { cost: r.cost, label: dict[r.key] }))) return;
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${WORKER_URL}/member/redeem`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: r.id }),
+      });
+      const out = await res.json();
+      if (out.ok) {
+        alert(fmt(dict.rwDone, { code: out.code }));
+        load();
+      } else {
+        alert(out.error === 'points' ? dict.rwShort : dict.rwFail + (out.error || ''));
+        btn.disabled = false;
+      }
+    } catch (e) {
+      alert(dict.rwFail + e.message);
+      btn.disabled = false;
+    }
+  }));
+}
+
+function renderRedemptions(redemptions) {
+  const d = i18n[LANG];
+  const list = $('cp-list');
+  if (!redemptions || redemptions.length === 0) {
+    list.innerHTML = `<div class="cp-card empty" style="padding:20px">${d.cpEmpty}</div>`;
+    return;
+  }
+  const stMap = { Pending: [d.rdPending,'pending'], Approved: [d.rdApproved,''], Used: [d.rdUsed,'used'], Rejected: [d.rdRejected,'cancelled'] };
+  list.innerHTML = redemptions.map(r => {
+    const [label, cls] = stMap[r.status] || [r.status, ''];
+    const reward = REWARDS.find(x => x.id === r.item);
+    const name = reward ? d[reward.key] : (r.label || r.item);
+    const meta = [r.code, r.expires ? `${d.cpExpires} ${r.expires}` : '', `-${r.cost} ${LANG==='zh'?'點':'pt'}`].filter(Boolean).join(' ・ ');
+    return `<div class="cp-card">
+      <div class="cp-top"><div class="cp-name">${name}</div><div class="bk-status ${cls}">${label}</div></div>
+      <div class="cp-meta">${meta}</div>
+    </div>`;
+  }).join('');
+}
+
 function renderBookings(bookings) {
   const list = $('bk-list');
   const d = i18n[LANG];
@@ -216,13 +382,32 @@ function renderBookings(bookings) {
   }
   list.innerHTML = bookings.map(b => {
     const [label, cls] = statusInfo(b);
+    let pts = '';
+    if (b.counted && b.points > 0) pts = `<div class="bk-pts">${fmt(d.bkPts, { n: b.points })}</div>`;
+    else if (b.status !== 'Cancelled' && b.points > 0) pts = `<div class="bk-pts future">${fmt(d.bkPtsFuture, { n: b.points })}</div>`;
     return `<div class="bk-card">
       <div class="bk-top"><div class="bk-room">${b.room}</div><div class="bk-status ${cls}">${label}</div></div>
       <div class="bk-dates">${b.checkin} → ${b.checkout} · ${b.guests} ${d.guests}</div>
       <div class="bk-code">${b.code}</div>
+      ${pts}
     </div>`;
   }).join('');
 }
+
+function renderMember(data) {
+  const d = i18n[LANG];
+  const p = data.member.points || { available: 0, earned: 0, redeemed: 0 };
+  $('m-name').textContent = data.member.display_name || '';
+  $('m-points').textContent = p.available;
+  $('m-break').textContent = fmt(d.ptsBreak, { e: p.earned + (p.adjust || 0), r: p.redeemed });
+  if (data.member.picture_url) $('m-avatar').src = data.member.picture_url;
+  $('rules-note').textContent = d.rules;
+  renderBirthday(data.member);
+  renderRewards(p);
+  renderRedemptions(data.redemptions);
+  renderBookings(data.bookings);
+}
+
 async function load() {
   if (!token()) { show('view-login'); return; }
   show('view-loading');
@@ -231,10 +416,7 @@ async function load() {
     if (res.status === 401) { localStorage.removeItem('memberToken'); show('view-login'); return; }
     const data = await res.json();
     lastData = data;
-    $('m-name').textContent = data.member.display_name || '';
-    $('m-points').textContent = data.member.points || 0;
-    if (data.member.picture_url) $('m-avatar').src = data.member.picture_url;
-    renderBookings(data.bookings);
+    renderMember(data);
     show('view-member');
   } catch (e) {
     show('view-login');
