@@ -291,6 +291,14 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   font-family:'Noto Sans TC',sans-serif;font-weight:400;
 }
 .confirm-done:active{background:var(--ocean-mid);}
+.confirm-line{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;min-height:var(--touch);margin-bottom:12px;
+  background:#06C755;color:white;border-radius:2px;text-decoration:none;
+  font-size:.86rem;letter-spacing:.08em;font-weight:400;
+}
+.confirm-line:active{opacity:.85;}
+.confirm-line-sub{font-size:.74rem;color:var(--text-mid);line-height:1.7;margin-bottom:10px;text-align:center;}
 </style>
 </head>
 <body>
@@ -436,6 +444,11 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     <div class="confirm-note-title" data-i18n="cancelPolicy">Cancellation Policy</div>
     <div class="confirm-note-text" data-i18n-html="cancelText"></div>
   </div>
+  <p class="confirm-line-sub" data-i18n="addLineSub">加入官方 LINE,接收訂房確認與最新消息。</p>
+  <a class="confirm-line" href="https://lin.ee/8pa3shQ" target="_blank" rel="noopener">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.64 2 10.13c0 4.03 3.58 7.4 8.42 8.04.33.07.77.22.89.5.1.26.07.66.03.92l-.14.86c-.04.26-.2 1.01.89.55 1.09-.46 5.87-3.46 8.01-5.92C21.66 13.44 22 11.86 22 10.13 22 5.64 17.52 2 12 2z"/></svg>
+    <span data-i18n="addLine">加入官方 LINE 好友</span>
+  </a>
   <button class="confirm-done" onclick="location.href='index.html'" data-i18n="backHome">Back to Home</button>
 </div>
 
@@ -469,6 +482,8 @@ const i18n = {
     pricingTitle: 'Pricing',
     pricingText: 'Exact room rates will be included in our confirmation message. Prices may vary by season and room type.',
     backHome: 'Back to Home',
+    addLine: 'Add us on LINE',
+    addLineSub: 'Add our official LINE for booking updates and quick help.',
     fillRequired: 'Please fill in all required fields.',
     sending: 'Sending…',
     errorMsg: 'Something went wrong. Please try again or contact us via WhatsApp.',
@@ -499,6 +514,8 @@ const i18n = {
     pricingTitle: '房價',
     pricingText: '確認訊息中將提供詳細房價。價格可能依季節與房型有所不同。',
     backHome: '返回首頁',
+    addLine: '加入官方 LINE 好友',
+    addLineSub: '加入官方 LINE,接收訂房確認與最新消息。',
     fillRequired: '請填寫所有必填欄位。',
     sending: '傳送中…',
     errorMsg: '發生錯誤,請稍後再試或透過 WhatsApp 聯繫我們。',
@@ -529,6 +546,8 @@ const i18n = {
     pricingTitle: '料金',
     pricingText: '正確な料金は確認メッセージに記載されます。価格は季節や客室タイプにより異なる場合があります。',
     backHome: 'ホームへ戻る',
+    addLine: '公式LINEを友だち追加',
+    addLineSub: '公式LINEを追加すると、ご予約の確認や最新情報をお届けします。',
     fillRequired: 'すべての必須項目を入力してください。',
     sending: '送信中…',
     errorMsg: 'エラーが発生しました。再度お試しいただくか、WhatsAppでご連絡ください。',
