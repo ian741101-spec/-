@@ -732,9 +732,7 @@ function changeGuests(delta) {
   document.getElementById('guests-num').textContent = guests;
 }
 
-/* ── 訂房通知:LINE 推播由 Worker 端發送(EmailJS 已移除);GAS 備份紀錄保留 ── */
-const OWNER_EMAIL = 'icebar0413@gmail.com';
-const GAS_URL     = 'https://script.google.com/macros/s/AKfycbyKI_F2L1SJByORLaGOX9vYVOdthVz0Sg-Dcq4Y3dodH_Qsh6d7x5vl1oMrV8IPhfM/exec';
+/* ── 訂房通知全由 Worker 端的 LINE 推播負責(EmailJS 與 GAS 備份已移除)── */
 
 /* ── CLOUDFLARE WORKER (Airtable proxy — no token in HTML) ── */
 const WORKER_URL = 'https://inhouse-airtable.ian741101.workers.dev';
@@ -883,20 +881,6 @@ function submitForm() {
   btn.textContent = getDict().sending;
   btn.disabled = true;
 
-  const templateParams = {
-    guest_name:    name,
-    guest_email:   email || '',
-    guest_phone:   phone,
-    to_email:      email || phone,
-    room_type:     room,
-    checkin_date:  checkin,
-    checkout_date: checkout,
-    guest_count:   guests,
-    guests:        guests,
-    notes:         notes || 'None',
-    owner_email:   OWNER_EMAIL,
-  };
-
   // Convert date string back to YYYY-MM-DD for Airtable
   function toISO(str) {
     const d = new Date(str);
@@ -929,10 +913,8 @@ function submitForm() {
       btn.disabled = false;
       return;
     }
-    // Step 2: Airtable success — LINE 推播由 Worker 端發送;這裡只留 GAS 備份紀錄(失敗不擋訂房)
-    return fetch(GAS_URL, { method: 'POST', body: JSON.stringify(templateParams) })
-      .catch(() => null)
-      .then(() => [true]);
+    // 訂房成功 — 業主/房客的 LINE 通知由 Worker 端發送
+    return [true];
   })
   .then(results => {
     if (!results) return; // already handled error above
