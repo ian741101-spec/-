@@ -193,7 +193,7 @@ function json(data, status = 200) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: CORS });
@@ -458,6 +458,10 @@ export default {
         }
 
         if (data.error) return json({ ok: false, error: data.error }, 400);
+
+        // LINE 推播通知(業主必發;房客有 LINE 登入才發)。失敗不影響訂房
+        ctx.waitUntil(notifyBookingViaLine(env, fields, session, String(body.lang || 'zh')));
+
         return json({ ok: true, id: data.id, booking_code: fields.booking_code });
 
       } catch (e) {
@@ -590,6 +594,80 @@ export default {
 };
 
 // ── 產生訂單編號：IH-YYYYMMDD-NNN ──
+// ── LINE Messaging API 推播 ──
+// 需要 Worker secrets:LINE_MESSAGING_TOKEN(channel access token)、OWNER_LINE_USER_ID
+// Messaging API channel 必須與 LINE Login channel 同一個 provider,userId 才會一致
+async function linePush(env, to, text) {
+  if (!env.LINE_MESSAGING_TOKEN || !to) return;
+  try {
+    const res = await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.LINE_MESSAGING_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ to, messages: [{ type: 'text', text }] }),
+    });
+    if (!res.ok) console.error('LINE push failed:', res.status, await res.text());
+  } catch (e) {
+    console.error('LINE push error:', e.message);
+  }
+}
+
+async function notifyBookingViaLine(env, f, session, lang) {
+  const ownerText = [
+    '🔔 新訂房申請',
+    `訂單編號:${f.booking_code}`,
+    `房型:${f.room_type}`,
+    `入住:${f.checkin_date} → 退房:${f.checkout_date}`,
+    `人數:${f.guests}`,
+    `姓名:${f.guest_name}`,
+    `電話:${f.guest_phone}`,
+    f.guest_email ? `Email:${f.guest_email}` : null,
+    f.notes ? `備註:${f.notes}` : null,
+    session ? '(房客為 LINE 會員,已同步發送確認訊息)' : null,
+  ].filter(Boolean).join('\n');
+
+  const guestTexts = {
+    zh: [
+      '🌊 in.house 已收到您的訂房申請',
+      `訂單編號:${f.booking_code}`,
+      `房型:${f.room_type}`,
+      `入住:${f.checkin_date} → 退房:${f.checkout_date}`,
+      `人數:${f.guests}`,
+      '',
+      '我們確認房況後會盡快與您聯繫。',
+      '自助入住時需要「訂單編號 + 手機後四碼」,請妥善保存這則訊息。',
+    ],
+    en: [
+      '🌊 in.house — booking request received',
+      `Booking code: ${f.booking_code}`,
+      `Room: ${f.room_type}`,
+      `Check-in: ${f.checkin_date} → Check-out: ${f.checkout_date}`,
+      `Guests: ${f.guests}`,
+      '',
+      'We will confirm availability and get back to you shortly.',
+      'Self check-in requires your booking code + last 4 digits of your phone number — please keep this message.',
+    ],
+    ja: [
+      '🌊 in.house ご予約リクエストを受け付けました',
+      `予約番号:${f.booking_code}`,
+      `お部屋:${f.room_type}`,
+      `チェックイン:${f.checkin_date} → チェックアウト:${f.checkout_date}`,
+      `人数:${f.guests}`,
+      '',
+      '空室状況を確認のうえ、追ってご連絡いたします。',
+      'セルフチェックインには「予約番号+電話番号下4桁」が必要です。このメッセージを保存してください。',
+    ],
+  };
+  const guestText = (guestTexts[lang] || guestTexts.zh).join('\n');
+
+  await Promise.all([
+    linePush(env, env.OWNER_LINE_USER_ID, ownerText),
+    session ? linePush(env, session.sub, guestText) : Promise.resolve(),
+  ]);
+}
+
 function generateBookingCode(checkinDate) {
   const d   = checkinDate ? checkinDate.replace(/-/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const seq = String(Math.floor(Math.random() * 900) + 100);
