@@ -882,9 +882,12 @@ function submitForm() {
   btn.disabled = true;
 
   // Convert date string back to YYYY-MM-DD for Airtable
+  // 必須用本地日期組出字串:toISOString() 會把台灣時間 0 點換算成 UTC,日期倒退一天
   function toISO(str) {
     const d = new Date(str);
-    return isNaN(d) ? str : d.toISOString().slice(0, 10);
+    if (isNaN(d)) return str;
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
 
   // Step 1: Write to Airtable via Worker(會員登入時附上 token 綁定訂單)

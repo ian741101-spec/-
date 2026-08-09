@@ -57,6 +57,13 @@ const MEMBERS_API     = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE
 const BOOKINGS_API    = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
 const REDEMPTIONS_API = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_REDEMPTIONS}`;
 
+// Worker 跑在 UTC,但民宿在台灣;日期欄位一律用台灣時間(UTC+8)的日曆日
+function todayTW(addMonths = 0) {
+  const d = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  if (addMonths) d.setUTCMonth(d.getUTCMonth() + addMonths);
+  return d.toISOString().slice(0, 10);
+}
+
 function atGet(apiUrl, token) {
   return fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
 }
@@ -282,7 +289,7 @@ export default {
                 display_name: prof.displayName || '',
                 picture_url:  prof.pictureUrl || '',
                 points:       0,
-                created_at:   new Date().toISOString().slice(0, 10),
+                created_at:   todayTW(),
               } }),
             });
           }
@@ -413,8 +420,7 @@ export default {
         }
 
         const code    = 'IH-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-        const expires = new Date();
-        expires.setUTCMonth(expires.getUTCMonth() + 6);   // 效期 6 個月
+        const expires = todayTW(6);   // 效期 6 個月
         const res = await fetch(REDEMPTIONS_API, {
           method: 'POST',
           headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
@@ -428,8 +434,8 @@ export default {
               points_cost:  reward.cost,
               status:       'Pending',
               coupon_code:  code,
-              created_at:   new Date().toISOString().slice(0, 10),
-              expires_at:   expires.toISOString().slice(0, 10),
+              created_at:   todayTW(),
+              expires_at:   expires,
             },
           }),
         });
@@ -615,7 +621,7 @@ export default {
           transport:      body.transport || '',
           notes:          body.note ? body.note : undefined,
           lock_code:      lockCode || undefined,
-          checkin_at:     new Date().toISOString().slice(0, 10),
+          checkin_at:     todayTW(),
           status:         'Confirmed',
         };
 
@@ -723,7 +729,7 @@ async function notifyBookingViaLine(env, f, session, lang) {
 }
 
 function generateBookingCode(checkinDate) {
-  const d   = checkinDate ? checkinDate.replace(/-/g, '') : new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const d   = checkinDate ? checkinDate.replace(/-/g, '') : todayTW().replace(/-/g, '');
   const seq = String(Math.floor(Math.random() * 900) + 100);
   return `IH-${d}-${seq}`;
 }
