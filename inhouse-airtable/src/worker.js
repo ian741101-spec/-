@@ -9,7 +9,8 @@
 //   GET  /checkin/verify?code=xxx&phone4=xx → 驗證訂單 + 手機後四碼
 //   POST /checkin/submit                    → 提交 check-in + 回傳該房固定門鎖密碼
 //   GET  /auth/me                           → 會員資料+點數+訂房+兌換紀錄
-//   POST /member/birthday                   → 設定生日月份
+//   POST /member/birthday                   → 設定生日月份(限設定一次)
+//   POST /member/link-booking               → 認領未綁定的舊訂單(code + phone4)
 //   POST /member/redeem                     → 點數兌換申請
 //   GET  /health                            → 健康檢查
 //
@@ -39,6 +40,9 @@ const SITE_URL        = 'https://inhouse-dcc.pages.dev';
 // 加倍(擇優不疊加):11–4 月的週一~週四晚 ×2;生日當月 ×2(需會員填 birthday_month)
 // 入點時機:完成入住(checkin_status = Checked-in 且 status != Cancelled)
 // 點數 = 累積(訂房計算) + points_adjust(members 表手動調整,推薦好友等) − 已兌換
+// 登入完成後可回到的頁面(白名單,防止開放轉址)
+const LOGIN_NEXT = { member: '/member', booking: '/booking' };
+
 const AIRTABLE_REDEMPTIONS = 'redemptions';
 const ROOM_POINTS_DEFAULT  = 2;
 const ROOM_POINTS          = { 'Intertidal Bunk': 1 };
@@ -110,6 +114,9 @@ async function loadMemberData(sub, TOKEN) {
           guests:   f.guests         || 1,
           status:   f.status         || '',
           checkinStatus: f.checkin_status || '',
+          name:     f.guest_name     || '',
+          phone:    f.guest_phone    || '',
+          email:    f.guest_email    || '',
           points:   pts,
           counted,
         };
@@ -211,9 +218,11 @@ export default {
 
     const MEMBERS_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_MEMBERS}`;
 
-    // ── GET /auth/line/login → 導向 LINE 授權頁 ──
+    // ── GET /auth/line/login[?next=booking] → 導向 LINE 授權頁 ──
+    // next 只接受固定字串(白名單對映),不吃任意網址,避免被當成轉址跳板
     if (request.method === 'GET' && url.pathname === '/auth/line/login') {
-      const state = await makeToken({ t: Date.now() }, env.SESSION_SECRET);
+      const next  = LOGIN_NEXT[url.searchParams.get('next')] ? url.searchParams.get('next') : 'member';
+      const state = await makeToken({ t: Date.now(), n: next }, env.SESSION_SECRET);
       const authorize = 'https://access.line.me/oauth2/v2.1/authorize'
         + '?response_type=code'
         + `&client_id=${LINE_CHANNEL_ID}`
@@ -285,7 +294,8 @@ export default {
           pic:  prof.pictureUrl || '',
           exp:  Date.now() + 30 * 24 * 60 * 60 * 1000,
         }, env.SESSION_SECRET);
-        return Response.redirect(`${SITE_URL}/member#token=${session}`, 302);
+        const dest = LOGIN_NEXT[state.n] || LOGIN_NEXT.member;
+        return Response.redirect(`${SITE_URL}${dest}#token=${session}`, 302);
       } catch (e) {
         return Response.redirect(`${SITE_URL}/member?error=server`, 302);
       }
@@ -325,6 +335,11 @@ export default {
         if (!found.records || found.records.length === 0) {
           return json({ ok: false, error: '會員資料不存在,請重新登入' }, 404);
         }
+        // 只能設定一次:點數是即時回算的,可改月份就能讓過往住宿追溯加倍
+        const current = Number(found.records[0].fields.birthday_month);
+        if (current >= 1 && current <= 12) {
+          return json({ ok: false, error: 'locked', birthday_month: current }, 409);
+        }
         const res = await fetch(`${MEMBERS_API}/${found.records[0].id}`, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
@@ -340,6 +355,45 @@ export default {
         return json({ ok: true, birthday_month: month });
       } catch (e) {
         return json({ ok: false, error: e.message }, 500);
+      }
+    }
+
+    // ── POST /member/link-booking → 認領未綁定的舊訂單(未登入時訂的房)──
+    // Body: { code, phone4 } — 以訂單編號 + 手機後四碼驗證,已綁他人的訂單不覆蓋
+    if (request.method === 'POST' && url.pathname === '/member/link-booking') {
+      const session = await memberFromRequest(request, env);
+      if (!session) return json({ error: 'unauthorized' }, 401);
+      try {
+        const body   = await request.json();
+        const code   = String(body.code   || '').trim().toUpperCase();
+        const phone4 = String(body.phone4 || '').trim();
+        if (!code || phone4.length !== 4) return json({ ok: false, error: 'input' }, 400);
+
+        const filter = encodeURIComponent(`{booking_code}="${code}"`);
+        const found  = await atGet(`${BOOKINGS_API}?filterByFormula=${filter}&maxRecords=1`, TOKEN);
+        if (found.error) return json({ ok: false, error: 'server' }, 502);
+        if (!found.records || found.records.length === 0) return json({ ok: false, error: 'notfound' }, 404);
+
+        const rec = found.records[0];
+        const f   = rec.fields;
+        if (String(f.guest_phone || '').replace(/\D/g, '').slice(-4) !== phone4) {
+          return json({ ok: false, error: 'phone' }, 401);
+        }
+        if (f.line_user_id && f.line_user_id !== session.sub) {
+          return json({ ok: false, error: 'taken' }, 409);
+        }
+        if (f.line_user_id === session.sub) return json({ ok: true, already: true });
+
+        const res  = await fetch(`${BOOKINGS_API}/${rec.id}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: { line_user_id: session.sub } }),
+        });
+        const data = await res.json();
+        if (data.error) return json({ ok: false, error: 'server' }, 502);
+        return json({ ok: true, points: bookingPoints(f, null), counted: bookingCounted(f) });
+      } catch (e) {
+        return json({ ok: false, error: 'server' }, 500);
       }
     }
 
