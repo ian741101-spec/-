@@ -300,6 +300,16 @@ function fmt(str, vars) {
   return str.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : ''));
 }
 let LANG = 'en';
+
+/* Airtable 回來的是 'YYYY-MM-DD'(或帶時間的 ISO),純顯示用,依語言排版。
+   認不得的值原樣回傳,不要變成「NaN 年 NaN 月」。 */
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso) {
+  const mt = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso == null ? '' : iso));
+  if (!mt) return iso || '';
+  const y = +mt[1], m = +mt[2], d = +mt[3];
+  return LANG === 'en' ? `${MONTHS_EN[m - 1]} ${d}, ${y}` : `${y}年${m}月${d}日`;
+}
 function detectLang() {
   const saved = localStorage.getItem('lang');
   if (saved && i18n[saved]) return saved;
@@ -460,7 +470,7 @@ function renderRedemptions(redemptions) {
     const [label, cls] = stMap[r.status] || [r.status, ''];
     const reward = REWARDS.find(x => x.id === r.item);
     const name = reward ? d[reward.key] : (r.label || r.item);
-    const meta = [r.code, r.expires ? `${d.cpExpires} ${r.expires}` : '', `-${r.cost} ${LANG==='zh'?'點':'pt'}`].filter(Boolean).join(' ・ ');
+    const meta = [r.code, r.expires ? `${d.cpExpires} ${fmtDate(r.expires)}` : '', `-${r.cost} ${LANG==='zh'?'點':'pt'}`].filter(Boolean).join(' ・ ');
     return `<div class="cp-card">
       <div class="cp-top"><div class="cp-name">${name}</div><div class="bk-status ${cls}">${label}</div></div>
       <div class="cp-meta">${meta}</div>
@@ -482,7 +492,7 @@ function renderBookings(bookings) {
     else if (b.status !== 'Cancelled' && b.points > 0) pts = `<div class="bk-pts future">${fmt(d.bkPtsFuture, { n: b.points })}</div>`;
     return `<div class="bk-card">
       <div class="bk-top"><div class="bk-room">${b.room}</div><div class="bk-status ${cls}">${label}</div></div>
-      <div class="bk-dates">${b.checkin} → ${b.checkout} · ${b.guests} ${d.guests}</div>
+      <div class="bk-dates">${fmtDate(b.checkin)} → ${fmtDate(b.checkout)} · ${b.guests} ${d.guests}</div>
       <div class="bk-code">${b.code}</div>
       ${pts}
     </div>`;

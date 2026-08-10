@@ -751,10 +751,26 @@
     document.getElementById('c-note').textContent   = document.getElementById('g-note').value    || '無';
   }
 
+  // Worker 回來的是 'YYYY-MM-DD',純顯示用(不會再被送回去),依語言排版
+  const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function formatDate(d) {
     if (!d) return '—';
-    const [y, m, day] = d.split('-');
-    return `${y} 年 ${parseInt(m)} 月 ${parseInt(day)} 日`;
+    const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+    if (!mt) return d;
+    const y = +mt[1], m = +mt[2], day = +mt[3];
+    return currentLang === 'en'
+      ? `${MONTHS_EN[m - 1]} ${day}, ${y}`
+      : `${y}年${m}月${day}日`;
+  }
+
+  // 換語言時,已經顯示出來的日期要跟著重排(booking 有值代表訂單已驗證過)
+  function refreshDates() {
+    if (!booking) return;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('b-checkin',  formatDate(booking.checkin));
+    set('b-checkout', formatDate(booking.checkout));
+    set('c-cin',      formatDate(booking.checkin));
+    set('c-cout',     formatDate(booking.checkout));
   }
 
   // ── 訂單驗證（呼叫 Worker GET /booking）──
@@ -1095,6 +1111,9 @@
     const sections = document.querySelectorAll('.confirm-section-title');
     if(sections[0]) sections[0].textContent = t.secBooking;
     if(sections[1]) sections[1].textContent = t.secGuest;
+
+    // 已驗證訂單的日期要跟著換語言重排
+    refreshDates();
   }
 </script>
 </body>
