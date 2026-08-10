@@ -404,7 +404,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 
   <!-- Email -->
   <div class="form-section">
-    <label class="form-label"><span data-i18n="email">Email</span> <span style="font-size:.72rem;color:var(--text-light);" data-i18n="optional">(optional)</span></label>
+    <label class="form-label"><span data-i18n="email">Email</span> <span class="form-req">*</span></label>
     <input class="form-input" id="email-input" type="email" inputmode="email" placeholder="your@email.com" data-i18n-placeholder="phEmail">
   </div>
 
@@ -511,6 +511,7 @@ const i18n = {
     mbLoginBtn: 'Log in with LINE',
     mbIn: 'Logged in as {name} — this booking will earn points.',
     fillRequired: 'Please fill in all required fields.',
+    emailInvalid: 'Please enter a valid email address.',
     sending: 'Sending…',
     errorMsg: 'Something went wrong. Please try again or contact us via WhatsApp.',
   },
@@ -546,6 +547,7 @@ const i18n = {
     mbLoginBtn: '使用 LINE 登入',
     mbIn: '已以 {name} 登入,本次訂房將累積點數。',
     fillRequired: '請填寫所有必填欄位。',
+    emailInvalid: '請輸入有效的 Email 地址。',
     sending: '傳送中…',
     errorMsg: '發生錯誤,請稍後再試或透過 WhatsApp 聯繫我們。',
   },
@@ -581,6 +583,7 @@ const i18n = {
     mbLoginBtn: 'LINEでログイン',
     mbIn: '{name} としてログイン中 — 今回のご予約はポイント対象です。',
     fillRequired: 'すべての必須項目を入力してください。',
+    emailInvalid: '有効なメールアドレスを入力してください。',
     sending: '送信中…',
     errorMsg: 'エラーが発生しました。再度お試しいただくか、WhatsAppでご連絡ください。',
   }
@@ -872,8 +875,14 @@ function submitForm() {
   const email    = document.getElementById('email-input').value.trim();
   const notes    = document.getElementById('notes-input').value.trim();
 
-  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !phone) {
+  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !phone || !email) {
     alert(getDict().fillRequired);
+    return;
+  }
+  // Email 為必填:沒加 LINE 好友的客人靠這個收訂房確認
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    alert(getDict().emailInvalid);
+    document.getElementById('email-input').focus();
     return;
   }
 
@@ -927,8 +936,8 @@ function submitForm() {
       `📅 <strong>${_d.checkout}:</strong> ${checkout}<br>` +
       `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
-      `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}` +
-      (email ? `<br>✉️ <strong>Email:</strong> ${email}` : '');
+      `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}<br>` +
+      `✉️ <strong>Email:</strong> ${email}`;
     document.getElementById('confirmScreen').classList.add('show');
     window.scrollTo(0, 0);
   })
