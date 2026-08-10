@@ -614,6 +614,49 @@ const i18n = {
   }
 };
 
+/* ── 日期格式化 ──
+   規則:值一律是 'YYYY-MM-DD' 字串(存在日期按鈕的 data-iso),畫面文字只是「顯示」。
+   絕對不要反過來從畫面文字 new Date() 解析回日期 —— 月份一翻譯成中文/日文就會解析失敗,
+   而且 toISOString() 會把台灣時間退回一天。兩個坑都踩過。 */
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function curLang() {
+  const l = localStorage.getItem('lang') || 'en';
+  return i18n[l] ? l : 'en';
+}
+
+// 只認嚴格的 YYYY-MM-DD,認不得回 null(舊草稿存的是顯示文字,靠這道擋掉)
+function parseISO(iso) {
+  const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso == null ? '' : iso));
+  if (!mt) return null;
+  return { y: +mt[1], m: +mt[2] - 1, d: +mt[3] };   // m 為 0-11
+}
+
+function isoOf(y, m, d) {
+  const p = n => String(n).padStart(2, '0');
+  return `${y}-${p(m + 1)}-${p(d)}`;
+}
+
+// y, m(0-11), d → 依語言的日期字串
+function fmtYMD(y, m, d, lang) {
+  return (lang || curLang()) === 'en'
+    ? `${MONTHS_EN[m]} ${d}, ${y}`
+    : `${y}年${m + 1}月${d}日`;
+}
+
+// y, m(0-11) → 月曆標題
+function fmtMonth(y, m, lang) {
+  return (lang || curLang()) === 'en'
+    ? `${MONTHS_EN[m]} ${y}`
+    : `${y}年${m + 1}月`;
+}
+
+// 'YYYY-MM-DD' → 依語言的日期字串(認不得回空字串)
+function fmtISO(iso, lang) {
+  const p = parseISO(iso);
+  return p ? fmtYMD(p.y, p.m, p.d, lang) : '';
+}
+
 function detectLang() {
   const saved = localStorage.getItem('lang');
   if (saved && i18n[saved]) return saved;
@@ -633,10 +676,13 @@ function applyLang(lang) {
   });
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
-    // Skip date text spans if user already picked a date (parent button has .filled)
-    if ((el.id === 'checkin-text' || el.id === 'checkout-text') &&
-        el.parentElement && el.parentElement.classList.contains('filled')) {
-      return;
+    // 已選好的日期不套字典,改用新語言重新格式化(值在 button 的 data-iso,不會因換語言而遺失)
+    if (el.id === 'checkin-text' || el.id === 'checkout-text') {
+      const btn = el.parentElement;
+      if (btn && btn.classList.contains('filled') && parseISO(btn.dataset.iso)) {
+        el.textContent = fmtISO(btn.dataset.iso, lang);
+        return;
+      }
     }
     if (dict[k]) el.textContent = dict[k];
   });
@@ -679,7 +725,6 @@ try { applyLang(detectLang()); } catch(e) { console.error('applyLang failed:', e
 
 
 /* ── CALENDAR ── */
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const now = new Date();
 var calYear = now.getFullYear(), calMonth = now.getMonth();
 var calMode = 'checkin'; // 'checkin' or 'checkout'
@@ -687,14 +732,14 @@ var selectedDate = null;
 
 function renderCal() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  document.getElementById('cal-month-label').textContent = `${MONTHS[calMonth]} ${calYear}`;
+  document.getElementById('cal-month-label').textContent = fmtMonth(calYear, calMonth);
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   let html = '';
   for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
   for (let d = 1; d <= daysInMonth; d++) {
     const date    = new Date(calYear, calMonth, d);
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dateStr = isoOf(calYear, calMonth, d);
     const isPast    = date < today;
     const isBlocked = blockedDates.includes(dateStr);
     const isToday   = date.getTime() === today.getTime();
@@ -714,8 +759,7 @@ function renderCal() {
 function selectDay(y, m, d) {
   selectedDate = new Date(y, m, d);
   renderCal();
-  const str = `${MONTHS[m]} ${d}, ${y}`;
-  document.getElementById('cal-selected-display').textContent = str;
+  document.getElementById('cal-selected-display').textContent = fmtYMD(y, m, d);
   document.getElementById('cal-confirm-btn').disabled = false;
 }
 
@@ -744,14 +788,12 @@ function closeCal() {
 
 function confirmDate() {
   if (!selectedDate) return;
-  const str = `${MONTHS[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
-  if (calMode === 'checkin') {
-    document.getElementById('checkin-text').textContent = str;
-    document.getElementById('checkin-btn').classList.add('filled');
-  } else {
-    document.getElementById('checkout-text').textContent = str;
-    document.getElementById('checkout-btn').classList.add('filled');
-  }
+  const y = selectedDate.getFullYear(), m = selectedDate.getMonth(), d = selectedDate.getDate();
+  const btn  = document.getElementById(calMode === 'checkin' ? 'checkin-btn'  : 'checkout-btn');
+  const text = document.getElementById(calMode === 'checkin' ? 'checkin-text' : 'checkout-text');
+  btn.dataset.iso  = isoOf(y, m, d);   // 送出時真正用的值
+  text.textContent = fmtYMD(y, m, d);  // 畫面文字,換語言時會被 applyLang 重新格式化
+  btn.classList.add('filled');
   closeCal();
 }
 
@@ -823,8 +865,8 @@ function saveDraft() {
   try {
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
       room:     document.getElementById('room-select').value,
-      checkin:  document.getElementById('checkin-btn').classList.contains('filled')  ? document.getElementById('checkin-text').textContent  : '',
-      checkout: document.getElementById('checkout-btn').classList.contains('filled') ? document.getElementById('checkout-text').textContent : '',
+      checkin:  document.getElementById('checkin-btn').dataset.iso  || '',
+      checkout: document.getElementById('checkout-btn').dataset.iso || '',
       guests,
       name:  document.getElementById('name-input').value,
       phone: document.getElementById('phone-input').value,
@@ -847,14 +889,15 @@ function restoreDraft() {
     document.getElementById('room-select').value = d.room;
     try { fetchBlockedDates(); } catch (_) {}
   }
-  if (d.checkin) {
-    document.getElementById('checkin-text').textContent = d.checkin;
-    document.getElementById('checkin-btn').classList.add('filled');
-  }
-  if (d.checkout) {
-    document.getElementById('checkout-text').textContent = d.checkout;
-    document.getElementById('checkout-btn').classList.add('filled');
-  }
+  // 日期用當下語言重新格式化。舊版草稿存的是顯示文字(例如 "Sep 10, 2026"),
+  // parseISO 認不得就當作沒選 —— 寧可讓客人重選一次,也不要送出解析不了的日期。
+  [['checkin', 'checkin-btn', 'checkin-text'], ['checkout', 'checkout-btn', 'checkout-text']]
+    .forEach(([key, btnId, textId]) => {
+      if (!parseISO(d[key])) return;
+      document.getElementById(btnId).dataset.iso  = d[key];
+      document.getElementById(textId).textContent = fmtISO(d[key]);
+      document.getElementById(btnId).classList.add('filled');
+    });
   if (d.guests) { guests = d.guests; document.getElementById('guests-num').textContent = guests; }
   ['name','phone','email','notes'].forEach(k => {
     if (d[k]) document.getElementById(k + '-input').value = d[k];
@@ -941,15 +984,16 @@ try { fetchBlockedDates(); } catch(e) { console.error('fetchBlockedDates failed:
 
 /* ── SUBMIT ── */
 function submitForm() {
-  const checkin  = document.getElementById('checkin-text').textContent;
-  const checkout = document.getElementById('checkout-text').textContent;
+  // 日期直接讀 data-iso('YYYY-MM-DD'),不從畫面文字反推
+  const checkin  = document.getElementById('checkin-btn').dataset.iso  || '';
+  const checkout = document.getElementById('checkout-btn').dataset.iso || '';
   const room     = document.getElementById('room-select').value;
   const name     = document.getElementById('name-input').value.trim();
   const phone    = document.getElementById('phone-input').value.trim();
   const email    = document.getElementById('email-input').value.trim();
   const notes    = document.getElementById('notes-input').value.trim();
 
-  if (!document.getElementById('checkin-btn').classList.contains('filled') || !document.getElementById('checkout-btn').classList.contains('filled') || !room || !name || !phone || !email) {
+  if (!parseISO(checkin) || !parseISO(checkout) || !room || !name || !phone || !email) {
     alert(getDict().fillRequired);
     return;
   }
@@ -981,15 +1025,6 @@ function submitForm() {
   btn.textContent = getDict().sending;
   btn.disabled = true;
 
-  // Convert date string back to YYYY-MM-DD for Airtable
-  // 必須用本地日期組出字串:toISOString() 會把台灣時間 0 點換算成 UTC,日期倒退一天
-  function toISO(str) {
-    const d = new Date(str);
-    if (isNaN(d)) return str;
-    const p = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  }
-
   // Step 1: Write to Airtable via Worker(會員登入時附上 token 綁定訂單)
   const memberToken = localStorage.getItem('memberToken');
   fetch(`${WORKER_URL}/booking`, {
@@ -1000,8 +1035,8 @@ function submitForm() {
       guest_phone:   phone,
       guest_email:   email || '',
       room_type:     room,
-      checkin_date:  toISO(checkin),
-      checkout_date: toISO(checkout),
+      checkin_date:  checkin,
+      checkout_date: checkout,
       guests:        guests,
       notes:         notesOut || '',
       lang:          localStorage.getItem('lang') || 'en'
@@ -1023,8 +1058,8 @@ function submitForm() {
     if (!results) return; // already handled error above
     const _d = getDict();
     document.getElementById('confirm-summary').innerHTML =
-      `📅 <strong>${_d.checkin}:</strong> ${checkin}<br>` +
-      `📅 <strong>${_d.checkout}:</strong> ${checkout}<br>` +
+      `📅 <strong>${_d.checkin}:</strong> ${fmtISO(checkin)}<br>` +
+      `📅 <strong>${_d.checkout}:</strong> ${fmtISO(checkout)}<br>` +
       `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
       `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}<br>` +

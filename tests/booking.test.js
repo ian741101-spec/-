@@ -69,12 +69,12 @@ for (const lang of ['en', 'zh', 'ja']) {
 w.applyLang('zh');
 
 // 7. 驗證：同行旅客電話留空 → 擋下
+// 走真正的月曆流程(openCal → selectDay → confirmDate),確保 data-iso 是這條路徑寫進去的
+const pickDate = (mode, y, m, d) => { w.openCal(mode); w.selectDay(y, m, d); w.confirmDate(); };
 const setupMain = () => {
   $('room-select').value = 'Ocean Double';
-  $('checkin-text').textContent = 'Sep 10, 2026';
-  $('checkin-btn').classList.add('filled');
-  $('checkout-text').textContent = 'Sep 12, 2026';
-  $('checkout-btn').classList.add('filled');
+  pickDate('checkin',  2026, 8, 10);   // 2026-09-10
+  pickDate('checkout', 2026, 8, 12);   // 2026-09-12
   $('name-input').value = '王大明';
   $('phone-input').value = '0911222333';
   $('email-input').value = 'test@example.com';
@@ -125,6 +125,27 @@ if (sent) {
   ok(sent.body.checkout_date === '2026-09-12', 'checkout_date 沒有差一天 (2026-09-12)');
 }
 
+// 10b. 三種語言下送出的日期都必須是同一組 ISO
+//      （日期顯示已改為依語種翻譯，若哪天有人又從畫面文字反推日期，中日文會直接解析失敗）
+for (const [lang, label] of [['en', 'Sep 10, 2026'], ['zh', '2026年9月10日'], ['ja', '2026年9月10日']]) {
+  w.applyLang(lang);
+  ok($('checkin-text').textContent === label, `[${lang}] 入住日顯示為 ${label}`);
+  sent = null;
+  w.submitForm();
+  ok(sent && sent.body.checkin_date  === '2026-09-10', `[${lang}] 送出的 checkin_date 仍是 2026-09-10`);
+  ok(sent && sent.body.checkout_date === '2026-09-12', `[${lang}] 送出的 checkout_date 仍是 2026-09-12`);
+}
+w.applyLang('zh');
+
+// 10c. 月曆標題也要依語種顯示
+w.openCal('checkin');
+ok($('cal-month-label').textContent === `${new Date().getFullYear()}年${new Date().getMonth() + 1}月`, '中文月曆標題為「YYYY年M月」');
+w.applyLang('en');
+w.renderCal();
+ok(/^[A-Z][a-z]{2} \d{4}$/.test($('cal-month-label').textContent), '英文月曆標題為「Mon YYYY」');
+w.closeCal();
+w.applyLang('zh');
+
 // 11. 草稿存還原（模擬 LINE 登入來回）
 w.saveDraft();
 const draft = JSON.parse(w.sessionStorage.getItem('bookingDraft'));
@@ -139,7 +160,17 @@ ok(doc.querySelectorAll('#companions-list .comp-row').length === 2, '還原後�
 ok(doc.querySelector('input[data-comp="0"][data-field="name"]').value === '王小明', '還原後 B 的姓名回來了');
 ok(doc.querySelector('input[data-comp="1"][data-field="phone"]').value === '0987654321', '還原後 C 的電話回來了');
 ok($('email-input').value === 'test@example.com', '還原後 Email 回來了');
-ok($('checkin-text').textContent === 'Sep 10, 2026', '還原後入住日期回來了');
+ok($('checkin-btn').dataset.iso === '2026-09-10', '還原後入住日期回來了 (data-iso)');
+ok($('checkin-btn').classList.contains('filled'), '還原後入住日期按鈕是已填狀態');
+ok($('checkin-text').textContent === '2026年9月10日', '還原後日期用當下語言(中文)顯示');
+
+// 11b. 舊版草稿(存的是顯示文字而非 ISO)要被擋掉,不能當成有效日期送出
+w.sessionStorage.setItem('bookingDraft', JSON.stringify({ checkin: 'Sep 10, 2026', checkout: 'Sep 12, 2026' }));
+$('checkin-btn').classList.remove('filled');  delete $('checkin-btn').dataset.iso;
+$('checkout-btn').classList.remove('filled'); delete $('checkout-btn').dataset.iso;
+w.restoreDraft();
+ok(!$('checkin-btn').dataset.iso, '舊版草稿的日期文字不會被當成 ISO 收下');
+ok(!$('checkin-btn').classList.contains('filled'), '舊版草稿日期 → 按鈕維持未填,客人需重選');
 
 // 12. HTML 注入防護
 w.guests = 2; w.companions = [{ name: '<img src=x onerror=1>', phone: '"><b>x' }];
