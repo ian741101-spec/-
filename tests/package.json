@@ -1,0 +1,6 @@
+{
+  "name": "inhouse-tests",
+  "private": true,
+  "scripts": { "test": "node booking.test.js" },
+  "devDependencies": { "jsdom": "^27.0.0" }
+}

@@ -130,6 +130,12 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 }
 .form-input:focus{border-color:var(--ocean-mid);}
 .form-textarea{min-height:88px;resize:none;}
+.form-hint{font-size:.72rem;line-height:1.6;color:var(--text-light);margin:-2px 0 10px;}
+
+/* 同行旅客（人數 > 1 時動態產生）*/
+.comp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.comp-tag{grid-column:1/-1;font-size:.72rem;letter-spacing:.1em;color:var(--text-light);}
+@media(max-width:420px){.comp-row{grid-template-columns:1fr;}}
 
 /* Guest counter */
 .guest-counter{display:flex;align-items:center;gap:20px;}
@@ -392,7 +398,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 
   <!-- Name -->
   <div class="form-section">
-    <label class="form-label"><span data-i18n="yourName">Your Name</span> <span class="form-req">*</span></label>
+    <label class="form-label"><span data-i18n="yourName">Your Name</span> <span id="main-guest-tag" style="display:none;">(A)</span> <span class="form-req">*</span></label>
     <input class="form-input" id="name-input" type="text" placeholder="Full name" data-i18n-placeholder="phName">
   </div>
 
@@ -406,6 +412,13 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <div class="form-section">
     <label class="form-label"><span data-i18n="email">Email</span> <span class="form-req">*</span></label>
     <input class="form-input" id="email-input" type="email" inputmode="email" placeholder="your@email.com" data-i18n-placeholder="phEmail">
+  </div>
+
+  <!-- 同行旅客（人數 > 1 時由 renderCompanions() 產生 B、C、D…）-->
+  <div class="form-section" id="companions-section" style="display:none;">
+    <label class="form-label"><span data-i18n="companions">Other Guests</span> <span class="form-req">*</span></label>
+    <div class="form-hint" data-i18n="companionsHint">Please give the name and mobile number of every guest other than the main booker.</div>
+    <div id="companions-list"></div>
   </div>
 
   <!-- Notes -->
@@ -512,6 +525,10 @@ const i18n = {
     mbIn: 'Logged in as {name} — this booking will earn points.',
     fillRequired: 'Please fill in all required fields.',
     emailInvalid: 'Please enter a valid email address.',
+    companions: 'Other Guests',
+    companionsHint: 'Please give the name and mobile number of every guest other than the main booker (A).',
+    companionsRequired: 'Please enter a name and mobile number for every other guest.',
+    phCompPhone: 'Mobile number',
     sending: 'Sending…',
     errorMsg: 'Something went wrong. Please try again or contact us via WhatsApp.',
   },
@@ -548,6 +565,10 @@ const i18n = {
     mbIn: '已以 {name} 登入,本次訂房將累積點數。',
     fillRequired: '請填寫所有必填欄位。',
     emailInvalid: '請輸入有效的 Email 地址。',
+    companions: '同行旅客',
+    companionsHint: '訂房人（A）以外的每位旅客,都請留下姓名與手機號碼。',
+    companionsRequired: '請填寫每位同行旅客的姓名與手機號碼。',
+    phCompPhone: '手機號碼',
     sending: '傳送中…',
     errorMsg: '發生錯誤,請稍後再試或透過 WhatsApp 聯繫我們。',
   },
@@ -584,6 +605,10 @@ const i18n = {
     mbIn: '{name} としてログイン中 — 今回のご予約はポイント対象です。',
     fillRequired: 'すべての必須項目を入力してください。',
     emailInvalid: '有効なメールアドレスを入力してください。',
+    companions: '同行者',
+    companionsHint: 'ご予約者（A）以外の同行者について、お名前と携帯番号をご記入ください。',
+    companionsRequired: '同行者全員のお名前と携帯番号をご記入ください。',
+    phCompPhone: '携帯番号',
     sending: '送信中…',
     errorMsg: 'エラーが発生しました。再度お試しいただくか、WhatsAppでご連絡ください。',
   }
@@ -637,6 +662,8 @@ function applyLang(lang) {
   if (typeof memberBannerState !== 'undefined' && memberBannerState) {
     renderMemberBanner(memberBannerState.state, memberBannerState.name);
   }
+  // 同行旅客欄位也是動態產生的(placeholder 要跟著換語言),值存在陣列裡不會遺失
+  renderCompanions();
 }
 
 document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -733,6 +760,47 @@ var guests = 1;
 function changeGuests(delta) {
   guests = Math.max(1, Math.min(8, guests + delta));
   document.getElementById('guests-num').textContent = guests;
+  syncCompanions();
+}
+
+/* ── 同行旅客:訂房人是 A,其餘每人留姓名 + 電話 ──
+   companions 陣列是唯一的真實來源,畫面由它重繪,所以加減人數
+   或切換語言都不會清掉已經打好的字。 */
+var companions = [];
+function compLetter(i) { return String.fromCharCode(66 + i); } // 0→B, 1→C, …
+function escAttr(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+function syncCompanions() {
+  const need = Math.max(0, guests - 1);
+  while (companions.length < need) companions.push({ name: '', phone: '' });
+  companions.length = need;
+  renderCompanions();
+}
+function renderCompanions() {
+  if (!Array.isArray(companions)) return;   // applyLang 可能在本區塊執行前就跑過
+  const sec  = document.getElementById('companions-section');
+  const list = document.getElementById('companions-list');
+  const tag  = document.getElementById('main-guest-tag');
+  if (!sec || !list) return;
+  if (tag) tag.style.display = companions.length ? '' : 'none';
+  if (!companions.length) { sec.style.display = 'none'; list.innerHTML = ''; return; }
+  const d = getDict();
+  list.innerHTML = companions.map((c, i) => `
+    <div class="comp-row">
+      <span class="comp-tag">${compLetter(i)}</span>
+      <input class="form-input" type="text" data-comp="${i}" data-field="name"
+             value="${escAttr(c.name)}" placeholder="${escAttr(d.phName || 'Full name')}">
+      <input class="form-input" type="tel" inputmode="tel" data-comp="${i}" data-field="phone"
+             value="${escAttr(c.phone)}" placeholder="${escAttr(d.phCompPhone || 'Mobile number')}">
+    </div>`).join('');
+  list.querySelectorAll('input[data-comp]').forEach(el => {
+    el.addEventListener('input', () => {
+      companions[Number(el.dataset.comp)][el.dataset.field] = el.value;
+    });
+  });
+  sec.style.display = '';
 }
 
 /* ── 訂房通知全由 Worker 端的 LINE 推播負責(EmailJS 與 GAS 備份已移除)── */
@@ -762,6 +830,7 @@ function saveDraft() {
       phone: document.getElementById('phone-input').value,
       email: document.getElementById('email-input').value,
       notes: document.getElementById('notes-input').value,
+      companions,
     }));
   } catch (_) {}
 }
@@ -790,6 +859,11 @@ function restoreDraft() {
   ['name','phone','email','notes'].forEach(k => {
     if (d[k]) document.getElementById(k + '-input').value = d[k];
   });
+  // 同行旅客要在 guests 還原之後才重建,否則會被 syncCompanions() 截掉
+  if (Array.isArray(d.companions)) {
+    companions = d.companions.map(c => ({ name: (c && c.name) || '', phone: (c && c.phone) || '' }));
+  }
+  syncCompanions();
 }
 
 /* ── 會員狀態:未登入時提示登入才會累積點數;已登入則自動帶入資料 ── */
@@ -886,6 +960,23 @@ function submitForm() {
     return;
   }
 
+  // 同行旅客:訂房人以外的每一位都要有姓名 + 電話(電話不驗格式,可能是外國號碼)
+  const needComp = Math.max(0, guests - 1);
+  const roster = companions.slice(0, needComp)
+    .map(c => ({ name: (c.name || '').trim(), phone: (c.phone || '').trim() }));
+  if (roster.length < needComp || roster.some(c => !c.name || !c.phone)) {
+    alert(getDict().companionsRequired);
+    const bad = document.querySelector('#companions-list input[data-comp]');
+    if (bad) bad.focus();
+    return;
+  }
+
+  // 訂房表沒有同行旅客欄位,併進 notes 一起送(Worker 原樣寫入 Airtable 並帶進 LINE 通知)
+  const rosterLines = roster.map((c, i) => `${compLetter(i)} ${c.name} ${c.phone}`);
+  const notesOut = rosterLines.length
+    ? [`同行旅客(訂房人 A 以外):`, ...rosterLines, ...(notes ? ['---', notes] : [])].join('\n')
+    : notes;
+
   const btn = document.querySelector('.submit-btn');
   btn.textContent = getDict().sending;
   btn.disabled = true;
@@ -912,7 +1003,7 @@ function submitForm() {
       checkin_date:  toISO(checkin),
       checkout_date: toISO(checkout),
       guests:        guests,
-      notes:         notes || '',
+      notes:         notesOut || '',
       lang:          localStorage.getItem('lang') || 'en'
     })
   })
@@ -937,7 +1028,11 @@ function submitForm() {
       `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
       `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}<br>` +
-      `✉️ <strong>Email:</strong> ${email}`;
+      `✉️ <strong>Email:</strong> ${email}` +
+      (roster.length
+        ? `<br>👥 <strong>${_d.companions}:</strong><br>` +
+          roster.map((c, i) => `&nbsp;&nbsp;${compLetter(i)} ${escAttr(c.name)} · ${escAttr(c.phone)}`).join('<br>')
+        : '');
     document.getElementById('confirmScreen').classList.add('show');
     window.scrollTo(0, 0);
   })
