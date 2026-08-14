@@ -275,23 +275,41 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   .cal-handle { display: none; }
 }
 
-/* ── 手機橫置 / 很矮的視窗:把月曆壓縮成放得下的尺寸,盡量不用捲 ── */
+/* ── 手機橫置 / 很矮的視窗 ──
+   橫置時 iOS Safari 的網址列會蓋在畫面最上方(直向時在最下方),而 position:fixed
+   的東西碰得到那一塊,所以貼齊上下邊緣的做法一定會被工具列吃掉一截。
+   對策:橫置時月曆改成「置中的小卡片」並整體壓扁,上下各留一大段空白,
+   不論 Safari 工具列出現在上面或下面,月份箭頭和「確認」按鈕都不會被擋到。 */
 @media (max-height: 520px) {
+  .cal-overlay { align-items: center; justify-content: center; padding: 6px 12px; }
   .cal-sheet {
-    max-height: 94vh;
-    max-height: 94dvh;
-    padding-bottom: calc(8px + var(--safe-bottom));
+    width: min(430px, 92vw);
+    max-height: 92vh;
+    max-height: min(92dvh, 330px);
+    border-radius: 12px;
+    padding-bottom: 4px;
+    transform: translateY(12px) scale(.97);
+    opacity: 0;
+    transition: transform .28s ease, opacity .28s ease;
   }
-  .cal-handle { margin-top: 6px; }
-  .cal-head { padding: 5px 16px; }
-  .cal-head-title { font-size: .86rem; }
-  .cal-nav-row { padding: 4px 16px; }
-  .cal-nav-btn { width: 30px; height: 30px; }
-  .cal-weekdays { padding: 2px 10px 1px; }
-  .cal-grid { padding: 2px 10px 4px; }
-  .cal-day { height: 28px; font-size: .76rem; }
-  .cal-footer { padding: 6px 16px; }
-  .cal-confirm { min-height: 40px; }
+  .cal-overlay.open .cal-sheet { transform: translateY(0) scale(1); opacity: 1; }
+  .cal-handle { display: none; }
+  .cal-head { padding: 4px 14px; }
+  .cal-head-title { font-size: .8rem; }
+  .cal-close { width: 26px; height: 26px; font-size: .8rem; }
+  .cal-nav-row { padding: 2px 14px; }
+  .cal-nav-btn { width: 26px; height: 26px; font-size: .9rem; }
+  .cal-month-label { font-size: .82rem; }
+  .cal-weekdays { padding: 1px 10px 0; }
+  .cal-wd { font-size: .58rem; padding: 1px 0; }
+  .cal-grid { padding: 1px 10px 3px; }
+  .cal-day { height: 22px; font-size: .7rem; }
+  .cal-footer { padding: 4px 14px; }
+  .cal-selected-text { font-size: .68rem; line-height: 1.35; }
+  .cal-selected-date { font-size: .8rem; }
+  .cal-confirm { min-height: 34px; padding: 0 14px; font-size: .7rem; }
+  /* 同理:橫置時確認畫面的頭尾也要多留一段,免得被 Safari 工具列壓到 */
+  .confirm-screen { padding-top: 56px; padding-bottom: calc(56px + var(--safe-bottom)); }
 }
 .confirm-screen{
   display:none;position:fixed;inset:0;z-index:600;
