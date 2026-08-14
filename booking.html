@@ -186,24 +186,36 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   padding:0 0 calc(20px + var(--safe-bottom));
   transform:translateY(100%);
   transition:transform .38s cubic-bezier(.25,.46,.45,.94);
+  /* 手機橫置時月曆比螢幕高:面板限高,只有日期格會捲動,
+     月份切換和「確認」按鈕永遠留在畫面上 */
+  display:flex;flex-direction:column;
+  max-height:96vh;
+  max-height:96dvh;   /* iOS 15.4+ 才有 dvh,舊版吃上面那行 */
+  overflow:hidden;
 }
 .cal-overlay.open .cal-sheet{transform:translateY(0);}
-.cal-handle{width:32px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:10px auto 0;}
+.cal-handle{width:32px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
 .cal-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.07);
+  flex-shrink:0;
 }
 .cal-head-title{font-family:'Noto Serif TC',serif;font-size:.95rem;font-weight:300;color:var(--ocean-deep);letter-spacing:.08em;}
 .cal-close{width:32px;height:32px;border:none;background:rgba(0,0,0,.06);border-radius:50%;font-size:.9rem;color:var(--text-mid);display:flex;align-items:center;justify-content:center;}
-.cal-nav-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--ocean-deep);}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--ocean-deep);flex-shrink:0;}
 .cal-nav-btn{width:34px;height:34px;background:rgba(255,255,255,.12);border:none;border-radius:2px;color:white;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;}
 .cal-nav-btn:active{background:rgba(255,255,255,.25);}
 .cal-month-label{font-family:'Noto Serif TC',serif;font-size:.9rem;font-weight:300;color:white;letter-spacing:.1em;}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 10px 2px;background:rgba(13,43,62,.04);}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 10px 2px;background:rgba(13,43,62,.04);flex-shrink:0;}
 .cal-wd{text-align:center;font-size:.62rem;letter-spacing:.04em;color:var(--text-light);padding:3px 0;}
 .cal-wd:first-child{color:var(--coral);}
 .cal-wd:last-child{color:var(--ocean-mid);}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:4px 10px 8px;}
+.cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:4px 10px 8px;
+  /* 面板放不下時,只有這塊捲動(min-height:0 讓它在 flex 裡真的縮得下去) */
+  overflow-y:auto;min-height:0;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+}
 .cal-day{
   height:36px;display:flex;align-items:center;justify-content:center;
   font-size:.82rem;border-radius:50%;
@@ -224,6 +236,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   display:flex;align-items:center;justify-content:space-between;
   gap:10px;padding:10px 16px;
   border-top:1px solid rgba(0,0,0,.07);
+  flex-shrink:0;
 }
 .cal-selected-text{font-size:.78rem;color:var(--text-mid);line-height:1.5;}
 .cal-selected-date{font-family:'Playfair Display',serif;font-size:.94rem;color:var(--ocean-deep);font-weight:700;}
@@ -253,7 +266,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     transform: translateY(20px) scale(.96);
     opacity: 0;
     transition: transform .3s ease, opacity .3s ease;
-    overflow-y: auto;
+    overflow: hidden;   /* 捲動交給裡面的日期格,面板本身不捲 */
   }
   .cal-overlay.open .cal-sheet {
     transform: translateY(0) scale(1);
@@ -261,15 +274,41 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   }
   .cal-handle { display: none; }
 }
+
+/* ── 手機橫置 / 很矮的視窗:把月曆壓縮成放得下的尺寸,盡量不用捲 ── */
+@media (max-height: 520px) {
+  .cal-sheet {
+    max-height: 94vh;
+    max-height: 94dvh;
+    padding-bottom: calc(8px + var(--safe-bottom));
+  }
+  .cal-handle { margin-top: 6px; }
+  .cal-head { padding: 5px 16px; }
+  .cal-head-title { font-size: .86rem; }
+  .cal-nav-row { padding: 4px 16px; }
+  .cal-nav-btn { width: 30px; height: 30px; }
+  .cal-weekdays { padding: 2px 10px 1px; }
+  .cal-grid { padding: 2px 10px 4px; }
+  .cal-day { height: 28px; font-size: .76rem; }
+  .cal-footer { padding: 6px 16px; }
+  .cal-confirm { min-height: 40px; }
+}
 .confirm-screen{
   display:none;position:fixed;inset:0;z-index:600;
   background:var(--cream);
   flex-direction:column;align-items:center;
-  justify-content:center;padding:40px 28px;
+  /* 內容比手機螢幕高,自己要能捲動;justify-content:center 會讓超出的部分捲不到,
+     改用 flex-start + ::before/::after 的 auto margin(內容放得下才置中) */
+  justify-content:flex-start;
+  padding:calc(24px + var(--safe-top)) 28px calc(40px + var(--safe-bottom));
   text-align:center;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
 }
 .confirm-screen.show{display:flex;}
-.confirm-icon{width:64px;height:64px;background:var(--seafoam);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:white;margin-bottom:20px;}
+.confirm-screen::before,.confirm-screen::after{content:'';margin:auto;flex-shrink:0;}
+.confirm-icon{width:64px;height:64px;flex-shrink:0;background:var(--seafoam);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:white;margin-bottom:20px;}
 .confirm-title{font-family:'Noto Serif TC',serif;font-size:1.5rem;font-weight:300;color:var(--ocean-deep);letter-spacing:.12em;margin-bottom:12px;}
 .confirm-sub{font-size:.88rem;color:var(--text-mid);line-height:1.85;margin-bottom:24px;}
 .confirm-summary{
@@ -1068,7 +1107,12 @@ function submitForm() {
         ? `<br>👥 <strong>${_d.companions}:</strong><br>` +
           roster.map((c, i) => `&nbsp;&nbsp;${compLetter(i)} ${escAttr(c.name)} · ${escAttr(c.phone)}`).join('<br>')
         : '');
-    document.getElementById('confirmScreen').classList.add('show');
+    // iOS:送出時鍵盤可能還開著,不先 blur 的話 visual viewport 位移會讓固定定位的
+    // 確認畫面歪掉、看起來像卡住
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    const _screen = document.getElementById('confirmScreen');
+    _screen.classList.add('show');
+    _screen.scrollTop = 0;   // 確認畫面自己是捲動容器
     window.scrollTo(0, 0);
   })
   .catch(err => {
