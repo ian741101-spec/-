@@ -64,6 +64,21 @@ function todayTW(addMonths = 0) {
   return d.toISOString().slice(0, 10);
 }
 
+// Airtable 的日期欄位如果勾了「包含時間」,API 回傳的是 UTC(台北的午夜 = 前一天 16:00Z),
+// 直接切前 10 碼會整批少一天,月曆上的已滿日期就會全部往前位移。先換算回台北當地日期再切。
+function dateOnlyTW(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+  if (s.includes('T')) {
+    const t = Date.parse(s);
+    if (!Number.isNaN(t)) return new Date(t + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+  // 純日期。順便收掉手動輸入的 2026/8/5 這種格式(舊資料有,不接會變成沒擋到日期)
+  const m = s.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+  if (!m) return '';
+  return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+}
+
 function atGet(apiUrl, token) {
   return fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
 }
@@ -465,12 +480,21 @@ export default {
 
         const blocked = [];
         for (const rec of (data.records || [])) {
-          const { checkin_date, checkout_date } = rec.fields;
-          if (!checkin_date || !checkout_date) continue;
-          const start = new Date(checkin_date);
-          const end   = new Date(checkout_date);
-          for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-            blocked.push(d.toISOString().slice(0, 10));
+          const startISO = dateOnlyTW(rec.fields.checkin_date);
+          const endISO   = dateOnlyTW(rec.fields.checkout_date);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(startISO) || !/^\d{4}-\d{2}-\d{2}$/.test(endISO)) continue;
+
+          // 逐日推進用 Date.UTC 純數字運算,不受 Worker 時區影響。
+          // 退房日不算(住到 8/17 退房 = 最後一晚是 8/16),所以是 cur < endMs
+          const [sy, sm, sd] = startISO.split('-').map(Number);
+          const [ey, em, ed] = endISO.split('-').map(Number);
+          const endMs = Date.UTC(ey, em - 1, ed);
+          let cur = Date.UTC(sy, sm - 1, sd);
+          for (let guard = 0; cur < endMs && guard < 400; guard++, cur += 86400000) {
+            const c = new Date(cur);
+            blocked.push(
+              `${c.getUTCFullYear()}-${String(c.getUTCMonth() + 1).padStart(2, '0')}-${String(c.getUTCDate()).padStart(2, '0')}`
+            );
           }
         }
         return json({ blocked });
