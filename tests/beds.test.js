@@ -103,7 +103,40 @@ const pickRoom = async (room) => {
   ok(w.isDateFull('2026-08-19') === true, '舊版 Worker 回應 → 有人訂就整天擋掉');
   ok(w.isDateFull('2026-08-18') === false, '舊版 Worker 回應 → 沒人訂的日期照常開放');
 
-  // ── 9. nightsOf:退房日不算 ──
+  // ── 9. 沒選房型時不准開月曆(不然會把賣掉的日期顯示成可選)──
+  $('room-select').value = '';
+  $('room-select').dispatchEvent(new w.Event('change'));
+  await settle();
+  w.__lastAlert = null;
+  w.openCal('checkin');
+  ok(!!w.__lastAlert && w.__lastAlert === w.getDict().pickRoomFirst,
+     '沒選房型點日期 → 跳出「請先選房型」提示');
+  ok($('calOverlay').classList.contains('open') === false, '沒選房型 → 月曆不會打開');
+
+  // ── 10. 換房型/改床位後,已選但訂不到的日期要當場清掉 ──
+  await pickRoom('Intertidal Bunk');
+  const setDate = (btnId, iso) => {
+    const b = $(btnId); b.dataset.iso = iso; b.classList.add('filled');
+  };
+  setDate('checkin-btn', '2026-08-19');   // 剩 1 床
+  setDate('checkout-btn', '2026-08-20');
+  w.__lastAlert = null;
+  w.changeGuests(1);                      // 變成 2 人 → 需要 2 床 → 不夠
+  ok($('checkin-btn').dataset.iso === '', '床位不夠 → 入住日被清掉');
+  ok($('checkout-btn').dataset.iso === '', '床位不夠 → 退房日被清掉');
+  ok($('checkin-btn').classList.contains('filled') === false, '按鈕回到未填狀態');
+  ok(!!w.__lastAlert, '有告訴客人日期被清掉了');
+
+  // 反過來:床位夠的話不能亂清客人選好的日期
+  w.changeGuests(-1);
+  setDate('checkin-btn', '2026-08-19');
+  setDate('checkout-btn', '2026-08-20');
+  w.__lastAlert = null;
+  w.revalidateDates();
+  ok($('checkin-btn').dataset.iso === '2026-08-19', '床位夠 → 日期保留');
+  ok(w.__lastAlert === null, '床位夠 → 不跳沒必要的提示');
+
+  // ── 11. nightsOf:退房日不算 ──
   ok(JSON.stringify(w.nightsOf('2026-08-15', '2026-08-18')) ===
      JSON.stringify(['2026-08-15', '2026-08-16', '2026-08-17']), '3 晚 → 不含退房日');
   ok(w.nightsOf('2026-08-15', '2026-08-15').length === 0, '同日進出 → 0 晚');

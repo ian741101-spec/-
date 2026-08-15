@@ -429,6 +429,18 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
   <!-- 會員狀態:未登入時提醒先登入才會累積點數 -->
   <div class="member-banner" id="member-banner"></div>
 
+  <!-- Room -->
+  <div class="form-section">
+    <label class="form-label"><span data-i18n="roomType">Room Type</span> <span class="form-req">*</span></label>
+    <select class="form-select" id="room-select">
+      <option value="" data-i18n="selectRoom">— Select a room —</option>
+      <option value="Ocean Double" data-i18n="optOcean">Ocean Double Room</option>
+      <option value="Twin Wanderer" data-i18n="optTwin">Twin Wanderer Room</option>
+      <option value="Just Right" data-i18n="optJustRight">Just Right Room</option>
+            <option value="Intertidal Bunk" data-i18n="optBunk">Intertidal Bunk Dorm (per bed)</option>
+    </select>
+  </div>
+
   <!-- Dates -->
   <div class="form-section">
     <label class="form-label"><span data-i18n="stayDates">Stay Dates</span> <span class="form-req">*</span></label>
@@ -442,18 +454,6 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
         <span id="checkout-text" data-i18n="checkout">Check-out</span>
       </button>
     </div>
-  </div>
-
-  <!-- Room -->
-  <div class="form-section">
-    <label class="form-label"><span data-i18n="roomType">Room Type</span> <span class="form-req">*</span></label>
-    <select class="form-select" id="room-select">
-      <option value="" data-i18n="selectRoom">— Select a room —</option>
-      <option value="Ocean Double" data-i18n="optOcean">Ocean Double Room</option>
-      <option value="Twin Wanderer" data-i18n="optTwin">Twin Wanderer Room</option>
-      <option value="Just Right" data-i18n="optJustRight">Just Right Room</option>
-            <option value="Intertidal Bunk" data-i18n="optBunk">Intertidal Bunk Dorm (per bed)</option>
-    </select>
   </div>
 
   <!-- Guests -->
@@ -587,6 +587,8 @@ const i18n = {
     optBunk: 'Intertidal Bunk Dorm (per bed)',
     numGuests: 'Number of Guests', yourName: 'Your Name',
     bunkMax: 'The dorm has 2 beds, so up to 2 guests per booking.',
+    pickRoomFirst: 'Please choose a room type first — availability differs from room to room.',
+    datesCleared: 'Those dates are not available for this selection, so we have cleared them. Please pick your dates again.',
     wholeRoom: 'Book the whole dorm',
     wholeRoomHint: 'Reserve both beds so the room is yours alone — no need to add a second guest.',
     bedsLabel: 'Beds',
@@ -633,6 +635,8 @@ const i18n = {
     optBunk: '潮間帶背包房(每床)',
     numGuests: '入住人數', yourName: '您的姓名',
     bunkMax: '背包房共 2 張床,單筆訂房最多 2 人。',
+    pickRoomFirst: '請先選擇房型,每一間房的空房狀況不一樣。',
+    datesCleared: '您選的日期在這個房型/床位數下已經沒有空房,已為您清除,請重新選擇日期。',
     wholeRoom: '我要包房',
     wholeRoomHint: '把 2 張床整間包下來,不會有其他旅客入住;一個人也可以包房,不需要填同行旅客。',
     bedsLabel: '床位',
@@ -679,6 +683,8 @@ const i18n = {
     optBunk: 'インタータイダルバンク(ベッド単位)',
     numGuests: '宿泊人数', yourName: 'お名前',
     bunkMax: 'ドミトリーはベッド2台のため、1回のご予約は2名様までです。',
+    pickRoomFirst: 'まずお部屋タイプをお選びください。空室状況はお部屋ごとに異なります。',
+    datesCleared: 'ご希望の日程はこの条件では空きがないため、日付をクリアしました。再度お選びください。',
     wholeRoom: '貸切にする',
     wholeRoomHint: 'ベッド2台をまとめて確保し、相部屋になりません。お一人様でも貸切にできます。',
     bedsLabel: 'ベッド',
@@ -867,6 +873,16 @@ function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
 function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCal(); }
 
 function openCal(mode) {
+  // 沒選房型就開月曆的話,系統不知道要查哪一間房的房況,會把已經賣掉的日期
+  // 全部顯示成可選。所以先擋下來,把客人帶回房型那一欄。
+  if (!selectedRoom()) {
+    alert(getDict().pickRoomFirst);
+    const sel = document.getElementById('room-select');
+    // 捲動/聚焦只是輔助,舊瀏覽器沒有這些方法時不能讓整段爆掉
+    try { if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+    try { if (sel && sel.focus) sel.focus(); } catch (_) {}
+    return;
+  }
   calMode = mode;
   selectedDate = null;
   document.getElementById('cal-selected-display').textContent = '—';
@@ -921,13 +937,15 @@ function changeGuests(delta) {
   guests = Math.max(1, Math.min(max, guests + delta));
   document.getElementById('guests-num').textContent = guests;
   syncCompanions();
-  renderCal();   // 需要的床數變了,可以訂的日期也跟著變
+  renderCal();          // 需要的床數變了,可以訂的日期也跟著變
+  revalidateDates();    // 加了人就可能不夠床,已選的日期要當場退掉
 }
 
 function onWholeRoomChange() {
   const chk = document.getElementById('whole-room-check');
   wholeRoom = !!(chk && chk.checked);
   renderCal();
+  revalidateDates();
 }
 
 /* 換房型:通鋪要露出包房選項、把人數壓在床位數以內;其他房型要把包房收回去 */
@@ -948,7 +966,25 @@ function onRoomChange() {
     document.getElementById('guests-num').textContent = guests;
     syncCompanions();   // 人數縮回來了,多出來的同行旅客欄位要一起收掉
   }
-  fetchBlockedDates();  // 裡面會 renderCal()
+  fetchBlockedDates();  // 裡面會 renderCal(),抓完房況後會回頭檢查已選日期
+}
+
+/* 已經選好的日期,在換房型或改床位數之後可能就訂不到了(不同房型房況不同)。
+   房況一抓回來就重新檢查,不能等到送出才說 —— 客人早就把後面的欄位都填完了。 */
+function revalidateDates() {
+  const ci = document.getElementById('checkin-btn').dataset.iso  || '';
+  const co = document.getElementById('checkout-btn').dataset.iso || '';
+  if (!parseISO(ci) || !parseISO(co)) return;
+  if (!nightsOf(ci, co).some(isDateFull)) return;
+
+  [['checkin-btn', 'checkin-text', 'checkin'], ['checkout-btn', 'checkout-text', 'checkout']]
+    .forEach(([btnId, textId, key]) => {
+      const btn = document.getElementById(btnId);
+      btn.dataset.iso = '';
+      btn.classList.remove('filled');
+      document.getElementById(textId).textContent = getDict()[key];
+    });
+  alert(getDict().datesCleared);
 }
 
 /* 這段住宿的每一晚(退房日不含)。用本地日期零件推進,不碰 toISOString */
@@ -1146,6 +1182,7 @@ function fetchBlockedDates() {
       remaining: data.remaining || null,
     };
     renderCal();
+    revalidateDates();
   })
   .catch(() => { availability = EMPTY_AVAIL; renderCal(); });
 }

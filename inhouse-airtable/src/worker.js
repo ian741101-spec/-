@@ -270,7 +270,9 @@ const CORS = {
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...CORS, 'Content-Type': 'application/json' }
+    // 這些回應全都是即時資料(房況、點數、訂單),被瀏覽器或中間層快取住的話,
+    // 客人會看到已經賣掉的日期還開放。一律不准快取。
+    headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
   });
 }
 
