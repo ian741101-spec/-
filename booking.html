@@ -586,11 +586,12 @@ const i18n = {
     optJustRight: 'Just Right Room', optFreediver: 'Freediver Single Room',
     optBunk: 'Intertidal Bunk Dorm (per bed)',
     numGuests: 'Number of Guests', yourName: 'Your Name',
-    bunkMax: 'The dorm has 2 beds, so up to 2 guests per booking.',
+    bunkMax: 'The dorm has 2 beds. Tick "book the whole dorm" if you need room for 3–4.',
+    bunkMaxWhole: 'Whole dorm booked — extra bedding can sleep up to 4. Rates for extra guests are confirmed by message.',
     pickRoomFirst: 'Please choose a room type first — availability differs from room to room.',
     datesCleared: 'Those dates are not available for this selection, so we have cleared them. Please pick your dates again.',
     wholeRoom: 'Book the whole dorm',
-    wholeRoomHint: 'Reserve both beds so the room is yours alone — no need to add a second guest.',
+    wholeRoomHint: 'Reserve both beds so the room is yours alone — fine for one person, and extra bedding can sleep up to 4.',
     bedsLabel: 'Beds',
     wholeRoomValue: 'Whole dorm (2 beds)',
     bedsGone: 'Sorry — those dates no longer have enough beds for this booking. Please pick different dates, or reduce the number of beds.',
@@ -634,11 +635,12 @@ const i18n = {
     optJustRight: '剛剛好房', optFreediver: '自由潛水單人房',
     optBunk: '潮間帶背包房(每床)',
     numGuests: '入住人數', yourName: '您的姓名',
-    bunkMax: '背包房共 2 張床,單筆訂房最多 2 人。',
+    bunkMax: '背包房共 2 張床。3~4 人請勾選下方「我要包房」。',
+    bunkMaxWhole: '包房可加床,最多 4 人。加床費用我們會在確認訊息中告知。',
     pickRoomFirst: '請先選擇房型,每一間房的空房狀況不一樣。',
     datesCleared: '您選的日期在這個房型/床位數下已經沒有空房,已為您清除,請重新選擇日期。',
     wholeRoom: '我要包房',
-    wholeRoomHint: '把 2 張床整間包下來,不會有其他旅客入住;一個人也可以包房,不需要填同行旅客。',
+    wholeRoomHint: '把 2 張床整間包下來,不會有其他旅客入住。一個人也可以包房;3~4 人則可加床。',
     bedsLabel: '床位',
     wholeRoomValue: '包房(整間 2 床)',
     bedsGone: '不好意思,您選的日期床位已經不足了。請改選其他日期,或減少床位數。',
@@ -682,11 +684,12 @@ const i18n = {
     optJustRight: 'ジャストライトルーム', optFreediver: 'フリーダイバーシングル',
     optBunk: 'インタータイダルバンク(ベッド単位)',
     numGuests: '宿泊人数', yourName: 'お名前',
-    bunkMax: 'ドミトリーはベッド2台のため、1回のご予約は2名様までです。',
+    bunkMax: 'ドミトリーはベッド2台です。3~4名様は「貸切にする」をお選びください。',
+    bunkMaxWhole: '貸切ならエキストラベッドで最大4名様まで。追加料金は確認メッセージでご案内します。',
     pickRoomFirst: 'まずお部屋タイプをお選びください。空室状況はお部屋ごとに異なります。',
     datesCleared: 'ご希望の日程はこの条件では空きがないため、日付をクリアしました。再度お選びください。',
     wholeRoom: '貸切にする',
-    wholeRoomHint: 'ベッド2台をまとめて確保し、相部屋になりません。お一人様でも貸切にできます。',
+    wholeRoomHint: 'ベッド2台をまとめて確保し、相部屋になりません。お一人様でも、エキストラベッドで最大4名様でもご利用いただけます。',
     bedsLabel: 'ベッド',
     wholeRoomValue: '貸切(2ベッド)',
     bedsGone: '申し訳ございません。ご希望の日程はベッドに空きがなくなりました。日程を変更するか、ベッド数を減らしてください。',
@@ -847,7 +850,7 @@ function renderCal() {
     const date    = new Date(calYear, calMonth, d);
     const dateStr = isoOf(calYear, calMonth, d);
     const isPast    = date < today;
-    const isBlocked = isDateFull(dateStr);
+    const isBlocked = isDateUnselectable(dateStr);
     const isToday   = date.getTime() === today.getTime();
     const isSel     = selectedDate &&
       selectedDate.getFullYear() === calYear &&
@@ -860,6 +863,24 @@ function renderCal() {
     html += `<div class="${cls}" onclick="${(isPast||isBlocked)?'':`selectDay(${calYear},${calMonth},${d})`}">${d}</div>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
+}
+
+/* 月曆上某一格能不能點,要看現在是在選入住日還是退房日 —— 規則本來就不一樣:
+
+   入住日:那一晚必須有空床。
+   退房日:退房當天不算住宿,所以「那一晚客滿」不影響它能不能當退房日。
+          真正的限制是「入住日 ~ 退房日前一晚」中間不能有任何一晚客滿。
+
+   這兩件事以前混在一起用同一條規則,造成兩個問題:
+   (1) 8/19 起有人入住 → 想住 8/18 一晚、8/19 退房的客人選不到 8/19,被迫跳到更後面
+   (2) 頭尾都有空、中間卻跨過客滿的日子 → 完全沒被擋，一路到送出才發現 */
+function isDateUnselectable(dateStr) {
+  if (calMode !== 'checkout') return isDateFull(dateStr);
+
+  const ci = document.getElementById('checkin-btn').dataset.iso || '';
+  if (!parseISO(ci)) return isDateFull(dateStr);   // 還沒選入住日,退回單日判斷
+  if (dateStr <= ci) return true;                  // 退房一定要晚於入住(ISO 字串可直接比大小)
+  return nightsOf(ci, dateStr).some(isDateFull);
 }
 
 function selectDay(y, m, d) {
@@ -910,6 +931,17 @@ function confirmDate() {
   btn.dataset.iso  = isoOf(y, m, d);   // 送出時真正用的值
   text.textContent = fmtYMD(y, m, d);  // 畫面文字,換語言時會被 applyLang 重新格式化
   btn.classList.add('filled');
+
+  // 改了入住日之後,原本選的退房日可能就不成立了(變成比入住日早,或中間跨到客滿的日子)
+  if (calMode === 'checkin') {
+    const co = document.getElementById('checkout-btn').dataset.iso || '';
+    if (parseISO(co) && (co <= btn.dataset.iso || nightsOf(btn.dataset.iso, co).some(isDateFull))) {
+      const cb = document.getElementById('checkout-btn');
+      cb.dataset.iso = '';
+      cb.classList.remove('filled');
+      document.getElementById('checkout-text').textContent = getDict().checkout;
+    }
+  }
   closeCal();
 }
 
@@ -921,6 +953,15 @@ var wholeRoom = false;
    這份對照表要跟 Worker 的 ROOM_CAPACITY 一致。 */
 const ROOM_CAPACITY = { 'Intertidal Bunk': 2 };
 function roomCapacity(room) { return ROOM_CAPACITY[room] || 1; }
+
+/* 加床:背包房實體只有 2 張床,但包整間時可以加床睡到 4 人。
+   只有包房才給加床 —— 跟陌生人同房時不會替誰加床,那些位置也不單獨賣。 */
+const ROOM_MAX_GUESTS = { 'Intertidal Bunk': 4 };
+function maxGuests() {
+  const room = selectedRoom();
+  if (!isDorm()) return 8;
+  return wholeRoom ? (ROOM_MAX_GUESTS[room] || roomCapacity(room)) : roomCapacity(room);
+}
 function selectedRoom() { const el = document.getElementById('room-select'); return el ? el.value : ''; }
 function isDorm() { return roomCapacity(selectedRoom()) > 1; }
 
@@ -933,8 +974,7 @@ function bedsNeeded() {
 }
 
 function changeGuests(delta) {
-  const max = isDorm() ? roomCapacity(selectedRoom()) : 8;
-  guests = Math.max(1, Math.min(max, guests + delta));
+  guests = Math.max(1, Math.min(maxGuests(), guests + delta));
   document.getElementById('guests-num').textContent = guests;
   syncCompanions();
   renderCal();          // 需要的床數變了,可以訂的日期也跟著變
@@ -944,28 +984,42 @@ function changeGuests(delta) {
 function onWholeRoomChange() {
   const chk = document.getElementById('whole-room-check');
   wholeRoom = !!(chk && chk.checked);
+  // 取消包房 → 沒有加床了,人數要壓回床位數
+  if (guests > maxGuests()) {
+    guests = maxGuests();
+    document.getElementById('guests-num').textContent = guests;
+    syncCompanions();
+  }
+  updateGuestsHint();
   renderCal();
   revalidateDates();
+}
+
+/* 人數上限的說明字會隨「有沒有包房」變動,所以不能只靠 data-i18n 靜態帶入 */
+function updateGuestsHint() {
+  const hint = document.getElementById('guests-hint');
+  if (!hint) return;
+  if (!isDorm()) { hint.style.display = 'none'; return; }
+  hint.style.display = '';
+  hint.textContent = wholeRoom ? getDict().bunkMaxWhole : getDict().bunkMax;
 }
 
 /* 換房型:通鋪要露出包房選項、把人數壓在床位數以內;其他房型要把包房收回去 */
 function onRoomChange() {
   const dorm = isDorm();
-  const cap  = roomCapacity(selectedRoom());
   const sec  = document.getElementById('whole-room-section');
-  const hint = document.getElementById('guests-hint');
-  if (sec)  sec.style.display  = dorm ? '' : 'none';
-  if (hint) hint.style.display = dorm ? '' : 'none';
+  if (sec) sec.style.display = dorm ? '' : 'none';
   if (!dorm) {
     wholeRoom = false;
     const chk = document.getElementById('whole-room-check');
     if (chk) chk.checked = false;
   }
-  if (dorm && guests > cap) {
-    guests = cap;
+  if (guests > maxGuests()) {
+    guests = maxGuests();
     document.getElementById('guests-num').textContent = guests;
     syncCompanions();   // 人數縮回來了,多出來的同行旅客欄位要一起收掉
   }
+  updateGuestsHint();
   fetchBlockedDates();  // 裡面會 renderCal(),抓完房況後會回頭檢查已選日期
 }
 

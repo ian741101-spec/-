@@ -136,7 +136,58 @@ const pickRoom = async (room) => {
   ok($('checkin-btn').dataset.iso === '2026-08-19', '床位夠 → 日期保留');
   ok(w.__lastAlert === null, '床位夠 → 不跳沒必要的提示');
 
-  // ── 11. nightsOf:退房日不算 ──
+  // ── 11. 退房日的規則和入住日不一樣 ──
+  // AVAIL 設定:8/19 剩 1 床、8/20 剩 0 床
+  await pickRoom('Intertidal Bunk');
+  $('checkin-btn').dataset.iso = '';
+  $('checkout-btn').dataset.iso = '';
+
+  w.calMode = 'checkin';
+  ok(w.isDateUnselectable('2026-08-20') === true, '選入住日:8/20 客滿 → 不能選');
+  ok(w.isDateUnselectable('2026-08-19') === false, '選入住日:8/19 還有床 → 可以選');
+
+  // 8/18 入住,想 8/19 退房(只住 8/18 一晚)—— 8/19 是否客滿都不該影響
+  w.availability.remaining['2026-08-19'] = 0;   // 把 8/19 也弄成客滿
+  $('checkin-btn').dataset.iso = '2026-08-18';
+  w.calMode = 'checkout';
+  ok(w.isDateUnselectable('2026-08-19') === false,
+     '選退房日:8/19 就算客滿,仍可當退房日(退房當天不算住宿)');
+  ok(w.isDateUnselectable('2026-08-18') === true, '選退房日:不能早於或等於入住日');
+  ok(w.isDateUnselectable('2026-08-21') === true,
+     '選退房日:8/21 會跨過客滿的 8/19、8/20 → 擋掉');
+
+  // 中間沒有客滿的日子就要放行
+  w.availability.remaining['2026-08-19'] = 1;
+  w.availability.remaining['2026-08-20'] = 1;
+  ok(w.isDateUnselectable('2026-08-21') === false, '中間都有床 → 8/21 可當退房日');
+
+  // ── 12. 改入住日後,不合理的退房日要自動清掉 ──
+  w.availability.remaining['2026-08-20'] = 0;
+  $('checkin-btn').dataset.iso = '2026-08-18';
+  $('checkout-btn').dataset.iso = '2026-08-19';
+  $('checkout-btn').classList.add('filled');
+  w.calMode = 'checkin';
+  w.selectedDate = new Date(2026, 7, 25);       // 把入住日改到 8/25(晚於原退房日)
+  w.confirmDate();
+  ok($('checkout-btn').dataset.iso === '', '入住日改到退房日之後 → 退房日被清掉');
+  ok($('checkout-btn').classList.contains('filled') === false, '退房按鈕回到未填狀態');
+
+  // ── 13. 加床:只有包房才能超過床位數 ──
+  await pickRoom('Intertidal Bunk');
+  w.changeGuests(5);
+  ok(w.guests === 2, '沒包房 → 人數上限 2 (實際 ' + w.guests + ')');
+  $('whole-room-check').checked = true;
+  $('whole-room-check').dispatchEvent(new w.Event('change'));
+  w.changeGuests(5);
+  ok(w.guests === 4, '包房 → 可加床到 4 人 (實際 ' + w.guests + ')');
+  ok(w.bedsNeeded() === 2, '加床不會多占床位,還是整間 2 張床');
+  $('whole-room-check').checked = false;
+  $('whole-room-check').dispatchEvent(new w.Event('change'));
+  ok(w.guests === 2, '取消包房 → 人數壓回 2 (實際 ' + w.guests + ')');
+  ok(doc.querySelectorAll('#companions-list .comp-row').length === 1,
+     '同行旅客欄位跟著縮回 1 列');
+
+  // ── 14. nightsOf:退房日不算 ──
   ok(JSON.stringify(w.nightsOf('2026-08-15', '2026-08-18')) ===
      JSON.stringify(['2026-08-15', '2026-08-16', '2026-08-17']), '3 晚 → 不含退房日');
   ok(w.nightsOf('2026-08-15', '2026-08-15').length === 0, '同日進出 → 0 晚');
