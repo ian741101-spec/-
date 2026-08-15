@@ -1,6 +1,6 @@
 {
   "name": "inhouse-tests",
   "private": true,
-  "scripts": { "test": "node booking.test.js && node checkin.test.js" },
+  "scripts": { "test": "node booking.test.js && node checkin.test.js && node beds.test.js" },
   "devDependencies": { "jsdom": "^27.0.0" }
 }

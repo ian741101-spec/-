@@ -149,6 +149,19 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
 .count-btn:active{background:var(--ocean-deep);color:white;}
 #guests-num{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ocean-deep);min-width:32px;text-align:center;}
 
+/* 通鋪包房:只有選到通鋪時才出現 */
+.whole-room-box{
+  display:flex;align-items:flex-start;gap:12px;
+  background:rgba(13,43,62,.04);
+  border:1.5px solid rgba(13,43,62,.12);
+  border-radius:4px;padding:14px 16px;cursor:pointer;
+  transition:border-color .2s, background .2s;
+}
+.whole-room-box:has(input:checked){border-color:var(--seafoam);background:rgba(13,43,62,.06);}
+.whole-room-box input{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:var(--ocean-deep);}
+.whole-room-title{display:block;color:var(--ocean-deep);font-size:.95rem;}
+.whole-room-hint{display:block;margin-top:4px;font-size:.8rem;line-height:1.5;opacity:.7;}
+
 /* Policy box */
 .policy-box{
   background:rgba(13,43,62,.04);
@@ -451,6 +464,18 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
       <span id="guests-num">1</span>
       <button class="count-btn" onclick="changeGuests(1)">+</button>
     </div>
+    <div class="form-hint" id="guests-hint" style="display:none;" data-i18n="bunkMax"></div>
+  </div>
+
+  <!-- 包房(只有通鋪會出現) -->
+  <div class="form-section" id="whole-room-section" style="display:none;">
+    <label class="whole-room-box">
+      <input type="checkbox" id="whole-room-check" onchange="onWholeRoomChange()">
+      <span>
+        <span class="whole-room-title" data-i18n="wholeRoom">Book the whole dorm</span>
+        <span class="whole-room-hint" data-i18n="wholeRoomHint">Reserve both beds so you have the room to yourselves.</span>
+      </span>
+    </label>
   </div>
 
   <!-- Name -->
@@ -561,6 +586,12 @@ const i18n = {
     optJustRight: 'Just Right Room', optFreediver: 'Freediver Single Room',
     optBunk: 'Intertidal Bunk Dorm (per bed)',
     numGuests: 'Number of Guests', yourName: 'Your Name',
+    bunkMax: 'The dorm has 2 beds, so up to 2 guests per booking.',
+    wholeRoom: 'Book the whole dorm',
+    wholeRoomHint: 'Reserve both beds so the room is yours alone — no need to add a second guest.',
+    bedsLabel: 'Beds',
+    wholeRoomValue: 'Whole dorm (2 beds)',
+    bedsGone: 'Sorry — those dates no longer have enough beds for this booking. Please pick different dates, or reduce the number of beds.',
     phone: 'Mobile', email: 'Email', specialReq: 'Special Requests', optional: '(optional)',
     phName: 'Full name', phContact: 'So we can reach you',
     phNotes: 'Allergies, arrival time, dive gear needs...',
@@ -601,6 +632,12 @@ const i18n = {
     optJustRight: '剛剛好房', optFreediver: '自由潛水單人房',
     optBunk: '潮間帶背包房(每床)',
     numGuests: '入住人數', yourName: '您的姓名',
+    bunkMax: '背包房共 2 張床,單筆訂房最多 2 人。',
+    wholeRoom: '我要包房',
+    wholeRoomHint: '把 2 張床整間包下來,不會有其他旅客入住;一個人也可以包房,不需要填同行旅客。',
+    bedsLabel: '床位',
+    wholeRoomValue: '包房(整間 2 床)',
+    bedsGone: '不好意思,您選的日期床位已經不足了。請改選其他日期,或減少床位數。',
     phone: 'Mobile', email: 'Email', specialReq: '特殊需求', optional: '(選填)',
     phName: '全名', phContact: '方便我們聯繫您',
     phNotes: '過敏、抵達時間、潛水裝備需求...',
@@ -641,6 +678,12 @@ const i18n = {
     optJustRight: 'ジャストライトルーム', optFreediver: 'フリーダイバーシングル',
     optBunk: 'インタータイダルバンク(ベッド単位)',
     numGuests: '宿泊人数', yourName: 'お名前',
+    bunkMax: 'ドミトリーはベッド2台のため、1回のご予約は2名様までです。',
+    wholeRoom: '貸切にする',
+    wholeRoomHint: 'ベッド2台をまとめて確保し、相部屋になりません。お一人様でも貸切にできます。',
+    bedsLabel: 'ベッド',
+    wholeRoomValue: '貸切(2ベッド)',
+    bedsGone: '申し訳ございません。ご希望の日程はベッドに空きがなくなりました。日程を変更するか、ベッド数を減らしてください。',
     phone: 'Mobile', email: 'Email', specialReq: '特別なご要望', optional: '(任意)',
     phName: 'フルネーム', phContact: 'ご連絡可能な方法',
     phNotes: 'アレルギー、到着時間、ダイビング装備の希望など...',
@@ -798,7 +841,7 @@ function renderCal() {
     const date    = new Date(calYear, calMonth, d);
     const dateStr = isoOf(calYear, calMonth, d);
     const isPast    = date < today;
-    const isBlocked = blockedDates.includes(dateStr);
+    const isBlocked = isDateFull(dateStr);
     const isToday   = date.getTime() === today.getTime();
     const isSel     = selectedDate &&
       selectedDate.getFullYear() === calYear &&
@@ -854,12 +897,70 @@ function confirmDate() {
   closeCal();
 }
 
-/* ── GUESTS ── */
+/* ── GUESTS / 床位 ── */
 var guests = 1;
+var wholeRoom = false;
+
+/* 房型容量:通鋪是按床賣的,兩張床可以拆給兩組客人;其餘房型整間只給一組。
+   這份對照表要跟 Worker 的 ROOM_CAPACITY 一致。 */
+const ROOM_CAPACITY = { 'Intertidal Bunk': 2 };
+function roomCapacity(room) { return ROOM_CAPACITY[room] || 1; }
+function selectedRoom() { const el = document.getElementById('room-select'); return el ? el.value : ''; }
+function isDorm() { return roomCapacity(selectedRoom()) > 1; }
+
+/* 這筆訂房要占幾張床。通鋪:包房 = 整間,否則一人一床。
+   其餘房型是整間出租,人數多寡不影響房況,一律算 1。 */
+function bedsNeeded() {
+  if (!isDorm()) return 1;
+  const cap = roomCapacity(selectedRoom());
+  return wholeRoom ? cap : Math.min(guests, cap);
+}
+
 function changeGuests(delta) {
-  guests = Math.max(1, Math.min(8, guests + delta));
+  const max = isDorm() ? roomCapacity(selectedRoom()) : 8;
+  guests = Math.max(1, Math.min(max, guests + delta));
   document.getElementById('guests-num').textContent = guests;
   syncCompanions();
+  renderCal();   // 需要的床數變了,可以訂的日期也跟著變
+}
+
+function onWholeRoomChange() {
+  const chk = document.getElementById('whole-room-check');
+  wholeRoom = !!(chk && chk.checked);
+  renderCal();
+}
+
+/* 換房型:通鋪要露出包房選項、把人數壓在床位數以內;其他房型要把包房收回去 */
+function onRoomChange() {
+  const dorm = isDorm();
+  const cap  = roomCapacity(selectedRoom());
+  const sec  = document.getElementById('whole-room-section');
+  const hint = document.getElementById('guests-hint');
+  if (sec)  sec.style.display  = dorm ? '' : 'none';
+  if (hint) hint.style.display = dorm ? '' : 'none';
+  if (!dorm) {
+    wholeRoom = false;
+    const chk = document.getElementById('whole-room-check');
+    if (chk) chk.checked = false;
+  }
+  if (dorm && guests > cap) {
+    guests = cap;
+    document.getElementById('guests-num').textContent = guests;
+    syncCompanions();   // 人數縮回來了,多出來的同行旅客欄位要一起收掉
+  }
+  fetchBlockedDates();  // 裡面會 renderCal()
+}
+
+/* 這段住宿的每一晚(退房日不含)。用本地日期零件推進,不碰 toISOString */
+function nightsOf(checkinISO, checkoutISO) {
+  const a = parseISO(checkinISO), b = parseISO(checkoutISO);
+  if (!a || !b) return [];
+  const end = new Date(b.y, b.m, b.d);
+  const out = [];
+  for (const d = new Date(a.y, a.m, a.d); d < end && out.length < 400; d.setDate(d.getDate() + 1)) {
+    out.push(isoOf(d.getFullYear(), d.getMonth(), d.getDate()));
+  }
+  return out;
 }
 
 /* ── 同行旅客:訂房人是 A,其餘每人留姓名 + 電話 ──
@@ -925,6 +1026,7 @@ function saveDraft() {
       checkin:  document.getElementById('checkin-btn').dataset.iso  || '',
       checkout: document.getElementById('checkout-btn').dataset.iso || '',
       guests,
+      wholeRoom,
       name:  document.getElementById('name-input').value,
       phone: document.getElementById('phone-input').value,
       email: document.getElementById('email-input').value,
@@ -942,10 +1044,8 @@ function restoreDraft() {
     sessionStorage.removeItem(DRAFT_KEY);
   } catch (_) { return; }
   if (!d) return;
-  if (d.room) {
-    document.getElementById('room-select').value = d.room;
-    try { fetchBlockedDates(); } catch (_) {}
-  }
+  // 房型先還原,但房況要等人數/包房也還原後再一起算(onRoomChange 在最後面呼叫)
+  if (d.room) document.getElementById('room-select').value = d.room;
   // 日期用當下語言重新格式化。舊版草稿存的是顯示文字(例如 "Sep 10, 2026"),
   // parseISO 認不得就當作沒選 —— 寧可讓客人重選一次,也不要送出解析不了的日期。
   [['checkin', 'checkin-btn', 'checkin-text'], ['checkout', 'checkout-btn', 'checkout-text']]
@@ -955,7 +1055,17 @@ function restoreDraft() {
       document.getElementById(textId).textContent = fmtISO(d[key]);
       document.getElementById(btnId).classList.add('filled');
     });
-  if (d.guests) { guests = d.guests; document.getElementById('guests-num').textContent = guests; }
+  // 人數要夾在該房型的床位數以內:舊草稿可能存了 5 人,回來時房型卻是只有 2 床的通鋪
+  if (d.guests) {
+    const _max = isDorm() ? roomCapacity(selectedRoom()) : 8;
+    guests = Math.max(1, Math.min(_max, Number(d.guests) || 1));
+    document.getElementById('guests-num').textContent = guests;
+  }
+  if (d.wholeRoom && isDorm()) {
+    wholeRoom = true;
+    const _chk = document.getElementById('whole-room-check');
+    if (_chk) _chk.checked = true;
+  }
   ['name','phone','email','notes'].forEach(k => {
     if (d[k]) document.getElementById(k + '-input').value = d[k];
   });
@@ -964,6 +1074,8 @@ function restoreDraft() {
     companions = d.companions.map(c => ({ name: (c && c.name) || '', phone: (c && c.phone) || '' }));
   }
   syncCompanions();
+  // 房型 + 人數 + 包房都還原好了,這時才去算房況(也會把包房區塊顯示出來)
+  try { onRoomChange(); } catch (_) {}
 }
 
 /* ── 會員狀態:未登入時提示登入才會累積點數;已登入則自動帶入資料 ── */
@@ -1018,26 +1130,42 @@ function renderMemberBanner(state, name) {
 })();
 
 /* ── BLOCKED DATES (per room type) ── */
-var blockedDates = [];
+const EMPTY_AVAIL = { blocked: [], capacity: 1, remaining: null };
+var availability = EMPTY_AVAIL;
 
 function fetchBlockedDates() {
-  const room = document.getElementById('room-select').value;
-  if (!room) { blockedDates = []; renderCal(); return; }
+  const room = selectedRoom();
+  if (!room) { availability = EMPTY_AVAIL; renderCal(); return; }
 
   fetch(`${WORKER_URL}/availability?room_type=${encodeURIComponent(room)}`)
   .then(r => r.json())
   .then(data => {
-    blockedDates = data.blocked || [];
+    availability = {
+      blocked:   data.blocked || [],
+      capacity:  Number(data.capacity) > 0 ? Number(data.capacity) : 1,
+      remaining: data.remaining || null,
+    };
     renderCal();
   })
-  .catch(() => { blockedDates = []; renderCal(); });
+  .catch(() => { availability = EMPTY_AVAIL; renderCal(); });
+}
+
+/* 某天訂不訂得到:看剩下的床夠不夠這次要的床數。
+   remaining 裡沒出現的日期 = 完全沒人訂 = 滿床。
+   萬一 Worker 還是舊版(沒回 remaining),就退回「有人訂就整天擋掉」的保守判斷。 */
+function isDateFull(dateStr) {
+  if (!availability.remaining) return availability.blocked.indexOf(dateStr) !== -1;
+  const left = availability.remaining[dateStr];
+  return (left === undefined ? availability.capacity : left) < bedsNeeded();
 }
 
 const _roomSelectEl = document.getElementById('room-select');
 if (_roomSelectEl) {
-  _roomSelectEl.addEventListener('change', fetchBlockedDates);
+  _roomSelectEl.addEventListener('change', onRoomChange);
 }
-try { fetchBlockedDates(); } catch(e) { console.error('fetchBlockedDates failed:', e); }
+// 用 onRoomChange 而不是 fetchBlockedDates:瀏覽器可能還原了上次選的房型,
+// 包房選項要跟著露出來
+try { onRoomChange(); } catch(e) { console.error('onRoomChange failed:', e); }
 
 /* ── SUBMIT ── */
 function submitForm() {
@@ -1058,6 +1186,13 @@ function submitForm() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     alert(getDict().emailInvalid);
     document.getElementById('email-input').focus();
+    return;
+  }
+
+  // 選好日期之後才加人數或勾包房的話,原本選的日期可能已經不夠床了,送出前再確認一次
+  const _needBeds = bedsNeeded();
+  if (nightsOf(checkin, checkout).some(isDateFull)) {
+    alert(getDict().bedsGone);
     return;
   }
 
@@ -1095,6 +1230,7 @@ function submitForm() {
       checkin_date:  checkin,
       checkout_date: checkout,
       guests:        guests,
+      beds:          _needBeds,   // 通鋪按床賣;包房 = 一個人也占滿整間
       notes:         notesOut || '',
       lang:          localStorage.getItem('lang') || 'en'
     })
@@ -1119,6 +1255,10 @@ function submitForm() {
       `📅 <strong>${_d.checkout}:</strong> ${fmtISO(checkout)}<br>` +
       `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
+      (roomCapacity(room) > 1
+        ? `🛌 <strong>${_d.bedsLabel}:</strong> ` +
+          (_needBeds >= roomCapacity(room) ? _d.wholeRoomValue : `${_needBeds}`) + '<br>'
+        : '') +
       `📱 <strong>${_d.phone || 'Mobile'}:</strong> ${phone}<br>` +
       `✉️ <strong>Email:</strong> ${email}` +
       (roster.length

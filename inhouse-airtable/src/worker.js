@@ -23,6 +23,7 @@
 //   訂房：booking_code, guest_name, guest_phone, guest_email,
 //         room_type, checkin_date, checkout_date, guests, notes, status
 //   Check-in：checkin_status, arrival_time, transport, lock_code, checkin_at
+//   選配：line_user_id、beds（通鋪按床賣才寫;欄位不存在會自動拔掉重送）
 // rooms 表（每房固定密碼，硬體不聯網、密碼人工設定於鎖上）：
 //   room_type（需與訂房表 room_type 完全一致）, lock_code
 
@@ -46,6 +47,19 @@ const LOGIN_NEXT = { member: '/member', booking: '/booking' };
 const AIRTABLE_REDEMPTIONS = 'redemptions';
 const ROOM_POINTS_DEFAULT  = 2;
 const ROOM_POINTS          = { 'Intertidal Bunk': 1 };
+
+// 一間房同時能接幾組客人。通鋪是「按床賣」的,兩張床可以拆給兩組人;
+// 其餘房型整間只給一組客人(人數多寡不影響房況)。
+const ROOM_CAPACITY_DEFAULT = 1;
+const ROOM_CAPACITY         = { 'Intertidal Bunk': 2 };
+function roomCapacity(roomType) {
+  const c = ROOM_CAPACITY[roomType];
+  return c === undefined ? ROOM_CAPACITY_DEFAULT : c;
+}
+
+// 訂房表裡不是每個 base 都有的欄位。Airtable 少了它們時會整筆 422,
+// 所以送出失敗時要逐一拔掉重送(見 POST /booking)
+const OPTIONAL_BOOKING_FIELDS = ['line_user_id', 'beds'];
 const REWARDS = {
   gift10:    { cost: 10, label: '小禮物或飲品' },
   coupon300: { cost: 20, label: 'NT$300 住宿折價券' },
@@ -79,6 +93,43 @@ function dateOnlyTW(v) {
   return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
 }
 
+// 一筆訂房實際占用的每一晚(退房日不含:8/15 進 8/17 退 = 8/15、8/16 兩晚)
+function stayNights(checkinRaw, checkoutRaw) {
+  const startISO = dateOnlyTW(checkinRaw);
+  const endISO   = dateOnlyTW(checkoutRaw);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startISO) || !/^\d{4}-\d{2}-\d{2}$/.test(endISO)) return [];
+
+  // 逐日推進用 Date.UTC 純數字運算,不受 Worker 時區影響
+  const [sy, sm, sd] = startISO.split('-').map(Number);
+  const [ey, em, ed] = endISO.split('-').map(Number);
+  const endMs = Date.UTC(ey, em - 1, ed);
+  const nights = [];
+  let cur = Date.UTC(sy, sm - 1, sd);
+  for (let guard = 0; cur < endMs && guard < 400; guard++, cur += 86400000) {
+    const c = new Date(cur);
+    nights.push(
+      `${c.getUTCFullYear()}-${String(c.getUTCMonth() + 1).padStart(2, '0')}-${String(c.getUTCDate()).padStart(2, '0')}`
+    );
+  }
+  return nights;
+}
+
+// 通鋪一筆訂單占幾張床。beds 欄位是後來才加的,兩個用途刻意用不同的退路,
+// 各自往安全的方向倒:
+//   房況 → beds ?? guests ?? 1  寧可多擋一張床,也不要超賣
+//   點數 → beds ?? 1            點數是即時回算的,不能讓舊訂單改版後憑空多點
+function bedsForAvailability(f) {
+  const beds = Number(f.beds);
+  if (Number.isFinite(beds) && beds > 0) return Math.min(beds, 20);
+  const g = Number(f.guests);
+  return Number.isFinite(g) && g > 0 ? Math.min(g, 20) : 1;
+}
+function bedsForPoints(f) {
+  if (roomCapacity(f.room_type) <= 1) return 1;
+  const beds = Number(f.beds);
+  return Number.isFinite(beds) && beds > 0 ? Math.min(beds, 20) : 1;
+}
+
 function atGet(apiUrl, token) {
   return fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
 }
@@ -89,14 +140,16 @@ function bookingPoints(f, birthdayMonth) {
   const start = new Date(f.checkin_date + 'T00:00:00Z');
   const end   = new Date(f.checkout_date + 'T00:00:00Z');
   if (isNaN(start) || isNaN(end) || end <= start) return 0;
-  const base = ROOM_POINTS[f.room_type] !== undefined ? ROOM_POINTS[f.room_type] : ROOM_POINTS_DEFAULT;
+  // 通鋪按床計點(1 點/床/晚),所以包房 2 床 = 2 點/晚,與私人房一致
+  const perNight = (ROOM_POINTS[f.room_type] !== undefined ? ROOM_POINTS[f.room_type] : ROOM_POINTS_DEFAULT)
+                 * bedsForPoints(f);
   let total = 0, n = 0;
   for (const d = new Date(start); d < end && n < 90; d.setUTCDate(d.getUTCDate() + 1), n++) {
     const m  = d.getUTCMonth() + 1;
     const dw = d.getUTCDay();
     const weekdayDouble  = (m >= 11 || m <= 4) && dw >= 1 && dw <= 4;
     const birthdayDouble = !!birthdayMonth && m === birthdayMonth;
-    total += base * ((weekdayDouble || birthdayDouble) ? 2 : 1);
+    total += perNight * ((weekdayDouble || birthdayDouble) ? 2 : 1);
   }
   return total;
 }
@@ -469,37 +522,42 @@ export default {
 
     // ── GET /availability?room_type=xxx ──
     if (request.method === 'GET' && url.pathname === '/availability') {
-      const room   = url.searchParams.get('room_type') || '';
-      const filter = `AND({room_type}="${room}",{status}!="Cancelled")`;
-      const apiUrl = `${BASE_URL}?filterByFormula=${encodeURIComponent(filter)}&fields[]=checkin_date&fields[]=checkout_date`;
+      const room     = url.searchParams.get('room_type') || '';
+      const capacity = roomCapacity(room);
+      const filter   = `AND({room_type}="${room}",{status}!="Cancelled")`;
+      const baseUrl  = `${BASE_URL}?filterByFormula=${encodeURIComponent(filter)}`
+                     + '&fields[]=checkin_date&fields[]=checkout_date&fields[]=guests';
 
       try {
-        const res  = await fetch(apiUrl, { headers: { Authorization: `Bearer ${TOKEN}` } });
-        const data = await res.json();
-        if (data.error) return json({ blocked: [], error: data.error });
+        // beds 欄位可能還沒建;Airtable 對不存在的 fields[] 會整包 422,所以失敗就拔掉重問
+        let res  = await fetch(`${baseUrl}&fields[]=beds`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+        let data = await res.json();
+        if (data.error && /UNKNOWN_FIELD_NAME/i.test(JSON.stringify(data.error))) {
+          res  = await fetch(baseUrl, { headers: { Authorization: `Bearer ${TOKEN}` } });
+          data = await res.json();
+        }
+        if (data.error) return json({ blocked: [], capacity, remaining: {}, error: data.error });
 
+        // blocked 維持舊語意(只要有人訂就整天擋掉),舊快取的訂房頁還在吃它,不能改。
+        // 新頁面改看 remaining:每天還剩幾張床,自己比對需要幾床。
         const blocked = [];
+        const used    = {};
         for (const rec of (data.records || [])) {
-          const startISO = dateOnlyTW(rec.fields.checkin_date);
-          const endISO   = dateOnlyTW(rec.fields.checkout_date);
-          if (!/^\d{4}-\d{2}-\d{2}$/.test(startISO) || !/^\d{4}-\d{2}-\d{2}$/.test(endISO)) continue;
-
-          // 逐日推進用 Date.UTC 純數字運算,不受 Worker 時區影響。
-          // 退房日不算(住到 8/17 退房 = 最後一晚是 8/16),所以是 cur < endMs
-          const [sy, sm, sd] = startISO.split('-').map(Number);
-          const [ey, em, ed] = endISO.split('-').map(Number);
-          const endMs = Date.UTC(ey, em - 1, ed);
-          let cur = Date.UTC(sy, sm - 1, sd);
-          for (let guard = 0; cur < endMs && guard < 400; guard++, cur += 86400000) {
-            const c = new Date(cur);
-            blocked.push(
-              `${c.getUTCFullYear()}-${String(c.getUTCMonth() + 1).padStart(2, '0')}-${String(c.getUTCDate()).padStart(2, '0')}`
-            );
+          const beds = capacity > 1 ? bedsForAvailability(rec.fields) : 1;
+          for (const night of stayNights(rec.fields.checkin_date, rec.fields.checkout_date)) {
+            blocked.push(night);
+            used[night] = (used[night] || 0) + beds;
           }
         }
-        return json({ blocked });
+
+        const remaining = {};
+        for (const night of Object.keys(used)) {
+          remaining[night] = Math.max(0, capacity - used[night]);
+        }
+        // 沒出現在 remaining 裡的日期 = 完全沒人訂 = 剩滿床
+        return json({ blocked, capacity, remaining });
       } catch (e) {
-        return json({ blocked: [], error: e.message });
+        return json({ blocked: [], capacity, remaining: {}, error: e.message });
       }
     }
 
@@ -520,31 +578,44 @@ export default {
           status:        'Pending',
         };
 
+        // 通鋪按床賣:beds 才是占用的床位數,guests 仍是實際入住人數。
+        // 一個人包整間 = guests 1 / beds 2,所以兩者刻意分開。其餘房型不寫這個欄位。
+        const capacity = roomCapacity(fields.room_type);
+        const bedsWanted = capacity > 1
+          ? Math.max(1, Math.min(capacity, Number(body.beds) || Number(body.guests) || 1))
+          : 0;
+        if (bedsWanted) fields.beds = bedsWanted;
+
         // 會員登入時綁定 LINE 使用者(bookings 表需有 line_user_id 欄位;沒有就自動退回不綁)
         const session = await memberFromRequest(request, env);
         if (session) fields.line_user_id = session.sub;
 
-        let res  = await fetch(BASE_URL, {
+        const post = () => fetch(BASE_URL, {
           method: 'POST',
           headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ fields })
-        });
-        let data = await res.json();
+        }).then(r => r.json());
 
-        if (data.error && fields.line_user_id && /UNKNOWN_FIELD_NAME/i.test(JSON.stringify(data.error))) {
-          delete fields.line_user_id;
-          res  = await fetch(BASE_URL, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields })
-          });
-          data = await res.json();
+        let data = await post();
+
+        // 選配欄位在這個 base 還沒建 → 拔掉那一個重送。Airtable 一次只報一個未知欄位,
+        // 所以要跑迴圈;寧可少存一個欄位,也不能讓客人的訂單直接失敗。
+        for (let attempt = 0; attempt < OPTIONAL_BOOKING_FIELDS.length; attempt++) {
+          if (!data.error || !/UNKNOWN_FIELD_NAME/i.test(JSON.stringify(data.error))) break;
+          const errStr = JSON.stringify(data.error);
+          const drop   = OPTIONAL_BOOKING_FIELDS.find(k => k in fields && errStr.includes(k));
+          if (!drop) break;
+          delete fields[drop];
+          data = await post();
         }
 
         if (data.error) return json({ ok: false, error: data.error }, 400);
 
-        // LINE 推播通知(業主必發;房客有 LINE 登入才發)。失敗不影響訂房
-        ctx.waitUntil(notifyBookingViaLine(env, fields, session, String(body.lang || 'zh')));
+        // LINE 推播通知(業主必發;房客有 LINE 登入才發)。失敗不影響訂房。
+        // 用客人「實際要的床位數」而不是 fields.beds:Airtable 還沒建 beds 欄位時
+        // 上面會把它拔掉,那樣通知就會把包房講成 1 床——業主是看這則訊息報價的
+        const notifyFields = bedsWanted ? { ...fields, beds: bedsWanted } : fields;
+        ctx.waitUntil(notifyBookingViaLine(env, notifyFields, session, String(body.lang || 'zh')));
 
         return json({ ok: true, id: data.id, booking_code: fields.booking_code });
 
@@ -699,12 +770,26 @@ async function linePush(env, to, text) {
 }
 
 async function notifyBookingViaLine(env, f, session, lang) {
+  // 通鋪要講清楚是訂幾張床還是包整間——網站上沒有標價,業主是看這則訊息報價的
+  const capacity  = roomCapacity(f.room_type);
+  const beds      = capacity > 1
+    ? Math.max(1, Math.min(capacity, Number(f.beds) || Number(f.guests) || 1))
+    : 0;
+  const wholeRoom = beds >= capacity;
+  const bedsLine  = { zh: null, en: null, ja: null };
+  if (beds > 0) {
+    bedsLine.zh = `床位:${wholeRoom ? `包房(整間 ${capacity} 床)` : `${beds} 床`}`;
+    bedsLine.en = `Beds: ${wholeRoom ? `Whole dorm (${capacity} beds)` : `${beds}`}`;
+    bedsLine.ja = `ベッド:${wholeRoom ? `貸切(${capacity}ベッド)` : `${beds}床`}`;
+  }
+
   const ownerText = [
     '🔔 新訂房申請',
     `訂單編號:${f.booking_code}`,
     `房型:${f.room_type}`,
     `入住:${f.checkin_date} → 退房:${f.checkout_date}`,
     `人數:${f.guests}`,
+    bedsLine.zh,
     `姓名:${f.guest_name}`,
     `電話:${f.guest_phone}`,
     f.guest_email ? `Email:${f.guest_email}` : null,
@@ -719,6 +804,7 @@ async function notifyBookingViaLine(env, f, session, lang) {
       `房型:${f.room_type}`,
       `入住:${f.checkin_date} → 退房:${f.checkout_date}`,
       `人數:${f.guests}`,
+      bedsLine.zh,
       '',
       '我們確認房況後會盡快與您聯繫。',
       '自助入住時需要「訂單編號 + 手機後四碼」,請妥善保存這則訊息。',
@@ -729,6 +815,7 @@ async function notifyBookingViaLine(env, f, session, lang) {
       `Room: ${f.room_type}`,
       `Check-in: ${f.checkin_date} → Check-out: ${f.checkout_date}`,
       `Guests: ${f.guests}`,
+      bedsLine.en,
       '',
       'We will confirm availability and get back to you shortly.',
       'Self check-in requires your booking code + last 4 digits of your phone number — please keep this message.',
@@ -739,6 +826,7 @@ async function notifyBookingViaLine(env, f, session, lang) {
       `お部屋:${f.room_type}`,
       `チェックイン:${f.checkin_date} → チェックアウト:${f.checkout_date}`,
       `人数:${f.guests}`,
+      bedsLine.ja,
       '',
       '空室状況を確認のうえ、追ってご連絡いたします。',
       'セルフチェックインには「予約番号+電話番号下4桁」が必要です。このメッセージを保存してください。',
