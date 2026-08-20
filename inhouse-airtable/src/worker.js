@@ -22,7 +22,8 @@
 // Airtable 欄位清單（15個，無重複）：
 //   訂房：booking_code, guest_name, guest_phone, guest_email,
 //         room_type, checkin_date, checkout_date, guests, notes, status
-//   Check-in：checkin_status, arrival_time, transport, lock_code, checkin_at
+//   Check-in：checkin_status, arrival_time, transport, lock_code
+//   匯款後五碼：業主確認匯款後手動填入（原 checkin_at 欄位改名而來，系統不讀不寫）
 //   選配：line_user_id、beds（通鋪按床賣才寫;欄位不存在會自動拔掉重送）
 // rooms 表（每房固定密碼，硬體不聯網、密碼人工設定於鎖上）：
 //   room_type（需與訂房表 room_type 完全一致）, lock_code
@@ -718,7 +719,6 @@ export default {
           transport:      body.transport || '',
           notes:          body.note ? body.note : undefined,
           lock_code:      lockCode || undefined,
-          checkin_at:     todayTW(),
           status:         'Confirmed',
         };
 
