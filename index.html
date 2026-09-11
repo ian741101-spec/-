@@ -246,9 +246,10 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
   <div class="slides" id="slides">
     <div class="slide"><img src="images/facade.webp" alt="in.house — Facade" loading="eager"></div>
     <div class="slide"><img src="images/lobby-stairs.webp" alt="in.house — Lobby" loading="lazy"></div>
-    <div class="slide"><img src="images/room-ocean-double-1.webp" alt="in.house — Ocean Double Room" loading="lazy"></div>
+    <div class="slide"><img src="images/hero-lobby-night.webp" alt="in.house — Lobby at night" loading="lazy"></div>
     <div class="slide"><img src="images/dive-corner.webp" alt="in.house — Dive Corner" loading="lazy"></div>
     <div class="slide"><img src="images/balcony-plants.webp" alt="in.house — Green Balcony" loading="lazy"></div>
+    <div class="slide"><img src="images/hero-facade-night.webp" alt="in.house — Facade at night" loading="lazy"></div>
   </div>
   <div class="overlay"></div>
   <div class="dots" id="dots">
@@ -257,6 +258,7 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
     <span class="dot" onclick="goTo(2)"></span>
     <span class="dot" onclick="goTo(3)"></span>
     <span class="dot" onclick="goTo(4)"></span>
+    <span class="dot" onclick="goTo(5)"></span>
   </div>
   <div class="hero-content">
     <div class="hero-label" data-i18n="label">Xiaoliuqiu · Taiwan</div>
@@ -586,7 +588,7 @@ applyLang(detectLang());
   const slides = document.getElementById('slides');
   const dots   = document.querySelectorAll('.dot');
   const bar    = document.getElementById('progress');
-  const TOTAL  = 5, DELAY = 4200;
+  const TOTAL  = slides.children.length, DELAY = 4200;
   let cur = 0, timer, startX = 0, moved = false;
   function goTo(i) {
     cur = (i + TOTAL) % TOTAL;
