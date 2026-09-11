@@ -368,13 +368,13 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
       <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="capMixed">Mixed Dorm</span></div>
+      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="capMixed">Mixed dorm · 2 beds, booked by the bed</span></div>
       <h2 class="card-title" data-i18n="r5Title">Intertidal Bunk</h2>
       <div class="card-subtitle">Intertidal Bunk Dorm</div>
-      <p class="card-desc" id="desc-5" data-i18n="r5Desc">Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet.</p>
+      <p class="card-desc" id="desc-5" data-i18n="r5Desc">A bunk bed with privacy curtains — 2 beds, booked one bed at a time — gives you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you'll meet. Want it to yourselves? Book the whole dorm: both beds are yours, even if you're travelling solo, and with extra bedding it sleeps up to 4 (we'll tell you the extra-bed cost in your confirmation message).</p>
       <span class="desc-toggle" onclick="toggleDesc('desc-5',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amCurtain">Privacy Curtain</span><span class="amenity-tag" data-i18n="amBean">Bean Bag</span><span class="amenity-tag" data-i18n="amReading">Reading Light</span>
+        <span class="amenity-tag" data-i18n="amWhole">Whole-Dorm Option</span><span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amCurtain">Privacy Curtain</span><span class="amenity-tag" data-i18n="amBean">Bean Bag</span><span class="amenity-tag" data-i18n="amReading">Reading Light</span>
       </div>
       <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
@@ -458,7 +458,7 @@ const i18n = {
     badgeFeatured: 'Featured', badgeBackpacker: 'Backpacker',
     typeCouplesPick: 'Couples Pick', typeTwin: 'Twin Room', typeMusic: 'Music Theme',
     typeSingle: 'Single Room', typeBunk: 'Bunk Dorm',
-    cap1to2: '1 – 2 guests', cap1: '1 guest', capMixed: 'Mixed Dorm',
+    cap1to2: '1 – 2 guests', cap1: '1 guest', capMixed: 'Mixed dorm · 2 beds, booked by the bed',
     r1Title: 'Ocean Double',
     r1Desc: 'A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.',
     r2Title: 'Twin Wanderer',
@@ -468,13 +468,13 @@ const i18n = {
     r4Title: 'Freediver Room',
     r4Desc: 'A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.',
     r5Title: 'Intertidal Bunk',
-    r5Desc: 'Bunk beds with privacy curtains give you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you\'ll meet.',
+    r5Desc: 'A bunk bed with privacy curtains — 2 beds, booked one bed at a time — gives you your own world in a shared space. A/C, round rug, bean bag — come back from a dive and just lie there. The best part? The people you\'ll meet. Want it to yourselves? Book the whole dorm: both beds are yours, even if you\'re travelling solo, and with extra bedding it sleeps up to 4 (we\'ll tell you the extra-bed cost in your confirmation message).',
     readMore: 'Read more ∨', readLess: 'Show less ∧',
     amAC: 'A/C', amPallet: 'Pallet Bed', amPlants: 'Plants', amUnderwaterArt: 'Underwater Art',
     amWindow: 'Window View', amTwinBeds: 'Twin Beds',
     amLyric: 'Lyric Wall', amBold: 'Bold Colors',
     amFin: 'Fin Display', amMirror: 'Full Mirror', amDriftwood: 'Driftwood Deco',
-    amCurtain: 'Privacy Curtain', amBean: 'Bean Bag', amReading: 'Reading Light',
+    amCurtain: 'Privacy Curtain', amBean: 'Bean Bag', amReading: 'Reading Light', amWhole: 'Whole-Dorm Option',
     bookNow: 'Book Now', bookNowArrow: 'Book Now →', whatsapp: 'WhatsApp',
     commonAreas: 'Common Areas', commonSpaces: 'Common Spaces',
     commonDesc: 'A place to put your phone down and actually talk to people.',
@@ -501,7 +501,7 @@ const i18n = {
     badgeFeatured: '推薦', badgeBackpacker: '背包客',
     typeCouplesPick: '情侶首選', typeTwin: '雙床房', typeMusic: '音樂主題',
     typeSingle: '單人房', typeBunk: '上下舖',
-    cap1to2: '1 – 2 人', cap1: '1 人', capMixed: '男女混宿',
+    cap1to2: '1 – 2 人', cap1: '1 人', capMixed: '男女混宿 · 共 2 床，按床預訂',
     r1Title: '海洋雙人房',
     r1Desc: '低床木棧板床架,帶來放鬆的島嶼氛圍。深藍色寢具如同寧靜的海面,搭配冷氣、植栽與水下攝影作品,每個細節都與海洋對話。',
     r2Title: '漫遊雙床房',
@@ -511,13 +511,13 @@ const i18n = {
     r4Title: '自由潛水單人房',
     r4Desc: '牆上展示真正的碳纖維自由潛水蛙鞋,搭配漂流木與珊瑚石。落地鏡映著光線。獨自旅行者——你值得這份寧靜。',
     r5Title: '潮間帶背包房',
-    r5Desc: '附隱私簾的上下舖,在共享空間中擁有自己的小天地。冷氣、圓形地毯、懶骨頭——潛完水回來就能躺下放空。最棒的是?在這裡遇見的人。',
+    r5Desc: '附隱私簾的上下舖，共 2 張床、按床預訂，在共享空間中擁有自己的小天地。冷氣、圓形地毯、懶骨頭——潛完水回來就能躺下放空。最棒的是？在這裡遇見的人。想要自己一間也可以：訂房時勾選「我要包房」，2 張床整間包下，一個人也能包；包房可加床，最多住 4 人（加床費用會在確認訊息中告知）。',
     readMore: '展開 ∨', readLess: '收起 ∧',
     amAC: '冷氣', amPallet: '木棧板床', amPlants: '植栽', amUnderwaterArt: '水下攝影',
     amWindow: '窗景', amTwinBeds: '雙單人床',
     amLyric: '歌詞牆', amBold: '撞色設計',
     amFin: '蛙鞋裝飾', amMirror: '落地鏡', amDriftwood: '漂流木佈置',
-    amCurtain: '隱私簾', amBean: '懶骨頭', amReading: '閱讀燈',
+    amCurtain: '隱私簾', amBean: '懶骨頭', amReading: '閱讀燈', amWhole: '可包房',
     bookNow: '立即訂房', bookNowArrow: '立即訂房 →', whatsapp: 'WhatsApp',
     commonAreas: '公共空間', commonSpaces: '公共區域',
     commonDesc: '一個讓你放下手機,真正與人交談的地方。',
@@ -544,7 +544,7 @@ const i18n = {
     badgeFeatured: 'おすすめ', badgeBackpacker: 'バックパッカー',
     typeCouplesPick: 'カップル人気', typeTwin: 'ツインルーム', typeMusic: '音楽テーマ',
     typeSingle: 'シングルルーム', typeBunk: '二段ベッド',
-    cap1to2: '1 – 2 名', cap1: '1 名', capMixed: '男女混合',
+    cap1to2: '1 – 2 名', cap1: '1 名', capMixed: '男女混合 · 全2ベッド、ベッド単位でご予約',
     r1Title: 'オーシャンダブル',
     r1Desc: 'ローパレットベッドが島のリラックスした雰囲気を演出。深い青の寝具は穏やかな海のよう。エアコン完備、植物と水中写真で飾られ——あらゆる細部が海と対話します。',
     r2Title: 'ツインワンダラー',
@@ -554,13 +554,13 @@ const i18n = {
     r4Title: 'フリーダイバールーム',
     r4Desc: '本物のカーボン製フリーダイビングフィンを壁に展示、流木と珊瑚石を添えて。全身鏡が光を捉えます。一人旅の方へ——この静けさを存分に。',
     r5Title: 'インタータイダルバンク',
-    r5Desc: 'プライバシーカーテン付きの二段ベッドで、共有空間でも自分だけの世界を。エアコン、丸いラグ、ビーズクッション——ダイビング後はそのまま寝転んで。一番の魅力?ここで出会う人々。',
+    r5Desc: 'プライバシーカーテン付きの二段ベッド（全2ベッド・ベッド単位でご予約）で、共有空間でも自分だけの世界を。エアコン、丸いラグ、ビーズクッション——ダイビング後はそのまま寝転んで。一番の魅力？ここで出会う人々。貸切も可能です：ご予約時に「貸切にする」を選ぶと2ベッドをまとめて確保でき、お一人様でもOK。エキストラベッドで最大4名様まで（追加料金は確認メッセージでご案内します）。',
     readMore: '続きを読む ∨', readLess: '閉じる ∧',
     amAC: 'エアコン', amPallet: 'パレットベッド', amPlants: '植物', amUnderwaterArt: '水中写真',
     amWindow: '窓からの景色', amTwinBeds: 'ツインベッド',
     amLyric: '歌詞ウォール', amBold: '大胆な配色',
     amFin: 'フィン展示', amMirror: '全身鏡', amDriftwood: '流木装飾',
-    amCurtain: 'プライバシーカーテン', amBean: 'ビーズクッション', amReading: '読書灯',
+    amCurtain: 'プライバシーカーテン', amBean: 'ビーズクッション', amReading: '読書灯', amWhole: '貸切OK',
     bookNow: '今すぐ予約', bookNowArrow: '今すぐ予約 →', whatsapp: 'WhatsApp',
     commonAreas: '共有スペース', commonSpaces: '共有エリア',
     commonDesc: 'スマホを置いて、本当に人と話せる場所。',
