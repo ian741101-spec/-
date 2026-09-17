@@ -244,21 +244,15 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
 <!-- HERO -->
 <div class="hero" id="hero">
   <div class="slides" id="slides">
-    <div class="slide"><img src="images/facade.webp" alt="in.house — Facade" loading="eager"></div>
-    <div class="slide"><img src="images/lobby-stairs.webp" alt="in.house — Lobby" loading="lazy"></div>
-    <div class="slide"><img src="images/hero-lobby-night.webp" alt="in.house — Lobby at night" loading="lazy"></div>
-    <div class="slide"><img src="images/dive-corner.webp" alt="in.house — Dive Corner" loading="lazy"></div>
-    <div class="slide"><img src="images/balcony-plants.webp" alt="in.house — Green Balcony" loading="lazy"></div>
+    <div class="slide"><img src="images/hero-lobby-night.webp" alt="in.house — Lobby at night" loading="eager"></div>
     <div class="slide"><img src="images/hero-facade-night.webp" alt="in.house — Facade at night" loading="lazy"></div>
+    <div class="slide"><img src="images/gear-yard.webp" alt="in.house — Outdoor gear yard" loading="lazy"></div>
   </div>
   <div class="overlay"></div>
   <div class="dots" id="dots">
     <span class="dot active" onclick="goTo(0)"></span>
     <span class="dot" onclick="goTo(1)"></span>
     <span class="dot" onclick="goTo(2)"></span>
-    <span class="dot" onclick="goTo(3)"></span>
-    <span class="dot" onclick="goTo(4)"></span>
-    <span class="dot" onclick="goTo(5)"></span>
   </div>
   <div class="hero-content">
     <div class="hero-label" data-i18n="label">Xiaoliuqiu · Taiwan</div>
@@ -285,7 +279,7 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
   <div class="sec-inner about-grid">
     <div class="about-photos">
       <img class="ph-main" src="images/lobby-hall.webp" alt="in.house lounge" loading="lazy">
-      <img class="ph-small" src="images/porch-seating.webp" alt="in.house front porch" loading="lazy">
+      <img class="ph-small" src="images/lobby-cat.webp" alt="in.house resident cat" loading="lazy">
     </div>
     <div>
       <div class="sec-label" data-i18n="aboutLabel">About in.house</div>
@@ -351,10 +345,10 @@ footer { background:var(--ocean-deep); padding:56px 24px calc(40px + var(--safe-
     <h2 class="sec-title" data-i18n="fdTitle">Built around people who dive</h2>
     <p class="sec-desc" data-i18n="fdDesc">Come back from the water, rinse off, hang everything up, and go find dinner. The house is set up so salt water and wetsuits are never a problem.</p>
     <div class="fd-grid">
-      <div class="fd-item"><img src="images/gear-wall.webp" alt="Gear drying wall" loading="lazy"><div class="fd-cap" data-i18n="fd1">Gear drying wall</div></div>
+      <div class="fd-item"><img src="images/hero-diver-sea.webp" alt="Freediving off Xiaoliuqiu" loading="lazy" style="object-position:center 100%"><div class="fd-cap" data-i18n="fd1">Freediving off the island</div></div>
       <div class="fd-item"><img src="images/ropes-drying.webp" alt="Safety lines" loading="lazy"><div class="fd-cap" data-i18n="fd2">Safety lines & floats</div></div>
       <div class="fd-item"><img src="images/gear-belts.webp" alt="Weight belts" loading="lazy"><div class="fd-cap" data-i18n="fd3">Weights & dive flags</div></div>
-      <div class="fd-item"><img src="images/dive-corner.webp" alt="Dive corner" loading="lazy"><div class="fd-cap" data-i18n="fd4">Dive corner & shop</div></div>
+      <div class="fd-item"><img src="images/gear-rack.webp" alt="Indoor gear rack" loading="lazy"><div class="fd-cap" data-i18n="fd4">Indoor gear rack</div></div>
     </div>
   </div>
 </section>
@@ -462,7 +456,7 @@ const i18n = {
     cap12: '1 – 2 guests', capBed: 'Book by the bed', rpMore: 'View all rooms →', memberBtn: 'Member Area',
     fdLabel: 'Freedive Friendly', fdTitle: 'Built around people who dive',
     fdDesc: 'Come back from the water, rinse off, hang everything up, and go find dinner. The house is set up so salt water and wetsuits are never a problem.',
-    fd1: 'Gear drying wall', fd2: 'Safety lines & floats', fd3: 'Weights & dive flags', fd4: 'Dive corner & shop',
+    fd1: 'Freediving off the island', fd2: 'Safety lines & floats', fd3: 'Weights & dive flags', fd4: 'Indoor gear rack',
     scLabel: 'Self Check-in', scTitle: 'No front desk. No waiting.',
     sc1T: 'Book online', sc1D: 'Pick a room and date. You\'ll get a booking code like IH-20260715-001 — keep it.',
     sc2T: 'Verify on arrival day', sc2D: 'Open the check-in page, enter your booking code and the last 4 digits of your phone.',
@@ -497,7 +491,7 @@ const i18n = {
     cap12: '1 – 2 位', capBed: '以床位計', rpMore: '看所有房型 →', memberBtn: '會員專區',
     fdLabel: '潛水友善', fdTitle: '為潛水的人設計的家',
     fdDesc: '從海裡回來,沖掉鹽分、把裝備掛好,就能出門覓食。溼防寒衣和海水,在這裡從來不是問題。',
-    fd1: '裝備晾曬牆', fd2: '安全繩與浮球', fd3: '配重帶與潛水旗', fd4: '潛水角落與小店',
+    fd1: '從家門口下海', fd2: '安全繩與浮球', fd3: '配重帶與潛水旗', fd4: '室內裝備架',
     scLabel: '自助入住', scTitle: '不用櫃檯,不用等待。',
     sc1T: '線上訂房', sc1D: '選好房型與日期,你會拿到一組訂單編號(例如 IH-20260715-001),請妥善保存。',
     sc2T: '入住當天驗證', sc2D: '打開自助入住頁面,輸入訂單編號與手機後四碼完成驗證。',
@@ -532,7 +526,7 @@ const i18n = {
     cap12: '1〜2名', capBed: 'ベッド単位で予約', rpMore: 'すべての客室を見る →', memberBtn: '会員ページ',
     fdLabel: 'ダイバーフレンドリー', fdTitle: '潜る人のためにつくられた家',
     fdDesc: '海から帰ったら、塩を流して器材を掛けて、夕食へ。ウェットスーツも海水も、ここでは困りごとになりません。',
-    fd1: '器材干しウォール', fd2: 'セーフティロープとブイ', fd3: 'ウェイトとダイブフラッグ', fd4: 'ダイブコーナーとショップ',
+    fd1: '島のすぐそばでフリーダイビング', fd2: 'セーフティロープとブイ', fd3: 'ウェイトとダイブフラッグ', fd4: '室内の器材ラック',
     scLabel: 'セルフチェックイン', scTitle: 'フロントなし。待ち時間なし。',
     sc1T: 'オンライン予約', sc1D: '客室と日程を選ぶと、予約番号(例:IH-20260715-001)が発行されます。大切に保管してください。',
     sc2T: '当日、予約を確認', sc2D: 'チェックインページで予約番号と電話番号の下4桁を入力して認証します。',
