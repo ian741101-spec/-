@@ -740,9 +740,15 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // 訂單裡存的是實體房名,客人訂房時看到的是「雙床房」
+  function roomLabel(r) {
+    if (!r) return '—';
+    return (r === 'Twin Wanderer' || r === 'Just Right') ? `雙床房 (${r})` : r;
+  }
+
   function fillConfirmPanel() {
     document.getElementById('c-code').textContent   = document.getElementById('booking-code').value.trim().toUpperCase();
-    document.getElementById('c-room').textContent   = booking.room    || '—';
+    document.getElementById('c-room').textContent   = roomLabel(booking.room);
     document.getElementById('c-cin').textContent    = formatDate(booking.checkin);
     document.getElementById('c-cout').textContent   = formatDate(booking.checkout);
     document.getElementById('c-name').textContent   = document.getElementById('g-name').value    || '—';
@@ -805,7 +811,7 @@
       booking  = data.booking;
       recordId = data.recordId;
 
-      document.getElementById('b-room').textContent     = booking.room     || '—';
+      document.getElementById('b-room').textContent     = roomLabel(booking.room);
       document.getElementById('b-checkin').textContent  = formatDate(booking.checkin);
       document.getElementById('b-checkout').textContent = formatDate(booking.checkout);
       document.getElementById('b-guests').textContent   = booking.guests   || '—';

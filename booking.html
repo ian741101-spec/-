@@ -435,8 +435,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     <select class="form-select" id="room-select">
       <option value="" data-i18n="selectRoom">— Select a room —</option>
       <option value="Ocean Double" data-i18n="optOcean">Ocean Double Room</option>
-      <option value="Twin Wanderer" data-i18n="optTwin">Twin Room (Twin Wanderer)</option>
-      <option value="Just Right" data-i18n="optJustRight">Twin Room (Just Right)</option>
+      <option value="Twin" data-i18n="optTwin">Twin Room</option>
             <option value="Intertidal Bunk" data-i18n="optBunk">Intertidal Bunk Dorm (per bed)</option>
     </select>
   </div>
@@ -582,8 +581,8 @@ const i18n = {
     pageDesc: "Fill in your details and we'll confirm<br>within 2 business days.",
     stayDates: 'Stay Dates', checkin: 'Check-in', checkout: 'Check-out',
     roomType: 'Room Type', selectRoom: '— Select a room —',
-    optOcean: 'Ocean Double Room', optTwin: 'Twin Room (Twin Wanderer)',
-    optJustRight: 'Twin Room (Just Right)', optFreediver: 'Freediver Single Room',
+    optOcean: 'Ocean Double Room', optTwin: 'Twin Room',
+    optFreediver: 'Freediver Single Room',
     optBunk: 'Intertidal Bunk Dorm (per bed)',
     numGuests: 'Number of Guests', yourName: 'Your Name',
     bunkMax: 'The dorm has 2 beds. Tick "book the whole dorm" if you need room for 3–4.',
@@ -631,8 +630,8 @@ const i18n = {
     pageDesc: '填寫您的資料,我們將於<br>2 個工作天內回覆確認。',
     stayDates: '入住日期', checkin: '入住日', checkout: '退房日',
     roomType: '房型', selectRoom: '— 請選擇房型 —',
-    optOcean: '海洋雙人房', optTwin: '雙床房（Twin Wanderer）',
-    optJustRight: '雙床房（Just Right）', optFreediver: '自由潛水單人房',
+    optOcean: '海洋雙人房', optTwin: '雙床房',
+    optFreediver: '自由潛水單人房',
     optBunk: '潮間帶背包房(每床)',
     numGuests: '入住人數', yourName: '您的姓名',
     bunkMax: '背包房共 2 張床。3~4 人請勾選下方「我要包房」。',
@@ -680,8 +679,8 @@ const i18n = {
     pageDesc: '詳細をご記入いただければ<br>2営業日以内にご確認のご返信をいたします。',
     stayDates: '宿泊日', checkin: 'チェックイン', checkout: 'チェックアウト',
     roomType: '客室タイプ', selectRoom: '— 客室を選択 —',
-    optOcean: 'オーシャンダブルルーム', optTwin: 'ツインルーム（Twin Wanderer）',
-    optJustRight: 'ツインルーム（Just Right）', optFreediver: 'フリーダイバーシングル',
+    optOcean: 'オーシャンダブルルーム', optTwin: 'ツインルーム',
+    optFreediver: 'フリーダイバーシングル',
     optBunk: 'インタータイダルバンク(ベッド単位)',
     numGuests: '宿泊人数', yourName: 'お名前',
     bunkMax: 'ドミトリーはベッド2台です。3~4名様は「貸切にする」をお選びください。',
@@ -880,7 +879,7 @@ function isDateUnselectable(dateStr) {
   const ci = document.getElementById('checkin-btn').dataset.iso || '';
   if (!parseISO(ci)) return isDateFull(dateStr);   // 還沒選入住日,退回單日判斷
   if (dateStr <= ci) return true;                  // 退房一定要晚於入住(ISO 字串可直接比大小)
-  return nightsOf(ci, dateStr).some(isDateFull);
+  return stayBlocked(ci, dateStr);
 }
 
 function selectDay(y, m, d) {
@@ -935,7 +934,7 @@ function confirmDate() {
   // 改了入住日之後,原本選的退房日可能就不成立了(變成比入住日早,或中間跨到客滿的日子)
   if (calMode === 'checkin') {
     const co = document.getElementById('checkout-btn').dataset.iso || '';
-    if (parseISO(co) && (co <= btn.dataset.iso || nightsOf(btn.dataset.iso, co).some(isDateFull))) {
+    if (parseISO(co) && (co <= btn.dataset.iso || stayBlocked(btn.dataset.iso, co))) {
       const cb = document.getElementById('checkout-btn');
       cb.dataset.iso = '';
       cb.classList.remove('filled');
@@ -953,6 +952,59 @@ var wholeRoom = false;
    這份對照表要跟 Worker 的 ROOM_CAPACITY 一致。 */
 const ROOM_CAPACITY = { 'Intertidal Bunk': 2 };
 function roomCapacity(room) { return ROOM_CAPACITY[room] || 1; }
+
+/* ── 雙床房群組 ──
+   Twin Wanderer 和 Just Right 兩間配置相同,對客人只顯示一個「雙床房」選項(value = 'Twin'),
+   但 Airtable 裡仍是兩間各自有房況。查房況時兩間都查、合併成「那天還有幾間空」;
+   送出時挑一間整段都有空的實體房,用它的名字寫進訂單(業主的 LINE 通知才知道是哪一間)。 */
+const ROOM_GROUPS = { 'Twin': ['Twin Wanderer', 'Just Right'] };
+function groupMembers(room) { return ROOM_GROUPS[room] || null; }
+var groupAvail = {};   // 群組時每間實體房各自的房況
+
+function roomFreeOn(av, dateStr) {
+  if (!av) return false;                                   // 查不到房況的房間不賣
+  if (!av.remaining) return av.blocked.indexOf(dateStr) === -1;
+  const left = av.remaining[dateStr];
+  return (left === undefined ? av.capacity : left) >= 1;
+}
+function mergeGroupAvail(members) {
+  const dates = {};
+  members.forEach(m => {
+    const av = groupAvail[m]; if (!av) return;
+    av.blocked.forEach(d => { dates[d] = 1; });
+    Object.keys(av.remaining || {}).forEach(d => { dates[d] = 1; });
+  });
+  const remaining = {};
+  Object.keys(dates).forEach(d => { remaining[d] = members.filter(m => roomFreeOn(groupAvail[m], d)).length; });
+  return {
+    blocked:   Object.keys(remaining).filter(d => remaining[d] === 0),
+    capacity:  members.filter(m => groupAvail[m]).length,
+    remaining,
+  };
+}
+/* 整段住宿要睡同一間:群組房型找一間每晚都有空的實體房,找不到回 null;
+   單一房型直接回房名 */
+function assignRoom(checkinISO, checkoutISO) {
+  const room = selectedRoom();
+  const members = groupMembers(room);
+  if (!members) return room;
+  const nights = nightsOf(checkinISO, checkoutISO);
+  return members.find(m => nights.every(d => roomFreeOn(groupAvail[m], d))) || null;
+}
+/* 這段日期訂不訂得到。群組房型不能只看每晚各自有沒有空——
+   第一晚只剩 A 房、第二晚只剩 B 房的話,其實沒有一間能住完整段 */
+function stayBlocked(checkinISO, checkoutISO) {
+  if (groupMembers(selectedRoom())) return !assignRoom(checkinISO, checkoutISO);
+  return nightsOf(checkinISO, checkoutISO).some(isDateFull);
+}
+/* 確認畫面顯示用:實體房名前面加上客人看到的房型名稱 */
+function roomLabel(room) {
+  const d = getDict();
+  for (const g in ROOM_GROUPS) {
+    if (ROOM_GROUPS[g].indexOf(room) !== -1) return `${d['opt' + g] || g} (${room})`;
+  }
+  return room;
+}
 
 /* 加床:背包房實體只有 2 張床,但包整間時可以加床睡到 4 人。
    只有包房才給加床 —— 跟陌生人同房時不會替誰加床,那些位置也不單獨賣。 */
@@ -1029,7 +1081,7 @@ function revalidateDates() {
   const ci = document.getElementById('checkin-btn').dataset.iso  || '';
   const co = document.getElementById('checkout-btn').dataset.iso || '';
   if (!parseISO(ci) || !parseISO(co)) return;
-  if (!nightsOf(ci, co).some(isDateFull)) return;
+  if (!stayBlocked(ci, co)) return;
 
   [['checkin-btn', 'checkin-text', 'checkin'], ['checkout-btn', 'checkout-text', 'checkout']]
     .forEach(([btnId, textId, key]) => {
@@ -1227,6 +1279,29 @@ function fetchBlockedDates() {
   const room = selectedRoom();
   if (!room) { availability = EMPTY_AVAIL; renderCal(); return; }
 
+  const members = groupMembers(room);
+  if (members) {
+    Promise.all(members.map(m =>
+      fetch(`${WORKER_URL}/availability?room_type=${encodeURIComponent(m)}`)
+        .then(r => r.json())
+        .then(d => ({
+          blocked:   d.blocked || [],
+          capacity:  Number(d.capacity) > 0 ? Number(d.capacity) : 1,
+          remaining: d.remaining || null,
+        }))
+        .catch(() => null)))
+    .then(list => {
+      groupAvail = {};
+      // 全部查失敗 → 跟單一房型一樣退回「全開」;只有一間失敗 → 那間不賣
+      const allFailed = list.every(x => !x);
+      members.forEach((m, i) => { groupAvail[m] = list[i] || (allFailed ? EMPTY_AVAIL : null); });
+      availability = allFailed ? EMPTY_AVAIL : mergeGroupAvail(members);
+      renderCal();
+      revalidateDates();
+    });
+    return;
+  }
+
   fetch(`${WORKER_URL}/availability?room_type=${encodeURIComponent(room)}`)
   .then(r => r.json())
   .then(data => {
@@ -1263,13 +1338,13 @@ function submitForm() {
   // 日期直接讀 data-iso('YYYY-MM-DD'),不從畫面文字反推
   const checkin  = document.getElementById('checkin-btn').dataset.iso  || '';
   const checkout = document.getElementById('checkout-btn').dataset.iso || '';
-  const room     = document.getElementById('room-select').value;
+  const roomChoice = document.getElementById('room-select').value;
   const name     = document.getElementById('name-input').value.trim();
   const phone    = document.getElementById('phone-input').value.trim();
   const email    = document.getElementById('email-input').value.trim();
   const notes    = document.getElementById('notes-input').value.trim();
 
-  if (!parseISO(checkin) || !parseISO(checkout) || !room || !name || !phone || !email) {
+  if (!parseISO(checkin) || !parseISO(checkout) || !roomChoice || !name || !phone || !email) {
     alert(getDict().fillRequired);
     return;
   }
@@ -1282,10 +1357,12 @@ function submitForm() {
 
   // 選好日期之後才加人數或勾包房的話,原本選的日期可能已經不夠床了,送出前再確認一次
   const _needBeds = bedsNeeded();
-  if (nightsOf(checkin, checkout).some(isDateFull)) {
+  if (stayBlocked(checkin, checkout)) {
     alert(getDict().bedsGone);
     return;
   }
+  // 雙床房群組:到這裡才決定實際寫進訂單的是哪一間
+  const room = assignRoom(checkin, checkout) || roomChoice;
 
   // 同行旅客:訂房人以外的每一位都要有姓名 + 電話(電話不驗格式,可能是外國號碼)
   const needComp = Math.max(0, guests - 1);
@@ -1344,7 +1421,7 @@ function submitForm() {
     document.getElementById('confirm-summary').innerHTML =
       `📅 <strong>${_d.checkin}:</strong> ${fmtISO(checkin)}<br>` +
       `📅 <strong>${_d.checkout}:</strong> ${fmtISO(checkout)}<br>` +
-      `🛏 <strong>${_d.roomType}:</strong> ${room}<br>` +
+      `🛏 <strong>${_d.roomType}:</strong> ${roomLabel(room)}<br>` +
       `👤 <strong>${_d.numGuests}:</strong> ${guests}<br>` +
       (roomCapacity(room) > 1
         ? `🛌 <strong>${_d.bedsLabel}:</strong> ` +

@@ -9,6 +9,9 @@ const AVAIL = {
   'Intertidal Bunk': { blocked: ['2026-08-19', '2026-08-20', '2026-08-20'], capacity: 2,
                        remaining: { '2026-08-19': 1, '2026-08-20': 0 } },
   'Ocean Double':    { blocked: ['2026-08-19'], capacity: 1, remaining: { '2026-08-19': 0 } },
+  // 雙床房群組:Twin Wanderer 8/19 有人、Just Right 8/20 有人
+  'Twin Wanderer':   { blocked: ['2026-08-19'], capacity: 1, remaining: { '2026-08-19': 0 } },
+  'Just Right':      { blocked: ['2026-08-20'], capacity: 1, remaining: { '2026-08-20': 0 } },
 };
 
 const dom = new JSDOM(html, {
@@ -194,6 +197,36 @@ const pickRoom = async (room) => {
   ok(JSON.stringify(w.nightsOf('2026-12-31', '2027-01-02')) ===
      JSON.stringify(['2026-12-31', '2027-01-01']), '跨年正確');
   ok(w.nightsOf('', '2026-08-18').length === 0, '沒選日期 → 空陣列');
+
+  // ── 15. 雙床房群組:選單只有一個「雙床房」,房況合併兩間、送出時自動分配 ──
+  await pickRoom('Twin');
+  ok(!!doc.querySelector('#room-select option[value="Twin"]'), '選單有「雙床房」(value=Twin)');
+  ok(!doc.querySelector('#room-select option[value="Twin Wanderer"]') &&
+     !doc.querySelector('#room-select option[value="Just Right"]'), '選單沒有 Twin Wanderer / Just Right');
+  ok($('whole-room-section').style.display === 'none', '雙床房不顯示包房選項');
+  ok(w.availability.capacity === 2, '合併後容量 = 2 間 (實際 ' + w.availability.capacity + ')');
+  ok(w.availability.remaining['2026-08-19'] === 1, '8/19 只剩 1 間 (實際 ' + w.availability.remaining['2026-08-19'] + ')');
+  ok(w.isDateFull('2026-08-19') === false, '8/19 還有一間 → 開放');
+  ok(w.isDateFull('2026-08-18') === false, '沒人訂的日子 → 開放');
+  ok(w.assignRoom('2026-08-18', '2026-08-19') === 'Twin Wanderer', '8/18 一晚 → 分到 Twin Wanderer');
+  ok(w.assignRoom('2026-08-19', '2026-08-20') === 'Just Right', '8/19 一晚 → Twin Wanderer 有人,分到 Just Right');
+  ok(w.assignRoom('2026-08-20', '2026-08-21') === 'Twin Wanderer', '8/20 一晚 → Just Right 有人,分到 Twin Wanderer');
+  ok(w.assignRoom('2026-08-19', '2026-08-21') === null, '8/19–8/20 兩晚 → 兩間都湊不齊整段,分不到');
+  ok(w.stayBlocked('2026-08-19', '2026-08-21') === true, '同一段 stayBlocked → 擋住(每晚各自有空也不行)');
+  ok(w.stayBlocked('2026-08-18', '2026-08-19') === false, '8/18 一晚 stayBlocked → 放行');
+  ok(w.roomLabel('Just Right').indexOf('Just Right') !== -1 && w.roomLabel('Just Right') !== 'Just Right',
+     '確認畫面用「雙床房 (Just Right)」顯示 (實際 ' + w.roomLabel('Just Right') + ')');
+  ok(w.roomLabel('Ocean Double') === 'Ocean Double', '非群組房名照舊');
+  // 退房日的月曆判斷也要走 stayBlocked:入住 8/19,選 8/21 當退房日應被擋
+  $('checkin-btn').dataset.iso = '2026-08-19';
+  w.calMode = 'checkout';
+  ok(w.isDateUnselectable('2026-08-21') === true, '入住 8/19 → 8/21 不能當退房日(8/19、8/20 兩晚沒有同一間房)');
+  ok(w.isDateUnselectable('2026-08-20') === false, '入住 8/19 → 8/20 可當退房日(Just Right 8/19 有空)');
+  w.calMode = 'checkin';
+  // 單一房型不受影響
+  await pickRoom('Ocean Double');
+  ok(w.assignRoom('2026-08-18', '2026-08-19') === 'Ocean Double', '單一房型 assignRoom 回自己');
+  ok(w.stayBlocked('2026-08-18', '2026-08-20') === true, '單一房型 stayBlocked 仍看 isDateFull(8/19 客滿)');
 
   console.log(fails ? `\n${fails} 項失敗` : '\n全部通過');
   process.exit(fails ? 1 : 0);

@@ -485,13 +485,16 @@ function renderBookings(bookings) {
     list.innerHTML = `<div class="bk-card empty">${d.empty.replace('\n','<br>')}</div>`;
     return;
   }
+  // 訂單裡存的是實體房名(Twin Wanderer / Just Right),客人訂的時候看到的是「雙床房」
+  const TWIN = { en: 'Twin Room', zh: '雙床房', ja: 'ツインルーム' };
+  const roomLabel = r => (r === 'Twin Wanderer' || r === 'Just Right') ? `${TWIN[LANG] || TWIN.en} (${r})` : r;
   list.innerHTML = bookings.map(b => {
     const [label, cls] = statusInfo(b);
     let pts = '';
     if (b.counted && b.points > 0) pts = `<div class="bk-pts">${fmt(d.bkPts, { n: b.points })}</div>`;
     else if (b.status !== 'Cancelled' && b.points > 0) pts = `<div class="bk-pts future">${fmt(d.bkPtsFuture, { n: b.points })}</div>`;
     return `<div class="bk-card">
-      <div class="bk-top"><div class="bk-room">${b.room}</div><div class="bk-status ${cls}">${label}</div></div>
+      <div class="bk-top"><div class="bk-room">${roomLabel(b.room)}</div><div class="bk-status ${cls}">${label}</div></div>
       <div class="bk-dates">${fmtDate(b.checkin)} → ${fmtDate(b.checkout)} · ${b.guests} ${d.guests}</div>
       <div class="bk-code">${b.code}</div>
       ${pts}

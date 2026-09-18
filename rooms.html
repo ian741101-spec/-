@@ -309,48 +309,27 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:
     </div>
   </article>
 
-  <!-- 2. Twin Wanderer -->
+  <!-- 2+3. Twin Room(Twin Wanderer / Just Right 兩間配置相同,合併成一張卡;訂房時系統自動分配) -->
   <article class="room-card" data-type="private">
     <div class="card-image">
       <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/room-twin-wanderer-1.webp" alt="Twin Wanderer Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-twin-wanderer-1.webp" alt="Twin Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-1.webp" alt="Twin Room" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-2.webp" alt="Twin Room another angle" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-3.webp" alt="Twin Room entrance view" loading="lazy"></div>
+        <div class="gallery-slide"><img src="images/room-just-right-4.webp" alt="Twin Room other side" loading="lazy"></div>
       </div>
       <span class="card-type-badge" data-i18n="typeTwin">Twin Room</span>
-      <div class="gallery-dots" style="display:none;"></div>
+      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span><span class="gallery-dot"></span><span class="gallery-dot"></span><span class="gallery-dot"></span></div>
     </div>
     <div class="card-body">
       <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
       <h2 class="card-title" data-i18n="r2Title">Twin Room</h2>
-      <div class="card-subtitle">Twin Wanderer</div>
-      <p class="card-desc" id="desc-2" data-i18n="r2Desc">Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.</p>
+      <div class="card-subtitle" data-i18n="r2Sub">Two rooms, same layout</div>
+      <p class="card-desc" id="desc-2" data-i18n="r2Desc">Two single beds with a round rug between them, sheer curtains and morning light — perfect for dive buddies or friends who each want their own bed. We have two of these rooms, laid out the same; you'll get whichever is free on your dates.</p>
       <span class="desc-toggle" onclick="toggleDesc('desc-2',this)" data-i18n="readMore">Read more ∨</span>
       <div class="card-amenities">
-        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amWindow">Window View</span><span class="amenity-tag" data-i18n="amTwinBeds">Twin Beds</span>
-      </div>
-      <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
-    </div>
-  </article>
-
-  <!-- 3. Just Right -->
-  <article class="room-card" data-type="private">
-    <div class="card-image">
-      <div class="gallery-track">
-        <div class="gallery-slide"><img src="images/room-just-right-1.webp" alt="Just Right Room" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/room-just-right-2.webp" alt="Just Right Room another angle" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/room-just-right-3.webp" alt="Just Right Room entrance view" loading="lazy"></div>
-        <div class="gallery-slide"><img src="images/room-just-right-4.webp" alt="Just Right Room other side" loading="lazy"></div>
-      </div>
-      <span class="card-type-badge" data-i18n="typeMusic">Music Theme</span>
-      <div class="gallery-dots"><span class="gallery-dot active"></span><span class="gallery-dot"></span><span class="gallery-dot"></span><span class="gallery-dot"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="card-capacity"><svg class="capacity-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg><span data-i18n="cap1to2">1 – 2 guests</span></div>
-      <h2 class="card-title" data-i18n="r3Title">Twin Room</h2>
-      <div class="card-subtitle">Just Right — Music Theme</div>
-      <p class="card-desc" id="desc-3" data-i18n="r3Desc">Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.</p>
-      <span class="desc-toggle" onclick="toggleDesc('desc-3',this)" data-i18n="readMore">Read more ∨</span>
-      <div class="card-amenities">
-        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amLyric">Lyric Wall</span><span class="amenity-tag" data-i18n="amBold">Bold Colors</span>
+        <span class="amenity-tag" data-i18n="amAC">A/C</span><span class="amenity-tag" data-i18n="amTwinBeds">Twin Beds</span><span class="amenity-tag" data-i18n="amWindow">Window View</span>
       </div>
       <div class="card-footer"><button class="book-btn" onclick="location.href='booking.html'" data-i18n="bookNow">Book Now</button></div>
     </div>
@@ -462,10 +441,8 @@ const i18n = {
     cap1to2: '1 – 2 guests', cap1: '1 guest', capMixed: 'Mixed dorm · 2 beds, booked by the bed',
     r1Title: 'Ocean Double',
     r1Desc: 'A low pallet bed frame sets a relaxed island tone, with deep-blue bedding that feels like the calm of the open sea. Air-conditioned, adorned with plants and underwater photography — every detail in conversation with the ocean.',
-    r2Title: 'Twin Room',
-    r2Desc: 'Two single beds with a round rug carving out a shared space between them. Sheer curtains let the morning light drift in — perfect for dive buddies or travel companions who like their own space.',
-    r3Title: 'Twin Room',
-    r3Desc: 'Song lyrics grace the wall: "Our wandering brought us here just in time." Bold red-and-blue bedding, minimal yet full of character — made for souls who stopped mid-journey and decided to stay.',
+    r2Title: 'Twin Room', r2Sub: 'Two rooms, same layout',
+    r2Desc: 'Two single beds with a round rug between them, sheer curtains and morning light — perfect for dive buddies or friends who each want their own bed. We have two of these rooms, laid out the same; you\'ll get whichever is free on your dates.',
     r4Title: 'Freediver Room',
     r4Desc: 'A real carbon-fibre freediving fin displayed on the wall, alongside driftwood and coral stones. The full-length mirror catches the light. Solo travelers — you deserve this quiet.',
     r5Title: 'Intertidal Bunk',
@@ -510,10 +487,8 @@ const i18n = {
     cap1to2: '1 – 2 人', cap1: '1 人', capMixed: '男女混宿 · 共 2 床，按床預訂',
     r1Title: '海洋雙人房',
     r1Desc: '低床木棧板床架,帶來放鬆的島嶼氛圍。深藍色寢具如同寧靜的海面,搭配冷氣、植栽與水下攝影作品,每個細節都與海洋對話。',
-    r2Title: '雙床房',
-    r2Desc: '兩張單人床中間以圓形地毯劃分共享空間。輕透窗簾讓晨光緩緩灑入——適合潛水夥伴或喜歡擁有獨立空間的旅伴。',
-    r3Title: '雙床房',
-    r3Desc: '牆上印著歌詞:「我們的流浪剛好趕上時間。」大膽的紅藍床品,簡約卻充滿個性——獻給那些旅途中駐足、決定留下的靈魂。',
+    r2Title: '雙床房', r2Sub: '共兩間,配置相同',
+    r2Desc: '兩張單人床中間鋪著圓形地毯,輕透窗簾讓晨光緩緩灑入——適合潛水夥伴或想各睡一床的朋友。這種房型我們有兩間、配置相同,依您的日期安排其中一間。',
     r4Title: '自由潛水單人房',
     r4Desc: '牆上展示真正的碳纖維自由潛水蛙鞋,搭配漂流木與珊瑚石。落地鏡映著光線。獨自旅行者——你值得這份寧靜。',
     r5Title: '潮間帶背包房',
@@ -558,10 +533,8 @@ const i18n = {
     cap1to2: '1 – 2 名', cap1: '1 名', capMixed: '男女混合 · 全2ベッド、ベッド単位でご予約',
     r1Title: 'オーシャンダブル',
     r1Desc: 'ローパレットベッドが島のリラックスした雰囲気を演出。深い青の寝具は穏やかな海のよう。エアコン完備、植物と水中写真で飾られ——あらゆる細部が海と対話します。',
-    r2Title: 'ツインルーム',
-    r2Desc: '2つのシングルベッドの間に丸いラグで共有スペースを演出。透けるカーテンから朝の光が優しく差し込みます——ダイビング仲間や、それぞれの空間を大切にしたい旅仲間に最適。',
-    r3Title: 'ツインルーム',
-    r3Desc: '壁には歌詞:「僕らの放浪がここでちょうど間に合った」。大胆な赤と青の寝具、シンプルながら個性的——旅の途中で立ち止まり、留まることを決めた魂のために。',
+    r2Title: 'ツインルーム', r2Sub: '同じ造りの部屋が2室',
+    r2Desc: '2つのシングルベッドの間に丸いラグ。透けるカーテンから朝の光が差し込み、ダイビング仲間やベッドを分けたい友人同士にぴったり。同じ造りの部屋が2室あり、ご希望日程で空いている方をご用意します。',
     r4Title: 'フリーダイバールーム',
     r4Desc: '本物のカーボン製フリーダイビングフィンを壁に展示、流木と珊瑚石を添えて。全身鏡が光を捉えます。一人旅の方へ——この静けさを存分に。',
     r5Title: 'インタータイダルバンク',
